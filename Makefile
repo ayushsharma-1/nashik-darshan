@@ -83,3 +83,15 @@ swagger-3-0: install-swag
 swagger-fix-refs:
 	@./scripts/fix_swagger_refs.sh
 
+
+.PHONY: run
+run:
+	@echo "Running development server..."
+	@go run cmd/server/main.go
+	@echo "✅ Development server running"
+
+.PHONY: build
+build:
+	@echo "Running production server..."
+	@go build cmd/server/main.go
+	@echo "✅ Production server running"
