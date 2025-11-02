@@ -14,7 +14,7 @@ type User struct {
 
 // Mixin of the User.
 func (User) Mixin() []ent.Mixin {
-	return []ent.Mixin{
+return []ent.Mixin{
 		baseMixin.BaseMixin{},
 	}
 }
@@ -29,7 +29,7 @@ func (User) Fields() []ent.Field {
 				return types.GenerateUUIDWithPrefix(types.UUID_PREFIX_USER)
 			}).
 			Immutable(),
-		field.String("full_name").
+		field.String("name").
 			SchemaType(map[string]string{
 				"postgres": "varchar(255)",
 			}).
@@ -39,14 +39,17 @@ func (User) Fields() []ent.Field {
 				"postgres": "varchar(255)",
 			}).
 			NotEmpty(),
-		field.String("phone_number").
+		field.String("phone").
 			SchemaType(map[string]string{
 				"postgres": "varchar(255)",
-			}),
+			}).
+			Nillable(),
+
 		field.String("role").
 			SchemaType(map[string]string{
 				"postgres": "varchar(255)",
 			}).
+			Default(string(types.UserRoleUser)).
 			NotEmpty(),
 	}
 }
@@ -58,9 +61,11 @@ func (User) Edges() []ent.Edge {
 // Indexes of the User.
 func (User) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("email", "phone_number").
+		index.Fields("email", "phone").
 			Unique(),
-		index.Fields("email"),
-		index.Fields("phone_number"),
+		index.Fields("email").
+			Unique(),
+		index.Fields("phone").
+			Unique(),
 	}
 }

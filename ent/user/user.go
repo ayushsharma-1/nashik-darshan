@@ -23,12 +23,12 @@ const (
 	FieldCreatedBy = "created_by"
 	// FieldUpdatedBy holds the string denoting the updated_by field in the database.
 	FieldUpdatedBy = "updated_by"
-	// FieldFullName holds the string denoting the full_name field in the database.
-	FieldFullName = "full_name"
+	// FieldName holds the string denoting the name field in the database.
+	FieldName = "name"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
-	// FieldPhoneNumber holds the string denoting the phone_number field in the database.
-	FieldPhoneNumber = "phone_number"
+	// FieldPhone holds the string denoting the phone field in the database.
+	FieldPhone = "phone"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
 	// Table holds the table name of the user in the database.
@@ -43,9 +43,9 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldCreatedBy,
 	FieldUpdatedBy,
-	FieldFullName,
+	FieldName,
 	FieldEmail,
-	FieldPhoneNumber,
+	FieldPhone,
 	FieldRole,
 }
 
@@ -68,10 +68,12 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// FullNameValidator is a validator for the "full_name" field. It is called by the builders before save.
-	FullNameValidator func(string) error
+	// NameValidator is a validator for the "name" field. It is called by the builders before save.
+	NameValidator func(string) error
 	// EmailValidator is a validator for the "email" field. It is called by the builders before save.
 	EmailValidator func(string) error
+	// DefaultRole holds the default value on creation for the "role" field.
+	DefaultRole string
 	// RoleValidator is a validator for the "role" field. It is called by the builders before save.
 	RoleValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
@@ -111,9 +113,9 @@ func ByUpdatedBy(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedBy, opts...).ToFunc()
 }
 
-// ByFullName orders the results by the full_name field.
-func ByFullName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldFullName, opts...).ToFunc()
+// ByName orders the results by the name field.
+func ByName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
 // ByEmail orders the results by the email field.
@@ -121,9 +123,9 @@ func ByEmail(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEmail, opts...).ToFunc()
 }
 
-// ByPhoneNumber orders the results by the phone_number field.
-func ByPhoneNumber(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPhoneNumber, opts...).ToFunc()
+// ByPhone orders the results by the phone field.
+func ByPhone(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPhone, opts...).ToFunc()
 }
 
 // ByRole orders the results by the role field.

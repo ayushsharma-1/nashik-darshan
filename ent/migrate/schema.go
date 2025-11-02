@@ -16,10 +16,10 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "created_by", Type: field.TypeString, Nullable: true},
 		{Name: "updated_by", Type: field.TypeString, Nullable: true},
-		{Name: "full_name", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(255)"}},
+		{Name: "name", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(255)"}},
 		{Name: "email", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(255)"}},
-		{Name: "phone_number", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(255)"}},
-		{Name: "role", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(255)"}},
+		{Name: "phone", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(255)"}},
+		{Name: "role", Type: field.TypeString, Default: "USER", SchemaType: map[string]string{"postgres": "varchar(255)"}},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -28,18 +28,18 @@ var (
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "user_email_phone_number",
+				Name:    "user_email_phone",
 				Unique:  true,
 				Columns: []*schema.Column{UsersColumns[7], UsersColumns[8]},
 			},
 			{
 				Name:    "user_email",
-				Unique:  false,
+				Unique:  true,
 				Columns: []*schema.Column{UsersColumns[7]},
 			},
 			{
-				Name:    "user_phone_number",
-				Unique:  false,
+				Name:    "user_phone",
+				Unique:  true,
 				Columns: []*schema.Column{UsersColumns[8]},
 			},
 		},

@@ -4,11 +4,9 @@ go 1.24.0
 
 require (
 	entgo.io/ent v0.14.5
-	github.com/MicahParks/keyfunc/v2 v2.1.0
 	github.com/cockroachdb/errors v1.11.3
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-playground/validator/v10 v10.27.0
-	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	github.com/nedpals/supabase-go v0.5.0

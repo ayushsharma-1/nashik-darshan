@@ -7,21 +7,21 @@ import (
 )
 
 type User struct {
-	ID       string         `json:"id" db:"id"`
-	Email    string         `json:"email" db:"email"`
-	Phone    string         `json:"phone" db:"phone"`
-	Role     types.UserRole `json:"role" db:"role"`
-	FullName string         `json:"full_name" db:"full_name"`
+	ID    string         `json:"id" db:"id"`
+	Email string         `json:"email" db:"email"`
+	Phone string         `json:"phone" db:"phone"`
+	Name  string         `json:"name" db:"name"`
+	Role  types.UserRole `json:"role" db:"role"`
 	types.BaseModel
 }
 
 func FromEnt(user *ent.User) *User {
 	return &User{
-		ID:       user.ID,
-		Email:    user.Email,
-		Phone:    user.PhoneNumber,
-		FullName: user.FullName,
-		Role:     types.UserRole(user.Role),
+		ID:    user.ID,
+		Email: user.Email,
+		Phone: *user.Phone,
+		Name:  user.Name,
+		Role:  types.UserRole(user.Role),
 		BaseModel: types.BaseModel{
 			Status:    types.Status(user.Status),
 			CreatedAt: user.CreatedAt,

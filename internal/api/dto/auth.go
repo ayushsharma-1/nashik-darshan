@@ -12,12 +12,12 @@ import (
 
 type SignupRequest struct {
 	// basic info
-	Email    string `json:"email" validate:"email,required"`
-	Phone    string `json:"phone"`
-	FullName string `json:"full_name" validate:"required"`
+	Email string `json:"email" validate:"email,required"`
+	Phone string `json:"phone"`
+	Name  string `json:"name" validate:"required"`
 
 	// role
-	Role types.UserRole `json:"role" validate:"required"`
+	Role types.UserRole `json:"-"`
 
 	// access token
 	AccessToken string `json:"access_token" validate:"required"`
@@ -28,7 +28,7 @@ func (r *SignupRequest) ToUser(ctx context.Context) *user.User {
 		ID:        types.GenerateUUIDWithPrefix(types.UUID_PREFIX_USER),
 		Email:     r.Email,
 		Phone:     r.Phone,
-		FullName:  r.FullName,
+		Name:      r.Name,
 		Role:      r.Role,
 		BaseModel: types.GetDefaultBaseModel(ctx),
 	}

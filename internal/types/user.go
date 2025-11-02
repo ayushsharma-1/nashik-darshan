@@ -9,14 +9,12 @@ import (
 type UserRole string
 
 const (
-	UserRoleStudent    UserRole = "STUDENT"
-	UserRoleInstructor UserRole = "INSTRUCTOR"
-	UserRoleAdmin      UserRole = "ADMIN"
+	UserRoleUser  UserRole = "USER"
+	UserRoleAdmin UserRole = "ADMIN"
 )
 
 var UserRoles = []string{
-	string(UserRoleStudent),
-	string(UserRoleInstructor),
+	string(UserRoleUser),
 	string(UserRoleAdmin),
 }
 

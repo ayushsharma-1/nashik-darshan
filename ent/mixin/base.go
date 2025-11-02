@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
+	"github.com/omkar273/codegeeky/internal/types"
 )
 
 // BaseMixin implements the ent.Mixin for sharing base fields with package schemas.
@@ -20,7 +21,7 @@ func (BaseMixin) Fields() []ent.Field {
 			SchemaType(map[string]string{
 				"postgres": "varchar(20)",
 			}).
-			Default("published"),
+			Default(string(types.StatusPublished)),
 		field.Time("created_at").
 			Immutable().
 			Default(time.Now),

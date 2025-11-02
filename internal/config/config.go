@@ -58,8 +58,6 @@ type SupabaseConfig struct {
 	URL            string `mapstructure:"url" validate:"required"`
 	PublishableKey string `mapstructure:"publishable_key" validate:"required"` // For client-side use
 	SecretKey      string `mapstructure:"secret_key" validate:"required"`      // For server-side use
-	JWKSUrl        string `mapstructure:"jwks_url"`                            // Optional, will be derived from URL if not provided
-	JWTSecret      string `mapstructure:"jwt_secret"`                          // Optional, used only for HMAC fallback
 }
 
 func NewConfig() (*Configuration, error) {

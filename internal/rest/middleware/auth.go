@@ -9,7 +9,6 @@ import (
 	"github.com/omkar273/codegeeky/internal/auth"
 	"github.com/omkar273/codegeeky/internal/config"
 	"github.com/omkar273/codegeeky/internal/logger"
-	"github.com/omkar273/codegeeky/internal/security"
 	"github.com/omkar273/codegeeky/internal/types"
 )
 
@@ -33,16 +32,7 @@ func GuestAuthenticateMiddleware(c *gin.Context) {
 func AuthenticateMiddleware(cfg *config.Configuration, logger *logger.Logger) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
-
-		encryptionService, err := security.NewEncryptionService(cfg, logger)
-		if err != nil {
-			logger.Errorw("failed to create encryption service", "error", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create encryption service"})
-			c.Abort()
-			return
-		}
-
-		authProvider := auth.NewSupabaseProvider(cfg, logger, encryptionService)
+		authProvider := auth.NewSupabaseProvider(cfg, logger)
 
 		// If no API key, check for JWT token
 		authHeader := c.GetHeader(types.HeaderAuthorization)

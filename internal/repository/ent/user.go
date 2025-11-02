@@ -33,15 +33,15 @@ func (r *UserRepository) Create(ctx context.Context, userData *domainUser.User) 
 	r.log.Debugw("creating user",
 		"user_id", userData.ID,
 		"email", userData.Email,
-		"full_name", userData.FullName,
+		"name", userData.Name,
 	)
 
 	// Create user with roles
 	_, err := client.User.Create().
 		SetID(userData.ID).
 		SetEmail(userData.Email).
-		SetPhoneNumber(userData.Phone).
-		SetFullName(userData.FullName).
+		SetPhone(userData.Phone).
+		SetName(userData.Name).
 		SetRole(string(userData.Role)).
 		SetStatus(string(userData.Status)).
 		SetCreatedAt(userData.CreatedAt).
@@ -64,7 +64,7 @@ func (r *UserRepository) Create(ctx context.Context, userData *domainUser.User) 
 			WithHint("Failed to create user").
 			WithReportableDetails(map[string]any{
 				"user_id":   userData.ID,
-				"user_name": userData.FullName,
+				"user_name": userData.Name,
 			}).
 			Mark(ierr.ErrDatabase)
 	}
@@ -200,8 +200,8 @@ func (r *UserRepository) Update(ctx context.Context, userData *domainUser.User) 
 
 	_, err := client.User.UpdateOneID(userData.ID).
 		SetEmail(userData.Email).
-		SetPhoneNumber(userData.Phone).
-		SetFullName(userData.FullName).
+		SetPhone(userData.Phone).
+		SetName(userData.Name).
 		SetRole(string(userData.Role)).
 		SetStatus(string(userData.Status)).
 		SetUpdatedAt(time.Now().UTC()).
@@ -310,10 +310,10 @@ func (o UserQueryOptions) GetFieldName(field string) string {
 		return user.FieldUpdatedAt
 	case "email":
 		return user.FieldEmail
-	case "full_name":
-		return user.FieldFullName
+	case "name":
+		return user.FieldName
 	case "phone":
-		return user.FieldPhoneNumber
+		return user.FieldPhone
 	default:
 		return field
 	}
@@ -358,7 +358,7 @@ func (o UserQueryOptions) ApplyEntityQueryOptions(
 
 	// Apply phone filter if specified
 	if len(f.Phone) > 0 {
-		query = query.Where(user.PhoneNumberIn(f.Phone...))
+		query = query.Where(user.PhoneIn(f.Phone...))
 	}
 
 	// Apply roles filter if specified
