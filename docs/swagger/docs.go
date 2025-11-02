@@ -52,16 +52,131 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/user": {
+            "put": {
+                "description": "Update the current user's information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update current user",
+                "parameters": [
+                    {
+                        "description": "Update user request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.MeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/me": {
+            "get": {
+                "description": "Get the current user's information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get current user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.MeResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "dto.MeResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/types.UserRole"
+                },
+                "status": {
+                    "$ref": "#/definitions/types.Status"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "updated_by": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.SignupRequest": {
             "type": "object",
             "required": [
                 "access_token",
                 "email",
-                "full_name",
-                "role"
+                "name"
             ],
             "properties": {
                 "access_token": {
@@ -72,19 +187,11 @@ const docTemplate = `{
                     "description": "basic info",
                     "type": "string"
                 },
-                "full_name": {
+                "name": {
                     "type": "string"
                 },
                 "phone": {
                     "type": "string"
-                },
-                "role": {
-                    "description": "role",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.UserRole"
-                        }
-                    ]
                 }
             }
         },
@@ -99,16 +206,68 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UpdateUserRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "ierr.ErrorDetail": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "internal_error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "ierr.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "$ref": "#/definitions/ierr.ErrorDetail"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "types.Status": {
+            "type": "string",
+            "enum": [
+                "published",
+                "deleted",
+                "archived",
+                "inactive",
+                "pending"
+            ],
+            "x-enum-varnames": [
+                "StatusPublished",
+                "StatusDeleted",
+                "StatusArchived",
+                "StatusInactive",
+                "StatusPending"
+            ]
+        },
         "types.UserRole": {
             "type": "string",
             "enum": [
-                "STUDENT",
-                "INSTRUCTOR",
+                "USER",
                 "ADMIN"
             ],
             "x-enum-varnames": [
-                "UserRoleStudent",
-                "UserRoleInstructor",
+                "UserRoleUser",
                 "UserRoleAdmin"
             ]
         }

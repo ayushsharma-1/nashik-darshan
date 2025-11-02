@@ -38,7 +38,6 @@ func (s *authService) Signup(ctx context.Context, req *dto.SignupRequest) (*dto.
 	}
 
 	// if user already exists, return error
-
 	if existingUser != nil {
 		return nil, ierr.NewError("user already exists").
 			WithHint("User already exists").

@@ -1,5 +1,28 @@
 basePath: /api/v1
 definitions:
+  dto.MeResponse:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      role:
+        $ref: '#/definitions/types.UserRole'
+      status:
+        $ref: '#/definitions/types.Status'
+      updated_at:
+        type: string
+      updated_by:
+        type: string
+    type: object
   dto.SignupRequest:
     properties:
       access_token:
@@ -8,19 +31,14 @@ definitions:
       email:
         description: basic info
         type: string
-      full_name:
+      name:
         type: string
       phone:
         type: string
-      role:
-        allOf:
-        - $ref: '#/definitions/types.UserRole'
-        description: role
     required:
     - access_token
     - email
-    - full_name
-    - role
+    - name
     type: object
   dto.SignupResponse:
     properties:
@@ -29,15 +47,51 @@ definitions:
       id:
         type: string
     type: object
+  dto.UpdateUserRequest:
+    properties:
+      name:
+        type: string
+      phone:
+        type: string
+    type: object
+  ierr.ErrorDetail:
+    properties:
+      details:
+        additionalProperties: {}
+        type: object
+      internal_error:
+        type: string
+      message:
+        type: string
+    type: object
+  ierr.ErrorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/ierr.ErrorDetail'
+      success:
+        type: boolean
+    type: object
+  types.Status:
+    enum:
+    - published
+    - deleted
+    - archived
+    - inactive
+    - pending
+    type: string
+    x-enum-varnames:
+    - StatusPublished
+    - StatusDeleted
+    - StatusArchived
+    - StatusInactive
+    - StatusPending
   types.UserRole:
     enum:
-    - STUDENT
-    - INSTRUCTOR
+    - USER
     - ADMIN
     type: string
     x-enum-varnames:
-    - UserRoleStudent
-    - UserRoleInstructor
+    - UserRoleUser
     - UserRoleAdmin
 host: localhost:8080
 info:
@@ -71,6 +125,59 @@ paths:
       summary: Signup
       tags:
       - Auth
+  /user:
+    put:
+      consumes:
+      - application/json
+      description: Update the current user's information
+      parameters:
+      - description: Update user request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Update current user
+      tags:
+      - User
+  /user/me:
+    get:
+      consumes:
+      - application/json
+      description: Get the current user's information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MeResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Get current user
+      tags:
+      - User
 securityDefinitions:
   Authorization:
     description: Enter the token with the `Bearer ` prefix, e.g. `Bearer <token>`.
