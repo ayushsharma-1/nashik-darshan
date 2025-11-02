@@ -137,7 +137,7 @@ func GetDefaultConfig() *Configuration {
 }
 
 func (p PostgresConfig) GetDSN() string {
-	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s statement_cache_mode=describe",
 		p.Host,
 		p.Port,
 		p.User,
