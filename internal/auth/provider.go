@@ -33,7 +33,7 @@ type ProviderSignInDetails struct {
 	Provider   string `json:"provider"`
 	RedirectTo string `json:"redirect_to"`
 }
-
+   
 type Provider interface {
 	// Core Authentication
 	GetProvider() types.AuthProvider
