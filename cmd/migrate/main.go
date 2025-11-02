@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -31,20 +33,52 @@ func main() {
 		log.Fatalf("Failed to create logger: %v", err)
 	}
 
-	// Get DSN from config
-	dsn := cfg.Postgres.GetDSN()
+	// For migrations, we need to handle connection poolers (like Neon) that don't support prepared statements
+	// Build a migration-specific DSN that disables prepared statements
+	migrationDSN := buildMigrationDSN(cfg.Postgres)
+
+	// If the host contains "pooler", try to use direct connection
+	// For Neon: replace "-pooler" with nothing to get direct connection
+	if strings.Contains(cfg.Postgres.Host, "pooler") {
+		directHost := strings.Replace(cfg.Postgres.Host, "-pooler", "", 1)
+		logger.Infow("Detected pooler connection, using direct connection for migrations",
+			"pooler_host", cfg.Postgres.Host,
+			"direct_host", directHost)
+		migrationDSN = buildMigrationDSNFromHost(cfg.Postgres, directHost)
+	}
+
 	logger.Infow("Connecting to database", "host", cfg.Postgres.Host)
 
-	// Create Ent client
-	client, err := ent.Open("postgres", dsn)
+	// Open raw database connection to enable PostGIS extension
+	db, err := sql.Open("postgres", migrationDSN)
 	if err != nil {
 		logger.Fatalw("Failed to connect to postgres", "error", err)
 	}
-	//nolint:errcheck
-	defer client.Close()
+	defer db.Close()
+
+	// Test connection
+	if err := db.Ping(); err != nil {
+		logger.Fatalw("Failed to ping postgres", "error", err)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
+
+	// Enable PostGIS extension if not already enabled
+	logger.Info("Enabling PostGIS extension...")
+	_, err = db.ExecContext(ctx, "CREATE EXTENSION IF NOT EXISTS postgis")
+	if err != nil {
+		logger.Fatalw("Failed to enable PostGIS extension", "error", err)
+	}
+	logger.Info("PostGIS extension enabled successfully")
+
+	// Create Ent client with migration DSN that disables prepared statements
+	client, err := ent.Open("postgres", migrationDSN)
+	if err != nil {
+		logger.Fatalw("Failed to create ent client", "error", err)
+	}
+	//nolint:errcheck
+	defer client.Close()
 
 	// Run auto migration
 	logger.Info("Running database migrations...")
@@ -67,4 +101,29 @@ func main() {
 	}
 
 	fmt.Println("Migration process completed")
+}
+
+// buildMigrationDSN builds a DSN specifically for migrations that disables prepared statements
+// This is necessary for connection poolers like Neon that don't support prepared statements
+func buildMigrationDSN(cfg config.PostgresConfig) string {
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s prefer_simple_protocol=true",
+		cfg.Host,
+		cfg.Port,
+		cfg.User,
+		cfg.Password,
+		cfg.DBName,
+		cfg.SSLMode,
+	)
+}
+
+// buildMigrationDSNFromHost builds a migration DSN with a specific host
+func buildMigrationDSNFromHost(cfg config.PostgresConfig, host string) string {
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s prefer_simple_protocol=true",
+		host,
+		cfg.Port,
+		cfg.User,
+		cfg.Password,
+		cfg.DBName,
+		cfg.SSLMode,
+	)
 }
