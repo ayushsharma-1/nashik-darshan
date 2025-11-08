@@ -39,42 +39,48 @@ func NewRouter(handlers *Handlers, cfg *config.Configuration, logger *logger.Log
 	v1Auth.Use(middleware.GuestAuthenticateMiddleware)
 	v1Auth.POST("/signup", handlers.Auth.Signup)
 
-	// Public category routes
-	v1Categories := v1Router.Group("/categories")
-	{
-		v1Categories.GET("", handlers.Category.List)
-		v1Categories.GET("/:id", handlers.Category.Get)
-		v1Categories.GET("/slug/:slug", handlers.Category.GetBySlug)
-	}
-
-	// Public place routes
-	v1Places := v1Router.Group("/places")
-	{
-		v1Places.GET("", handlers.Place.List)
-		v1Places.GET("/:id", handlers.Place.Get)
-		v1Places.GET("/slug/:slug", handlers.Place.GetBySlug)
-		v1Places.GET("/:place_id/images", handlers.Place.GetImages)
-	}
-
 	// Authenticated routes
 	v1Private := v1Router.Group("/")
 	v1Private.Use(middleware.AuthenticateMiddleware(cfg, logger))
 	{
 		v1Private.GET("/user/me", handlers.User.Me)
 		v1Private.PUT("/user", handlers.User.Update)
+	}
 
-		// Category management routes
-		v1Private.POST("/categories", handlers.Category.Create)
-		v1Private.PUT("/categories/:id", handlers.Category.Update)
-		v1Private.DELETE("/categories/:id", handlers.Category.Delete)
+	// Category routes
+	v1Category := v1Router.Group("/categories")
+	{
+		v1Category.GET("", handlers.Category.List)
+		v1Category.GET("/:id", handlers.Category.Get)
+		v1Category.GET("/slug/:slug", handlers.Category.GetBySlug)
 
-		// Place management routes
-		v1Private.POST("/places", handlers.Place.Create)
-		v1Private.PUT("/places/:id", handlers.Place.Update)
-		v1Private.DELETE("/places/:id", handlers.Place.Delete)
-		v1Private.POST("/places/:place_id/images", handlers.Place.AddImage)
-		v1Private.PUT("/places/images/:image_id", handlers.Place.UpdateImage)
-		v1Private.DELETE("/places/images/:image_id", handlers.Place.DeleteImage)
+		v1Category.Use(middleware.AuthenticateMiddleware(cfg, logger))
+		v1Category.POST("", handlers.Category.Create)
+		v1Category.PUT("/:id", handlers.Category.Update)
+		v1Category.DELETE("/:id", handlers.Category.Delete)
+	}
+
+	// Place routes
+	v1Place := v1Router.Group("/places")
+	{
+		v1Place.GET("", handlers.Place.List)
+		v1Place.GET("/:id", handlers.Place.Get)
+		v1Place.GET("/slug/:slug", handlers.Place.GetBySlug)
+		v1Place.GET("/:place_id/images", handlers.Place.GetImages)
+
+		v1Place.Use(middleware.AuthenticateMiddleware(cfg, logger))
+		v1Place.POST("", handlers.Place.Create)
+		v1Place.PUT("/:id", handlers.Place.Update)
+		v1Place.DELETE("/:id", handlers.Place.Delete)
+		v1Place.POST("/:place_id/images", handlers.Place.AddImage)
+	}
+
+	// Place image routes (authenticated only)
+	v1PlaceImage := v1Router.Group("/places/images")
+	v1PlaceImage.Use(middleware.AuthenticateMiddleware(cfg, logger))
+	{
+		v1PlaceImage.PUT("/:image_id", handlers.Place.UpdateImage)
+		v1PlaceImage.DELETE("/:image_id", handlers.Place.DeleteImage)
 	}
 
 	return router
