@@ -51,8 +51,8 @@ func init() {
 	category.SlugValidator = categoryDescSlug.Validators[0].(func(string) error)
 	// categoryDescID is the schema descriptor for id field.
 	categoryDescID := categoryFields[0].Descriptor()
-	// category.DefaultID holds the default value on creation for the id field.
-	category.DefaultID = categoryDescID.Default.(func() string)
+	// category.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	category.IDValidator = categoryDescID.Validators[0].(func(string) error)
 	placeMixin := schema.Place{}.Mixin()
 	placeMixinFields0 := placeMixin[0].Fields()
 	_ = placeMixinFields0

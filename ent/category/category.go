@@ -74,8 +74,8 @@ var (
 	NameValidator func(string) error
 	// SlugValidator is a validator for the "slug" field. It is called by the builders before save.
 	SlugValidator func(string) error
-	// DefaultID holds the default value on creation for the "id" field.
-	DefaultID func() string
+	// IDValidator is a validator for the "id" field. It is called by the builders before save.
+	IDValidator func(string) error
 )
 
 // OrderOption defines the ordering options for the Category queries.

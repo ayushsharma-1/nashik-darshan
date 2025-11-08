@@ -128,14 +128,6 @@ func (_c *CategoryCreate) SetID(v string) *CategoryCreate {
 	return _c
 }
 
-// SetNillableID sets the "id" field if the given value is not nil.
-func (_c *CategoryCreate) SetNillableID(v *string) *CategoryCreate {
-	if v != nil {
-		_c.SetID(*v)
-	}
-	return _c
-}
-
 // Mutation returns the CategoryMutation object of the builder.
 func (_c *CategoryCreate) Mutation() *CategoryMutation {
 	return _c.mutation
@@ -187,10 +179,6 @@ func (_c *CategoryCreate) defaults() {
 		v := category.DefaultMetadata
 		_c.mutation.SetMetadata(v)
 	}
-	if _, ok := _c.mutation.ID(); !ok {
-		v := category.DefaultID()
-		_c.mutation.SetID(v)
-	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -218,6 +206,11 @@ func (_c *CategoryCreate) check() error {
 	if v, ok := _c.mutation.Slug(); ok {
 		if err := category.SlugValidator(v); err != nil {
 			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Category.slug": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.ID(); ok {
+		if err := category.IDValidator(v); err != nil {
+			return &ValidationError{Name: "id", err: fmt.Errorf(`ent: validator failed for field "Category.id": %w`, err)}
 		}
 	}
 	return nil

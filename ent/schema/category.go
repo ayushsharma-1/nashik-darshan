@@ -5,7 +5,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	baseMixin "github.com/omkar273/nashikdarshan/ent/mixin"
-	"github.com/omkar273/nashikdarshan/internal/types"
 )
 
 type Category struct {
@@ -25,9 +24,7 @@ func (Category) Fields() []ent.Field {
 			SchemaType(map[string]string{
 				"postgres": "varchar(255)",
 			}).
-			DefaultFunc(func() string {
-				return types.GenerateUUIDWithPrefix(types.UUID_PREFIX_CATEGORY)
-			}).
+			NotEmpty().
 			Immutable(),
 		field.String("name").
 			SchemaType(map[string]string{
