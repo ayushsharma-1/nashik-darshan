@@ -897,7 +897,7 @@ type PlaceMutation struct {
 	place_type        *string
 	categories        *[]string
 	appendcategories  []string
-	address           *map[string]interface{}
+	address           *map[string]string
 	latitude          *decimal.Decimal
 	longitude         *decimal.Decimal
 	primary_image_url *string
@@ -1593,12 +1593,12 @@ func (m *PlaceMutation) ResetCategories() {
 }
 
 // SetAddress sets the "address" field.
-func (m *PlaceMutation) SetAddress(value map[string]interface{}) {
+func (m *PlaceMutation) SetAddress(value map[string]string) {
 	m.address = &value
 }
 
 // Address returns the value of the "address" field in the mutation.
-func (m *PlaceMutation) Address() (r map[string]interface{}, exists bool) {
+func (m *PlaceMutation) Address() (r map[string]string, exists bool) {
 	v := m.address
 	if v == nil {
 		return
@@ -1609,7 +1609,7 @@ func (m *PlaceMutation) Address() (r map[string]interface{}, exists bool) {
 // OldAddress returns the old "address" field's value of the Place entity.
 // If the Place object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlaceMutation) OldAddress(ctx context.Context) (v map[string]interface{}, err error) {
+func (m *PlaceMutation) OldAddress(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldAddress is only allowed on UpdateOne operations")
 	}
@@ -2216,7 +2216,7 @@ func (m *PlaceMutation) SetField(name string, value ent.Value) error {
 		m.SetCategories(v)
 		return nil
 	case place.FieldAddress:
-		v, ok := value.(map[string]interface{})
+		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

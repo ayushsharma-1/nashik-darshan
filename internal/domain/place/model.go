@@ -2,26 +2,51 @@ package place
 
 import (
 	"github.com/omkar273/nashikdarshan/ent"
+	ierr "github.com/omkar273/nashikdarshan/internal/errors"
 	"github.com/omkar273/nashikdarshan/internal/types"
 	"github.com/samber/lo"
 	"github.com/shopspring/decimal"
 )
 
+// Location represents a geographic location with latitude and longitude (WGS84)
+type Location struct {
+	Latitude  decimal.Decimal `json:"latitude"`
+	Longitude decimal.Decimal `json:"longitude"`
+}
+
+// Validate validates the Location coordinates
+func (l Location) Validate() error {
+	// Validate latitude range (-90 to 90)
+	if l.Latitude.LessThan(decimal.NewFromInt(-90)) || l.Latitude.GreaterThan(decimal.NewFromInt(90)) {
+		return ierr.NewError("invalid latitude").
+			WithHint("latitude must be between -90 and 90").
+			Mark(ierr.ErrValidation)
+	}
+
+	// Validate longitude range (-180 to 180)
+	if l.Longitude.LessThan(decimal.NewFromInt(-180)) || l.Longitude.GreaterThan(decimal.NewFromInt(180)) {
+		return ierr.NewError("invalid longitude").
+			WithHint("longitude must be between -180 and 180").
+			Mark(ierr.ErrValidation)
+	}
+
+	return nil
+}
+
 type Place struct {
-	ID               string                 `json:"id" db:"id"`
-	Slug             string                 `json:"slug" db:"slug"`
-	Title            string                 `json:"title" db:"title"`
-	Subtitle         *string                `json:"subtitle,omitempty" db:"subtitle"`
-	ShortDescription *string                `json:"short_description,omitempty" db:"short_description"`
-	LongDescription  *string                `json:"long_description,omitempty" db:"long_description"`
-	PlaceType        string                 `json:"place_type" db:"place_type"`
-	Categories       []string               `json:"categories" db:"categories"`
-	Address          map[string]interface{} `json:"address,omitempty" db:"address"`
-	Latitude         decimal.Decimal        `json:"latitude" db:"latitude"`
-	Longitude        decimal.Decimal        `json:"longitude" db:"longitude"`
-	PrimaryImageURL  *string                `json:"primary_image_url,omitempty" db:"primary_image_url"`
-	ThumbnailURL     *string                `json:"thumbnail_url,omitempty" db:"thumbnail_url"`
-	Amenities        []string               `json:"amenities" db:"amenities"`
+	ID               string            `json:"id" db:"id"`
+	Slug             string            `json:"slug" db:"slug"`
+	Title            string            `json:"title" db:"title"`
+	Subtitle         *string           `json:"subtitle,omitempty" db:"subtitle"`
+	ShortDescription *string           `json:"short_description,omitempty" db:"short_description"`
+	LongDescription  *string           `json:"long_description,omitempty" db:"long_description"`
+	PlaceType        string            `json:"place_type" db:"place_type"`
+	Categories       []string          `json:"categories" db:"categories"`
+	Address          map[string]string `json:"address,omitempty" db:"address"`
+	Location         Location          `json:"location" db:"location"`
+	PrimaryImageURL  *string           `json:"primary_image_url,omitempty" db:"primary_image_url"`
+	ThumbnailURL     *string           `json:"thumbnail_url,omitempty" db:"thumbnail_url"`
+	Amenities        []string          `json:"amenities" db:"amenities"`
 	types.BaseModel
 
 	// Relationships
@@ -49,11 +74,13 @@ func FromEnt(place *ent.Place) *Place {
 		LongDescription:  lo.ToPtr(place.LongDescription),
 		PlaceType:        place.PlaceType,
 		Categories:       place.Categories,
-		Latitude:         place.Latitude,
-		Longitude:        place.Longitude,
-		PrimaryImageURL:  lo.ToPtr(place.PrimaryImageURL),
-		ThumbnailURL:     lo.ToPtr(place.ThumbnailURL),
-		Amenities:        place.Amenities,
+		Location: Location{
+			Latitude:  place.Latitude,
+			Longitude: place.Longitude,
+		},
+		PrimaryImageURL: lo.ToPtr(place.PrimaryImageURL),
+		ThumbnailURL:    lo.ToPtr(place.ThumbnailURL),
+		Amenities:       place.Amenities,
 		BaseModel: types.BaseModel{
 			Status:    types.Status(place.Status),
 			CreatedAt: place.CreatedAt,
@@ -63,7 +90,7 @@ func FromEnt(place *ent.Place) *Place {
 		},
 	}
 
-	// Handle JSON fields
+	// Handle JSON fields - address is now map[string]string in ent after regeneration
 	if place.Address != nil {
 		p.Address = place.Address
 	}

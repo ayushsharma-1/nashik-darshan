@@ -165,7 +165,7 @@ func (_c *PlaceCreate) SetCategories(v []string) *PlaceCreate {
 }
 
 // SetAddress sets the "address" field.
-func (_c *PlaceCreate) SetAddress(v map[string]interface{}) *PlaceCreate {
+func (_c *PlaceCreate) SetAddress(v map[string]string) *PlaceCreate {
 	_c.mutation.SetAddress(v)
 	return _c
 }

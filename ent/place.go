@@ -46,7 +46,7 @@ type Place struct {
 	// Categories holds the value of the "categories" field.
 	Categories []string `json:"categories,omitempty"`
 	// Address holds the value of the "address" field.
-	Address map[string]interface{} `json:"address,omitempty"`
+	Address map[string]string `json:"address,omitempty"`
 	// Latitude holds the value of the "latitude" field.
 	Latitude decimal.Decimal `json:"latitude,omitempty"`
 	// Longitude holds the value of the "longitude" field.

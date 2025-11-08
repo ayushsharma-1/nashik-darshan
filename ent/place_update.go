@@ -204,7 +204,7 @@ func (_u *PlaceUpdate) ClearCategories() *PlaceUpdate {
 }
 
 // SetAddress sets the "address" field.
-func (_u *PlaceUpdate) SetAddress(v map[string]interface{}) *PlaceUpdate {
+func (_u *PlaceUpdate) SetAddress(v map[string]string) *PlaceUpdate {
 	_u.mutation.SetAddress(v)
 	return _u
 }
@@ -742,7 +742,7 @@ func (_u *PlaceUpdateOne) ClearCategories() *PlaceUpdateOne {
 }
 
 // SetAddress sets the "address" field.
-func (_u *PlaceUpdateOne) SetAddress(v map[string]interface{}) *PlaceUpdateOne {
+func (_u *PlaceUpdateOne) SetAddress(v map[string]string) *PlaceUpdateOne {
 	_u.mutation.SetAddress(v)
 	return _u
 }

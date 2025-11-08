@@ -96,8 +96,8 @@ func (r *PlaceRepository) Create(ctx context.Context, p *domain.Place) error {
 		SetSlug(p.Slug).
 		SetTitle(p.Title).
 		SetPlaceType(p.PlaceType).
-		SetLatitude(p.Latitude).
-		SetLongitude(p.Longitude).
+		SetLatitude(p.Location.Latitude).
+		SetLongitude(p.Location.Longitude).
 		SetStatus(string(p.Status)).
 		SetCreatedAt(now).
 		SetUpdatedAt(now).
@@ -275,7 +275,7 @@ func (r *PlaceRepository) List(ctx context.Context, filter *types.PlaceFilter) (
 
 		placesWithDist := make([]placeWithDistance, 0, len(domainPlaces))
 		for _, p := range domainPlaces {
-			dist := haversineDistance(lat0, lng0, p.Latitude, p.Longitude)
+			dist := haversineDistance(lat0, lng0, p.Location.Latitude, p.Location.Longitude)
 			if dist <= radiusM.InexactFloat64() {
 				placesWithDist = append(placesWithDist, placeWithDistance{
 					place:    p,
@@ -364,8 +364,8 @@ func (r *PlaceRepository) Update(ctx context.Context, p *domain.Place) error {
 		SetSlug(p.Slug).
 		SetTitle(p.Title).
 		SetPlaceType(p.PlaceType).
-		SetLatitude(p.Latitude).
-		SetLongitude(p.Longitude).
+		SetLatitude(p.Location.Latitude).
+		SetLongitude(p.Location.Longitude).
 		SetStatus(string(p.Status)).
 		SetUpdatedAt(time.Now().UTC()).
 		SetUpdatedBy(types.GetUserID(ctx))

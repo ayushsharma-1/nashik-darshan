@@ -66,7 +66,7 @@ func (Place) Fields() []ent.Field {
 				"postgres": "text[]",
 			}).
 			Optional(),
-		field.JSON("address", map[string]interface{}{}).
+		field.JSON("address", map[string]string{}).
 			SchemaType(map[string]string{
 				"postgres": "jsonb",
 			}).
