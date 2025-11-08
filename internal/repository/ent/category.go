@@ -6,7 +6,7 @@ import (
 
 	"github.com/omkar273/nashikdarshan/ent"
 	"github.com/omkar273/nashikdarshan/ent/category"
-	domainCategory "github.com/omkar273/nashikdarshan/internal/domain/category"
+	domain "github.com/omkar273/nashikdarshan/internal/domain/category"
 	ierr "github.com/omkar273/nashikdarshan/internal/errors"
 	"github.com/omkar273/nashikdarshan/internal/logger"
 	"github.com/omkar273/nashikdarshan/internal/postgres"
@@ -19,7 +19,7 @@ type CategoryRepository struct {
 	queryOpts CategoryQueryOptions
 }
 
-func NewCategoryRepository(client postgres.IClient, logger *logger.Logger) domainCategory.Repository {
+func NewCategoryRepository(client postgres.IClient, logger *logger.Logger) domain.Repository {
 	return &CategoryRepository{
 		client:    client,
 		log:       *logger,
@@ -27,31 +27,28 @@ func NewCategoryRepository(client postgres.IClient, logger *logger.Logger) domai
 	}
 }
 
-func (r *CategoryRepository) Create(ctx context.Context, categoryData *domainCategory.Category) error {
+func (r *CategoryRepository) Create(ctx context.Context, c *domain.Category) error {
 	client := r.client.Querier(ctx)
 
 	r.log.Debugw("creating category",
-		"category_id", categoryData.ID,
-		"name", categoryData.Name,
-		"slug", categoryData.Slug,
+		"category_id", c.ID,
+		"name", c.Name,
+		"slug", c.Slug,
 	)
 
 	create := client.Category.Create().
-		SetID(categoryData.ID).
-		SetName(categoryData.Name).
-		SetSlug(categoryData.Slug).
-		SetStatus(string(categoryData.Status)).
-		SetCreatedAt(categoryData.CreatedAt).
-		SetUpdatedAt(categoryData.UpdatedAt).
-		SetCreatedBy(categoryData.CreatedBy).
-		SetUpdatedBy(categoryData.UpdatedBy)
+		SetID(c.ID).
+		SetName(c.Name).
+		SetSlug(c.Slug).
+		SetStatus(string(c.Status)).
+		SetDescription(c.Description).
+		SetCreatedAt(c.CreatedAt).
+		SetUpdatedAt(c.UpdatedAt).
+		SetCreatedBy(c.CreatedBy).
+		SetUpdatedBy(c.UpdatedBy)
 
-	if categoryData.Description != nil {
-		create = create.SetDescription(*categoryData.Description)
-	}
-
-	if categoryData.Metadata != nil && len(categoryData.Metadata.ToMap()) > 0 {
-		create = create.SetMetadata(categoryData.Metadata.ToMap())
+	if c.Metadata != nil && len(c.Metadata.ToMap()) > 0 {
+		create = create.SetMetadata(c.Metadata.ToMap())
 	}
 
 	_, err := create.Save(ctx)
@@ -61,16 +58,16 @@ func (r *CategoryRepository) Create(ctx context.Context, categoryData *domainCat
 			return ierr.WithError(err).
 				WithHint("Category with this slug already exists").
 				WithReportableDetails(map[string]any{
-					"category_id": categoryData.ID,
-					"slug":        categoryData.Slug,
+					"category_id": c.ID,
+					"slug":        c.Slug,
 				}).
 				Mark(ierr.ErrAlreadyExists)
 		}
 		return ierr.WithError(err).
 			WithHint("Failed to create category").
 			WithReportableDetails(map[string]any{
-				"category_id": categoryData.ID,
-				"name":        categoryData.Name,
+				"category_id": c.ID,
+				"name":        c.Name,
 			}).
 			Mark(ierr.ErrDatabase)
 	}
@@ -78,7 +75,7 @@ func (r *CategoryRepository) Create(ctx context.Context, categoryData *domainCat
 	return nil
 }
 
-func (r *CategoryRepository) Get(ctx context.Context, id string) (*domainCategory.Category, error) {
+func (r *CategoryRepository) Get(ctx context.Context, id string) (*domain.Category, error) {
 	client := r.client.Querier(ctx)
 
 	r.log.Debugw("getting category", "category_id", id)
@@ -104,10 +101,10 @@ func (r *CategoryRepository) Get(ctx context.Context, id string) (*domainCategor
 			Mark(ierr.ErrDatabase)
 	}
 
-	return domainCategory.FromEnt(entCategory), nil
+	return domain.FromEnt(entCategory), nil
 }
 
-func (r *CategoryRepository) GetBySlug(ctx context.Context, slug string) (*domainCategory.Category, error) {
+func (r *CategoryRepository) GetBySlug(ctx context.Context, slug string) (*domain.Category, error) {
 	client := r.client.Querier(ctx)
 
 	r.log.Debugw("getting category by slug", "slug", slug)
@@ -133,10 +130,10 @@ func (r *CategoryRepository) GetBySlug(ctx context.Context, slug string) (*domai
 			Mark(ierr.ErrDatabase)
 	}
 
-	return domainCategory.FromEnt(entCategory), nil
+	return domain.FromEnt(entCategory), nil
 }
 
-func (r *CategoryRepository) List(ctx context.Context, filter *types.CategoryFilter) ([]*domainCategory.Category, error) {
+func (r *CategoryRepository) List(ctx context.Context, filter *types.CategoryFilter) ([]*domain.Category, error) {
 	client := r.client.Querier(ctx)
 
 	r.log.Debugw("listing categories",
@@ -155,10 +152,10 @@ func (r *CategoryRepository) List(ctx context.Context, filter *types.CategoryFil
 			Mark(ierr.ErrDatabase)
 	}
 
-	return domainCategory.FromEntList(categories), nil
+	return domain.FromEntList(categories), nil
 }
 
-func (r *CategoryRepository) ListAll(ctx context.Context, filter *types.CategoryFilter) ([]*domainCategory.Category, error) {
+func (r *CategoryRepository) ListAll(ctx context.Context, filter *types.CategoryFilter) ([]*domain.Category, error) {
 	if filter == nil {
 		filter = types.NewNoLimitCategoryFilter()
 	}
@@ -193,29 +190,24 @@ func (r *CategoryRepository) Count(ctx context.Context, filter *types.CategoryFi
 	return count, nil
 }
 
-func (r *CategoryRepository) Update(ctx context.Context, categoryData *domainCategory.Category) error {
+func (r *CategoryRepository) Update(ctx context.Context, c *domain.Category) error {
 	client := r.client.Querier(ctx)
 
 	r.log.Debugw("updating category",
-		"category_id", categoryData.ID,
-		"name", categoryData.Name,
+		"category_id", c.ID,
+		"name", c.Name,
 	)
 
-	update := client.Category.UpdateOneID(categoryData.ID).
-		SetName(categoryData.Name).
-		SetSlug(categoryData.Slug).
-		SetStatus(string(categoryData.Status)).
+	update := client.Category.UpdateOneID(c.ID).
+		SetName(c.Name).
+		SetSlug(c.Slug).
+		SetDescription(c.Description).
+		SetStatus(string(c.Status)).
 		SetUpdatedAt(time.Now().UTC()).
 		SetUpdatedBy(types.GetUserID(ctx))
 
-	if categoryData.Description != nil {
-		update = update.SetDescription(*categoryData.Description)
-	} else {
-		update = update.ClearDescription()
-	}
-
-	if categoryData.Metadata != nil {
-		update = update.SetMetadata(categoryData.Metadata.ToMap())
+	if c.Metadata != nil {
+		update = update.SetMetadata(c.Metadata.ToMap())
 	}
 
 	_, err := update.Save(ctx)
@@ -223,9 +215,9 @@ func (r *CategoryRepository) Update(ctx context.Context, categoryData *domainCat
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return ierr.WithError(err).
-				WithHintf("Category with ID %s was not found", categoryData.ID).
+				WithHintf("Category with ID %s was not found", c.ID).
 				WithReportableDetails(map[string]any{
-					"category_id": categoryData.ID,
+					"category_id": c.ID,
 				}).
 				Mark(ierr.ErrNotFound)
 		}
@@ -233,15 +225,15 @@ func (r *CategoryRepository) Update(ctx context.Context, categoryData *domainCat
 			return ierr.WithError(err).
 				WithHint("Category with this slug already exists").
 				WithReportableDetails(map[string]any{
-					"category_id": categoryData.ID,
-					"slug":        categoryData.Slug,
+					"category_id": c.ID,
+					"slug":        c.Slug,
 				}).
 				Mark(ierr.ErrAlreadyExists)
 		}
 		return ierr.WithError(err).
 			WithHint("Failed to update category").
 			WithReportableDetails(map[string]any{
-				"category_id": categoryData.ID,
+				"category_id": c.ID,
 			}).
 			Mark(ierr.ErrDatabase)
 	}
@@ -249,14 +241,14 @@ func (r *CategoryRepository) Update(ctx context.Context, categoryData *domainCat
 	return nil
 }
 
-func (r *CategoryRepository) Delete(ctx context.Context, categoryData *domainCategory.Category) error {
+func (r *CategoryRepository) Delete(ctx context.Context, c *domain.Category) error {
 	client := r.client.Querier(ctx)
 
 	r.log.Debugw("deleting category",
-		"category_id", categoryData.ID,
+		"category_id", c.ID,
 	)
 
-	_, err := client.Category.UpdateOneID(categoryData.ID).
+	_, err := client.Category.UpdateOneID(c.ID).
 		SetStatus(string(types.StatusDeleted)).
 		SetUpdatedAt(time.Now().UTC()).
 		SetUpdatedBy(types.GetUserID(ctx)).
@@ -265,16 +257,16 @@ func (r *CategoryRepository) Delete(ctx context.Context, categoryData *domainCat
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return ierr.WithError(err).
-				WithHintf("Category with ID %s was not found", categoryData.ID).
+				WithHintf("Category with ID %s was not found", c.ID).
 				WithReportableDetails(map[string]any{
-					"category_id": categoryData.ID,
+					"category_id": c.ID,
 				}).
 				Mark(ierr.ErrNotFound)
 		}
 		return ierr.WithError(err).
 			WithHint("Failed to delete category").
 			WithReportableDetails(map[string]any{
-				"category_id": categoryData.ID,
+				"category_id": c.ID,
 			}).
 			Mark(ierr.ErrDatabase)
 	}

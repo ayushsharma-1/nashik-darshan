@@ -10,9 +10,9 @@ import (
 )
 
 type CreateCategoryRequest struct {
-	Name        string  `json:"name" binding:"required,min=1,max=255"`
-	Slug        string  `json:"slug" binding:"required,min=1"`
-	Description *string `json:"description,omitempty"`
+	Name        string `json:"name" binding:"required,min=1,max=255"`
+	Slug        string `json:"slug" binding:"required,min=1"`
+	Description string `json:"description,omitempty"`
 }
 
 // Validate validates the CreateCategoryRequest
@@ -76,7 +76,7 @@ func (req *UpdateCategoryRequest) ApplyToCategory(ctx context.Context, cat *cate
 		cat.Slug = *req.Slug
 	}
 	if req.Description != nil {
-		cat.Description = req.Description
+		cat.Description = *req.Description
 	}
 	cat.UpdatedBy = types.GetUserID(ctx)
 }

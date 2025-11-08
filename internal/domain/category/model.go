@@ -6,29 +6,23 @@ import (
 	"github.com/samber/lo"
 )
 
-// Note: This file requires the ent code to be regenerated after adding the slug field to the schema.
-// Run the ent generation command to update ent.Category with the Slug field.
-
 type Category struct {
 	ID          string          `json:"id" db:"id"`
 	Name        string          `json:"name" db:"name"`
 	Slug        string          `json:"slug" db:"slug"`
-	Description *string         `json:"description,omitempty" db:"description"`
+	Description string          `json:"description,omitempty" db:"description"`
 	Metadata    *types.Metadata `json:"metadata,omitempty" db:"metadata"`
 	types.BaseModel
 }
 
 func FromEnt(category *ent.Category) *Category {
 	metadata := types.NewMetadataFromMap(category.Metadata)
-	var description *string
-	if category.Description != "" {
-		description = lo.ToPtr(category.Description)
-	}
+
 	return &Category{
 		ID:          category.ID,
 		Name:        category.Name,
 		Slug:        category.Slug,
-		Description: description,
+		Description: category.Description,
 		Metadata:    metadata,
 		BaseModel: types.BaseModel{
 			Status:    types.Status(category.Status),

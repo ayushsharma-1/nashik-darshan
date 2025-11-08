@@ -29,6 +29,10 @@ func NewCategoryService(params ServiceParams) CategoryService {
 
 // Create creates a new category
 func (s *categoryService) Create(ctx context.Context, req *dto.CreateCategoryRequest) (*dto.CategoryResponse, error) {
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
 	cat := req.ToCategory(ctx)
 
 	err := s.CategoryRepo.Create(ctx, cat)
@@ -67,6 +71,10 @@ func (s *categoryService) GetBySlug(ctx context.Context, slug string) (*dto.Cate
 
 // Update updates an existing category
 func (s *categoryService) Update(ctx context.Context, id string, req *dto.UpdateCategoryRequest) (*dto.CategoryResponse, error) {
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
 	cat, err := s.CategoryRepo.Get(ctx, id)
 	if err != nil {
 		return nil, err
