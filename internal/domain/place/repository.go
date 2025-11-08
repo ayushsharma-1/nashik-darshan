@@ -25,7 +25,4 @@ type Repository interface {
 	GetImages(ctx context.Context, placeID string) ([]*PlaceImage, error)
 	UpdateImage(ctx context.Context, image *PlaceImage) error
 	DeleteImage(ctx context.Context, imageID string) error
-
-	// Geospatial operations
-	ListNearby(ctx context.Context, lat, lon float64, radiusKM float64, filter *types.PlaceFilter) ([]*Place, error)
 }
