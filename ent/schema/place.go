@@ -103,7 +103,7 @@ func (Place) Edges() []ent.Edge {
 func (Place) Indexes() []ent.Index {
 	return []ent.Index{
 		// Unique slug
-		index.Fields("slug").
+		index.Fields("slug", "status").
 			Unique(),
 	}
 }

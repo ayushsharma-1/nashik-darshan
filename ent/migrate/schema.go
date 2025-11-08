@@ -63,9 +63,9 @@ var (
 		PrimaryKey: []*schema.Column{PlacesColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "place_slug",
+				Name:    "place_slug_status",
 				Unique:  true,
-				Columns: []*schema.Column{PlacesColumns[7]},
+				Columns: []*schema.Column{PlacesColumns[7], PlacesColumns[1]},
 			},
 		},
 	}

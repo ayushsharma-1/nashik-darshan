@@ -22,6 +22,7 @@ type Repository interface {
 
 	// Image operations
 	AddImage(ctx context.Context, image *PlaceImage) error
+	GetImage(ctx context.Context, imageID string) (*PlaceImage, error)
 	GetImages(ctx context.Context, placeID string) ([]*PlaceImage, error)
 	UpdateImage(ctx context.Context, image *PlaceImage) error
 	DeleteImage(ctx context.Context, imageID string) error

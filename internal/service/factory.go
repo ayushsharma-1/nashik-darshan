@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/omkar273/nashikdarshan/internal/config"
 	"github.com/omkar273/nashikdarshan/internal/domain/category"
+	"github.com/omkar273/nashikdarshan/internal/domain/place"
 	"github.com/omkar273/nashikdarshan/internal/domain/user"
 	"github.com/omkar273/nashikdarshan/internal/logger"
 	"github.com/omkar273/nashikdarshan/internal/postgres"
@@ -20,4 +21,5 @@ type ServiceParams struct {
 	// Repository dependencies
 	UserRepo     user.Repository
 	CategoryRepo category.Repository
+	PlaceRepo    place.Repository
 }

@@ -42,6 +42,7 @@ func (r *PlaceRepository) Create(ctx context.Context, p *domain.Place) error {
 		"place_type", p.PlaceType,
 	)
 
+	now := time.Now().UTC()
 	create := client.Place.Create().
 		SetID(p.ID).
 		SetSlug(p.Slug).
@@ -49,10 +50,10 @@ func (r *PlaceRepository) Create(ctx context.Context, p *domain.Place) error {
 		SetPlaceType(p.PlaceType).
 		SetLocation(p.Location).
 		SetStatus(string(p.Status)).
-		SetCreatedAt(p.CreatedAt).
-		SetUpdatedAt(p.UpdatedAt).
-		SetCreatedBy(p.CreatedBy).
-		SetUpdatedBy(p.UpdatedBy)
+		SetCreatedAt(now).
+		SetUpdatedAt(now).
+		SetCreatedBy(types.GetUserID(ctx)).
+		SetUpdatedBy(types.GetUserID(ctx))
 
 	if p.Subtitle != nil {
 		create = create.SetSubtitle(*p.Subtitle)
@@ -66,7 +67,7 @@ func (r *PlaceRepository) Create(ctx context.Context, p *domain.Place) error {
 	if len(p.Categories) > 0 {
 		create = create.SetCategories(p.Categories)
 	}
-	if p.Address != nil && len(p.Address) > 0 {
+	if len(p.Address) > 0 {
 		create = create.SetAddress(p.Address)
 	}
 	if p.PrimaryImageURL != nil {
@@ -264,7 +265,7 @@ func (r *PlaceRepository) Update(ctx context.Context, p *domain.Place) error {
 	} else {
 		update = update.ClearCategories()
 	}
-	if p.Address != nil && len(p.Address) > 0 {
+	if len(p.Address) > 0 {
 		update = update.SetAddress(p.Address)
 	} else {
 		update = update.ClearAddress()
@@ -357,16 +358,17 @@ func (r *PlaceRepository) AddImage(ctx context.Context, image *domain.PlaceImage
 		"place_id", image.PlaceID,
 	)
 
+	now := time.Now().UTC()
 	create := client.PlaceImage.Create().
 		SetID(image.ID).
 		SetPlaceID(image.PlaceID).
 		SetURL(image.URL).
 		SetPos(image.Pos).
 		SetStatus(string(image.Status)).
-		SetCreatedAt(image.CreatedAt).
-		SetUpdatedAt(image.UpdatedAt).
-		SetCreatedBy(image.CreatedBy).
-		SetUpdatedBy(image.UpdatedBy)
+		SetCreatedAt(now).
+		SetUpdatedAt(now).
+		SetCreatedBy(types.GetUserID(ctx)).
+		SetUpdatedBy(types.GetUserID(ctx))
 
 	if image.Alt != "" {
 		create = create.SetAlt(image.Alt)
@@ -397,6 +399,35 @@ func (r *PlaceRepository) AddImage(ctx context.Context, image *domain.PlaceImage
 	}
 
 	return nil
+}
+
+func (r *PlaceRepository) GetImage(ctx context.Context, imageID string) (*domain.PlaceImage, error) {
+	client := r.client.Querier(ctx)
+
+	r.log.Debugw("getting place image", "image_id", imageID)
+
+	entImage, err := client.PlaceImage.Query().
+		Where(placeimage.ID(imageID)).
+		Only(ctx)
+
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, ierr.WithError(err).
+				WithHintf("Place image with ID %s was not found", imageID).
+				WithReportableDetails(map[string]any{
+					"image_id": imageID,
+				}).
+				Mark(ierr.ErrNotFound)
+		}
+		return nil, ierr.WithError(err).
+			WithHint("Failed to get place image").
+			WithReportableDetails(map[string]any{
+				"image_id": imageID,
+			}).
+			Mark(ierr.ErrDatabase)
+	}
+
+	return domain.FromEntImage(entImage), nil
 }
 
 func (r *PlaceRepository) GetImages(ctx context.Context, placeID string) ([]*domain.PlaceImage, error) {

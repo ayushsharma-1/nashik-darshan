@@ -15,6 +15,7 @@ type Handlers struct {
 	Auth     *v1.AuthHandler
 	User     *v1.UserHandler
 	Category *v1.CategoryHandler
+	Place    *v1.PlaceHandler
 }
 
 func NewRouter(handlers *Handlers, cfg *config.Configuration, logger *logger.Logger) *gin.Engine {
@@ -46,6 +47,15 @@ func NewRouter(handlers *Handlers, cfg *config.Configuration, logger *logger.Log
 		v1Categories.GET("/slug/:slug", handlers.Category.GetBySlug)
 	}
 
+	// Public place routes
+	v1Places := v1Router.Group("/places")
+	{
+		v1Places.GET("", handlers.Place.List)
+		v1Places.GET("/:id", handlers.Place.Get)
+		v1Places.GET("/slug/:slug", handlers.Place.GetBySlug)
+		v1Places.GET("/:place_id/images", handlers.Place.GetImages)
+	}
+
 	// Authenticated routes
 	v1Private := v1Router.Group("/")
 	v1Private.Use(middleware.AuthenticateMiddleware(cfg, logger))
@@ -57,6 +67,14 @@ func NewRouter(handlers *Handlers, cfg *config.Configuration, logger *logger.Log
 		v1Private.POST("/categories", handlers.Category.Create)
 		v1Private.PUT("/categories/:id", handlers.Category.Update)
 		v1Private.DELETE("/categories/:id", handlers.Category.Delete)
+
+		// Place management routes
+		v1Private.POST("/places", handlers.Place.Create)
+		v1Private.PUT("/places/:id", handlers.Place.Update)
+		v1Private.DELETE("/places/:id", handlers.Place.Delete)
+		v1Private.POST("/places/:place_id/images", handlers.Place.AddImage)
+		v1Private.PUT("/places/images/:image_id", handlers.Place.UpdateImage)
+		v1Private.DELETE("/places/images/:image_id", handlers.Place.DeleteImage)
 	}
 
 	return router

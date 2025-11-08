@@ -151,6 +151,69 @@ type PlaceImageResponse struct {
 	*place.PlaceImage
 }
 
+// CreatePlaceImageRequest represents a request to create a place image
+type CreatePlaceImageRequest struct {
+	URL      string  `json:"url" binding:"required,url"`
+	Alt      *string `json:"alt,omitempty"`
+	Pos      int     `json:"pos" binding:"min=0"`
+	Metadata *types.Metadata
+}
+
+// Validate validates the CreatePlaceImageRequest
+func (req *CreatePlaceImageRequest) Validate() error {
+	return validator.ValidateRequest(req)
+}
+
+// ToPlaceImage converts CreatePlaceImageRequest to domain PlaceImage
+func (req *CreatePlaceImageRequest) ToPlaceImage(ctx context.Context, placeID string) *place.PlaceImage {
+	baseModel := types.GetDefaultBaseModel(ctx)
+
+	image := &place.PlaceImage{
+		PlaceID:   placeID,
+		URL:       req.URL,
+		Pos:       req.Pos,
+		BaseModel: baseModel,
+	}
+
+	if req.Alt != nil {
+		image.Alt = *req.Alt
+	}
+	if req.Metadata != nil {
+		image.Metadata = req.Metadata
+	}
+
+	return image
+}
+
+// UpdatePlaceImageRequest represents a request to update a place image
+type UpdatePlaceImageRequest struct {
+	URL      *string         `json:"url,omitempty" binding:"omitempty,url"`
+	Alt      *string         `json:"alt,omitempty"`
+	Pos      *int            `json:"pos,omitempty" binding:"omitempty,min=0"`
+	Metadata *types.Metadata `json:"metadata,omitempty"`
+}
+
+// Validate validates the UpdatePlaceImageRequest
+func (req *UpdatePlaceImageRequest) Validate() error {
+	return validator.ValidateRequest(req)
+}
+
+// ApplyToPlaceImage applies UpdatePlaceImageRequest to domain PlaceImage
+func (req *UpdatePlaceImageRequest) ApplyToPlaceImage(ctx context.Context, image *place.PlaceImage) {
+	if req.URL != nil {
+		image.URL = *req.URL
+	}
+	if req.Alt != nil {
+		image.Alt = *req.Alt
+	}
+	if req.Pos != nil {
+		image.Pos = *req.Pos
+	}
+	if req.Metadata != nil {
+		image.Metadata = req.Metadata
+	}
+}
+
 // ListPlacesResponse represents a paginated list of places
 type ListPlacesResponse = types.ListResponse[*PlaceResponse]
 
