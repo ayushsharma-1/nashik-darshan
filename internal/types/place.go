@@ -47,12 +47,16 @@ type PlaceFilter struct {
 }
 
 func (f *PlaceFilter) Validate() error {
-	if err := f.QueryFilter.Validate(); err != nil {
-		return err
+	if f.QueryFilter != nil {
+		if err := f.QueryFilter.Validate(); err != nil {
+			return err
+		}
 	}
 
-	if err := f.TimeRangeFilter.Validate(); err != nil {
-		return err
+	if f.TimeRangeFilter != nil {
+		if err := f.TimeRangeFilter.Validate(); err != nil {
+			return err
+		}
 	}
 
 	// Validate place types

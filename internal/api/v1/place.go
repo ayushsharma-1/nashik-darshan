@@ -201,6 +201,14 @@ func (h *PlaceHandler) List(c *gin.Context) {
 		return
 	}
 
+	// Initialize filter components if nil
+	if filter.QueryFilter == nil {
+		filter.QueryFilter = types.NewDefaultQueryFilter()
+	}
+	if filter.TimeRangeFilter == nil {
+		filter.TimeRangeFilter = &types.TimeRangeFilter{}
+	}
+
 	if err := filter.Validate(); err != nil {
 		c.Error(ierr.WithError(err).
 			WithHint("Invalid filter parameters").
