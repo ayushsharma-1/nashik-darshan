@@ -103,10 +103,9 @@ func main() {
 	fmt.Println("Migration process completed")
 }
 
-// buildMigrationDSN builds a DSN specifically for migrations that disables prepared statements
-// This is necessary for connection poolers like Neon that don't support prepared statements
+// buildMigrationDSN builds a DSN for migrations using direct connection
 func buildMigrationDSN(cfg config.PostgresConfig) string {
-	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s prefer_simple_protocol=true",
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		cfg.Host,
 		cfg.Port,
 		cfg.User,
@@ -118,7 +117,7 @@ func buildMigrationDSN(cfg config.PostgresConfig) string {
 
 // buildMigrationDSNFromHost builds a migration DSN with a specific host
 func buildMigrationDSNFromHost(cfg config.PostgresConfig, host string) string {
-	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s prefer_simple_protocol=true",
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		host,
 		cfg.Port,
 		cfg.User,

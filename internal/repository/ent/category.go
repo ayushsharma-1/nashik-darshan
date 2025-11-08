@@ -47,9 +47,12 @@ func (r *CategoryRepository) Create(ctx context.Context, c *domain.Category) err
 		SetCreatedBy(c.CreatedBy).
 		SetUpdatedBy(c.UpdatedBy)
 
+	// Always set metadata explicitly to avoid JSONB serialization issues
+	metadataMap := make(map[string]string)
 	if c.Metadata != nil && len(c.Metadata.ToMap()) > 0 {
-		create = create.SetMetadata(c.Metadata.ToMap())
+		metadataMap = c.Metadata.ToMap()
 	}
+	create = create.SetMetadata(metadataMap)
 
 	_, err := create.Save(ctx)
 

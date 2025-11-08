@@ -136,8 +136,10 @@ func GetDefaultConfig() *Configuration {
 	}
 }
 
+// GetDSN returns the database connection string (DSN) for direct PostgreSQL connections
 func (p PostgresConfig) GetDSN() string {
-	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s statement_cache_mode=describe",
+	// Build base DSN
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		p.Host,
 		p.Port,
 		p.User,
@@ -145,4 +147,11 @@ func (p PostgresConfig) GetDSN() string {
 		p.DBName,
 		p.SSLMode,
 	)
+
+	// Add channel_binding for Neon if sslmode is require
+	if p.SSLMode == "require" {
+		dsn += " channel_binding=require"
+	}
+
+	return dsn
 }
