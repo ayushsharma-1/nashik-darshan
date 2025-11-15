@@ -288,6 +288,8 @@ definitions:
         type: string
       location:
         $ref: '#/definitions/types.Location'
+      metadata:
+        $ref: '#/definitions/types.Metadata'
       name:
         type: string
       phone:
@@ -604,9 +606,6 @@ definitions:
       room_count:
         minimum: 0
         type: integer
-      slug:
-        minLength: 1
-        type: string
       star_rating:
         maximum: 5
         minimum: 1
@@ -1104,64 +1103,87 @@ paths:
       - application/json
       description: Get a paginated list of hotels with filtering and pagination
       parameters:
-      - description: Limit
+      - in: query
+        name: end_time
+        type: string
+      - in: query
+        name: expand
+        type: string
+      - description: Trending filter
         in: query
+        name: last_viewed_after
+        type: string
+      - description: Geospatial filters
+        in: query
+        name: latitude
+        type: number
+      - in: query
+        maximum: 1000
+        minimum: 1
         name: limit
         type: integer
-      - description: Offset
+      - in: query
+        name: longitude
+        type: number
+      - in: query
+        name: max_price
+        type: number
+      - description: Price range filters
         in: query
+        name: min_price
+        type: number
+      - in: query
+        minimum: 0
         name: offset
         type: integer
-      - description: Status
-        in: query
-        name: status
-        type: string
-      - description: Sort field
-        in: query
-        name: sort
-        type: string
-      - description: Sort order (asc/desc)
+      - enum:
+        - asc
+        - desc
         in: query
         name: order
         type: string
+      - description: radius in meters
+        in: query
+        name: radius_m
+        type: number
+      - description: Search
+        in: query
+        name: search_query
+        type: string
       - collectionFormat: csv
-        description: Filter by slugs
+        description: Custom filters
         in: query
         items:
           type: string
         name: slug
         type: array
+      - in: query
+        name: sort
+        type: string
       - collectionFormat: csv
-        description: Filter by star ratings
         in: query
         items:
           type: integer
         name: star_rating
         type: array
-      - description: Minimum price
-        in: query
-        name: min_price
-        type: number
-      - description: Maximum price
-        in: query
-        name: max_price
-        type: number
-      - description: Latitude for geospatial filtering
-        in: query
-        name: latitude
-        type: number
-      - description: Longitude for geospatial filtering
-        in: query
-        name: longitude
-        type: number
-      - description: Radius in meters for geospatial filtering
-        in: query
-        name: radius_m
-        type: number
-      - description: Search query
-        in: query
-        name: search_query
+      - in: query
+        name: start_time
         type: string
+      - enum:
+        - published
+        - deleted
+        - archived
+        - inactive
+        - pending
+        in: query
+        name: status
+        type: string
+        x-enum-varnames:
+        - StatusPublished
+        - StatusDeleted
+        - StatusArchived
+        - StatusInactive
+        - StatusPending
       produces:
       - application/json
       responses:

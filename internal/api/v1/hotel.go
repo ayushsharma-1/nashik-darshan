@@ -173,19 +173,7 @@ func (h *HotelHandler) Delete(c *gin.Context) {
 // @Tags Hotel
 // @Accept json
 // @Produce json
-// @Param limit query int false "Limit"
-// @Param offset query int false "Offset"
-// @Param status query string false "Status"
-// @Param sort query string false "Sort field"
-// @Param order query string false "Sort order (asc/desc)"
-// @Param slug query []string false "Filter by slugs"
-// @Param star_rating query []int false "Filter by star ratings"
-// @Param min_price query number false "Minimum price"
-// @Param max_price query number false "Maximum price"
-// @Param latitude query number false "Latitude for geospatial filtering"
-// @Param longitude query number false "Longitude for geospatial filtering"
-// @Param radius_m query number false "Radius in meters for geospatial filtering"
-// @Param search_query query string false "Search query"
+// @Param filter query types.HotelFilter false "Hotel filter parameters"
 // @Success 200 {object} dto.ListHotelsResponse
 // @Failure 400 {object} ierr.ErrorResponse
 // @Failure 500 {object} ierr.ErrorResponse

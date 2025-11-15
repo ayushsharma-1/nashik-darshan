@@ -46,13 +46,8 @@ func (s *hotelService) Create(ctx context.Context, req *dto.CreateHotelRequest) 
 		return nil, err
 	}
 
-	// Fetch the created hotel to get all fields including ID
-	createdHotel, err := s.HotelRepo.Get(ctx, h.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	return dto.NewHotelResponse(createdHotel), nil
+	// Return the created hotel directly (avoid read-after-write consistency issues)
+	return dto.NewHotelResponse(h), nil
 }
 
 // Get retrieves a hotel by ID
@@ -96,13 +91,8 @@ func (s *hotelService) Update(ctx context.Context, id string, req *dto.UpdateHot
 		return nil, err
 	}
 
-	// Fetch the updated hotel to get all fields
-	updatedHotel, err := s.HotelRepo.Get(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return dto.NewHotelResponse(updatedHotel), nil
+	// Return the updated hotel directly (avoid read-after-write consistency issues)
+	return dto.NewHotelResponse(h), nil
 }
 
 // Delete soft deletes a hotel

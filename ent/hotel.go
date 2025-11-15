@@ -42,9 +42,9 @@ type Hotel struct {
 	// RoomCount holds the value of the "room_count" field.
 	RoomCount int `json:"room_count,omitempty"`
 	// CheckInTime holds the value of the "check_in_time" field.
-	CheckInTime string `json:"check_in_time,omitempty"`
+	CheckInTime time.Time `json:"check_in_time,omitempty"`
 	// CheckOutTime holds the value of the "check_out_time" field.
-	CheckOutTime string `json:"check_out_time,omitempty"`
+	CheckOutTime time.Time `json:"check_out_time,omitempty"`
 	// Address holds the value of the "address" field.
 	Address map[string]string `json:"address,omitempty"`
 	// Latitude holds the value of the "latitude" field.
@@ -91,9 +91,9 @@ func (*Hotel) scanValues(columns []string) ([]any, error) {
 			values[i] = new(decimal.Decimal)
 		case hotel.FieldStarRating, hotel.FieldRoomCount, hotel.FieldViewCount, hotel.FieldRatingCount:
 			values[i] = new(sql.NullInt64)
-		case hotel.FieldID, hotel.FieldStatus, hotel.FieldCreatedBy, hotel.FieldUpdatedBy, hotel.FieldSlug, hotel.FieldName, hotel.FieldDescription, hotel.FieldCheckInTime, hotel.FieldCheckOutTime, hotel.FieldPhone, hotel.FieldEmail, hotel.FieldWebsite, hotel.FieldPrimaryImageURL, hotel.FieldThumbnailURL, hotel.FieldCurrency:
+		case hotel.FieldID, hotel.FieldStatus, hotel.FieldCreatedBy, hotel.FieldUpdatedBy, hotel.FieldSlug, hotel.FieldName, hotel.FieldDescription, hotel.FieldPhone, hotel.FieldEmail, hotel.FieldWebsite, hotel.FieldPrimaryImageURL, hotel.FieldThumbnailURL, hotel.FieldCurrency:
 			values[i] = new(sql.NullString)
-		case hotel.FieldCreatedAt, hotel.FieldUpdatedAt, hotel.FieldLastViewedAt:
+		case hotel.FieldCreatedAt, hotel.FieldUpdatedAt, hotel.FieldCheckInTime, hotel.FieldCheckOutTime, hotel.FieldLastViewedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -185,16 +185,16 @@ func (_m *Hotel) assignValues(columns []string, values []any) error {
 				_m.RoomCount = int(value.Int64)
 			}
 		case hotel.FieldCheckInTime:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field check_in_time", values[i])
 			} else if value.Valid {
-				_m.CheckInTime = value.String
+				_m.CheckInTime = value.Time
 			}
 		case hotel.FieldCheckOutTime:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field check_out_time", values[i])
 			} else if value.Valid {
-				_m.CheckOutTime = value.String
+				_m.CheckOutTime = value.Time
 			}
 		case hotel.FieldAddress:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -364,10 +364,10 @@ func (_m *Hotel) String() string {
 	builder.WriteString(fmt.Sprintf("%v", _m.RoomCount))
 	builder.WriteString(", ")
 	builder.WriteString("check_in_time=")
-	builder.WriteString(_m.CheckInTime)
+	builder.WriteString(_m.CheckInTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("check_out_time=")
-	builder.WriteString(_m.CheckOutTime)
+	builder.WriteString(_m.CheckOutTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("address=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Address))

@@ -17,8 +17,8 @@ type Hotel struct {
 	Description     *string           `json:"description,omitempty" db:"description"`
 	StarRating      int               `json:"star_rating" db:"star_rating"`
 	RoomCount       int               `json:"room_count" db:"room_count"`
-	CheckInTime     *string           `json:"check_in_time,omitempty" db:"check_in_time"`
-	CheckOutTime    *string           `json:"check_out_time,omitempty" db:"check_out_time"`
+	CheckInTime     *time.Time        `json:"check_in_time,omitempty" db:"check_in_time"`
+	CheckOutTime    *time.Time        `json:"check_out_time,omitempty" db:"check_out_time"`
 	Address         map[string]string `json:"address,omitempty" db:"address"`
 	Location        types.Location    `json:"location" db:"location"`
 	Phone           *string           `json:"phone,omitempty" db:"phone"`
@@ -37,20 +37,20 @@ type Hotel struct {
 	LastViewedAt    *time.Time      `json:"last_viewed_at,omitempty" db:"last_viewed_at"`
 	PopularityScore decimal.Decimal `json:"popularity_score" db:"popularity_score"`
 
+	Metadata *types.Metadata `json:"metadata,omitempty" db:"metadata"`
+
 	types.BaseModel
 }
 
 // FromEnt converts ent.Hotel to domain Hotel
 func FromEnt(hotel *ent.Hotel) *Hotel {
 	h := &Hotel{
-		ID:           hotel.ID,
-		Slug:         hotel.Slug,
-		Name:         hotel.Name,
-		Description:  lo.ToPtr(hotel.Description),
-		StarRating:   hotel.StarRating,
-		RoomCount:    hotel.RoomCount,
-		CheckInTime:  lo.ToPtr(hotel.CheckInTime),
-		CheckOutTime: lo.ToPtr(hotel.CheckOutTime),
+		ID:          hotel.ID,
+		Slug:        hotel.Slug,
+		Name:        hotel.Name,
+		Description: lo.ToPtr(hotel.Description),
+		StarRating:  hotel.StarRating,
+		RoomCount:   hotel.RoomCount,
 		Location: types.Location{
 			Latitude:  hotel.Latitude,
 			Longitude: hotel.Longitude,
@@ -60,8 +60,8 @@ func FromEnt(hotel *ent.Hotel) *Hotel {
 		Website:         lo.ToPtr(hotel.Website),
 		PrimaryImageURL: lo.ToPtr(hotel.PrimaryImageURL),
 		ThumbnailURL:    lo.ToPtr(hotel.ThumbnailURL),
-		PriceMin:        &hotel.PriceMin,
-		PriceMax:        &hotel.PriceMax,
+		PriceMin:        lo.Ternary(!hotel.PriceMin.IsZero(), &hotel.PriceMin, nil),
+		PriceMax:        lo.Ternary(!hotel.PriceMax.IsZero(), &hotel.PriceMax, nil),
 		Currency:        lo.ToPtr(hotel.Currency),
 
 		// Engagement fields
@@ -83,6 +83,19 @@ func FromEnt(hotel *ent.Hotel) *Hotel {
 	// Handle JSON fields - address
 	if hotel.Address != nil {
 		h.Address = hotel.Address
+	}
+
+	// Handle metadata
+	if len(hotel.Metadata) > 0 {
+		h.Metadata = types.NewMetadataFromMap(hotel.Metadata)
+	}
+
+	// Handle time fields - check for zero value
+	if !hotel.CheckInTime.IsZero() {
+		h.CheckInTime = &hotel.CheckInTime
+	}
+	if !hotel.CheckOutTime.IsZero() {
+		h.CheckOutTime = &hotel.CheckOutTime
 	}
 
 	return h

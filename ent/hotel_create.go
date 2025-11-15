@@ -152,13 +152,13 @@ func (_c *HotelCreate) SetNillableRoomCount(v *int) *HotelCreate {
 }
 
 // SetCheckInTime sets the "check_in_time" field.
-func (_c *HotelCreate) SetCheckInTime(v string) *HotelCreate {
+func (_c *HotelCreate) SetCheckInTime(v time.Time) *HotelCreate {
 	_c.mutation.SetCheckInTime(v)
 	return _c
 }
 
 // SetNillableCheckInTime sets the "check_in_time" field if the given value is not nil.
-func (_c *HotelCreate) SetNillableCheckInTime(v *string) *HotelCreate {
+func (_c *HotelCreate) SetNillableCheckInTime(v *time.Time) *HotelCreate {
 	if v != nil {
 		_c.SetCheckInTime(*v)
 	}
@@ -166,13 +166,13 @@ func (_c *HotelCreate) SetNillableCheckInTime(v *string) *HotelCreate {
 }
 
 // SetCheckOutTime sets the "check_out_time" field.
-func (_c *HotelCreate) SetCheckOutTime(v string) *HotelCreate {
+func (_c *HotelCreate) SetCheckOutTime(v time.Time) *HotelCreate {
 	_c.mutation.SetCheckOutTime(v)
 	return _c
 }
 
 // SetNillableCheckOutTime sets the "check_out_time" field if the given value is not nil.
-func (_c *HotelCreate) SetNillableCheckOutTime(v *string) *HotelCreate {
+func (_c *HotelCreate) SetNillableCheckOutTime(v *time.Time) *HotelCreate {
 	if v != nil {
 		_c.SetCheckOutTime(*v)
 	}
@@ -661,11 +661,11 @@ func (_c *HotelCreate) createSpec() (*Hotel, *sqlgraph.CreateSpec) {
 		_node.RoomCount = value
 	}
 	if value, ok := _c.mutation.CheckInTime(); ok {
-		_spec.SetField(hotel.FieldCheckInTime, field.TypeString, value)
+		_spec.SetField(hotel.FieldCheckInTime, field.TypeTime, value)
 		_node.CheckInTime = value
 	}
 	if value, ok := _c.mutation.CheckOutTime(); ok {
-		_spec.SetField(hotel.FieldCheckOutTime, field.TypeString, value)
+		_spec.SetField(hotel.FieldCheckOutTime, field.TypeTime, value)
 		_node.CheckOutTime = value
 	}
 	if value, ok := _c.mutation.Address(); ok {

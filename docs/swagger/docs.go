@@ -456,33 +456,75 @@ const docTemplate = `{
                 "summary": "List hotels",
                 "parameters": [
                     {
+                        "type": "string",
+                        "name": "end_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "expand",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Trending filter",
+                        "name": "last_viewed_after",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Geospatial filters",
+                        "name": "latitude",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 1000,
+                        "minimum": 1,
                         "type": "integer",
-                        "description": "Limit",
                         "name": "limit",
                         "in": "query"
                     },
                     {
+                        "type": "number",
+                        "name": "longitude",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "name": "max_price",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Price range filters",
+                        "name": "min_price",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 0,
                         "type": "integer",
-                        "description": "Offset",
                         "name": "offset",
                         "in": "query"
                     },
                     {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
                         "type": "string",
-                        "description": "Status",
-                        "name": "status",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Sort field",
-                        "name": "sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Sort order (asc/desc)",
                         "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "radius in meters",
+                        "name": "radius_m",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search",
+                        "name": "search_query",
                         "in": "query"
                     },
                     {
@@ -491,8 +533,13 @@ const docTemplate = `{
                             "type": "string"
                         },
                         "collectionFormat": "csv",
-                        "description": "Filter by slugs",
+                        "description": "Custom filters",
                         "name": "slug",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "sort",
                         "in": "query"
                     },
                     {
@@ -501,44 +548,31 @@ const docTemplate = `{
                             "type": "integer"
                         },
                         "collectionFormat": "csv",
-                        "description": "Filter by star ratings",
                         "name": "star_rating",
                         "in": "query"
                     },
                     {
-                        "type": "number",
-                        "description": "Minimum price",
-                        "name": "min_price",
-                        "in": "query"
-                    },
-                    {
-                        "type": "number",
-                        "description": "Maximum price",
-                        "name": "max_price",
-                        "in": "query"
-                    },
-                    {
-                        "type": "number",
-                        "description": "Latitude for geospatial filtering",
-                        "name": "latitude",
-                        "in": "query"
-                    },
-                    {
-                        "type": "number",
-                        "description": "Longitude for geospatial filtering",
-                        "name": "longitude",
-                        "in": "query"
-                    },
-                    {
-                        "type": "number",
-                        "description": "Radius in meters for geospatial filtering",
-                        "name": "radius_m",
-                        "in": "query"
-                    },
-                    {
                         "type": "string",
-                        "description": "Search query",
-                        "name": "search_query",
+                        "name": "start_time",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "published",
+                            "deleted",
+                            "archived",
+                            "inactive",
+                            "pending"
+                        ],
+                        "type": "string",
+                        "x-enum-varnames": [
+                            "StatusPublished",
+                            "StatusDeleted",
+                            "StatusArchived",
+                            "StatusInactive",
+                            "StatusPending"
+                        ],
+                        "name": "status",
                         "in": "query"
                     }
                 ],
@@ -2317,6 +2351,9 @@ const docTemplate = `{
                 "location": {
                     "$ref": "#/definitions/types.Location"
                 },
+                "metadata": {
+                    "$ref": "#/definitions/types.Metadata"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -2790,10 +2827,6 @@ const docTemplate = `{
                 "room_count": {
                     "type": "integer",
                     "minimum": 0
-                },
-                "slug": {
-                    "type": "string",
-                    "minLength": 1
                 },
                 "star_rating": {
                     "type": "integer",

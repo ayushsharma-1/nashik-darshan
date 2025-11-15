@@ -34,7 +34,8 @@ func (Hotel) Fields() []ent.Field {
 			SchemaType(map[string]string{
 				"postgres": "text",
 			}).
-			NotEmpty(),
+			NotEmpty().
+			Immutable(),
 		field.String("name").
 			SchemaType(map[string]string{
 				"postgres": "text",
@@ -58,14 +59,14 @@ func (Hotel) Fields() []ent.Field {
 			}).
 			Default(0).
 			NonNegative(),
-		field.String("check_in_time").
+		field.Time("check_in_time").
 			SchemaType(map[string]string{
-				"postgres": "varchar(10)",
+				"postgres": "time",
 			}).
 			Optional(),
-		field.String("check_out_time").
+		field.Time("check_out_time").
 			SchemaType(map[string]string{
-				"postgres": "varchar(10)",
+				"postgres": "time",
 			}).
 			Optional(),
 		field.JSON("address", map[string]string{}).

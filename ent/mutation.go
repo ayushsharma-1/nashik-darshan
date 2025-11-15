@@ -900,8 +900,8 @@ type HotelMutation struct {
 	addstar_rating    *int
 	room_count        *int
 	addroom_count     *int
-	check_in_time     *string
-	check_out_time    *string
+	check_in_time     *time.Time
+	check_out_time    *time.Time
 	address           *map[string]string
 	latitude          *decimal.Decimal
 	longitude         *decimal.Decimal
@@ -1519,12 +1519,12 @@ func (m *HotelMutation) ResetRoomCount() {
 }
 
 // SetCheckInTime sets the "check_in_time" field.
-func (m *HotelMutation) SetCheckInTime(s string) {
-	m.check_in_time = &s
+func (m *HotelMutation) SetCheckInTime(t time.Time) {
+	m.check_in_time = &t
 }
 
 // CheckInTime returns the value of the "check_in_time" field in the mutation.
-func (m *HotelMutation) CheckInTime() (r string, exists bool) {
+func (m *HotelMutation) CheckInTime() (r time.Time, exists bool) {
 	v := m.check_in_time
 	if v == nil {
 		return
@@ -1535,7 +1535,7 @@ func (m *HotelMutation) CheckInTime() (r string, exists bool) {
 // OldCheckInTime returns the old "check_in_time" field's value of the Hotel entity.
 // If the Hotel object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *HotelMutation) OldCheckInTime(ctx context.Context) (v string, err error) {
+func (m *HotelMutation) OldCheckInTime(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCheckInTime is only allowed on UpdateOne operations")
 	}
@@ -1568,12 +1568,12 @@ func (m *HotelMutation) ResetCheckInTime() {
 }
 
 // SetCheckOutTime sets the "check_out_time" field.
-func (m *HotelMutation) SetCheckOutTime(s string) {
-	m.check_out_time = &s
+func (m *HotelMutation) SetCheckOutTime(t time.Time) {
+	m.check_out_time = &t
 }
 
 // CheckOutTime returns the value of the "check_out_time" field in the mutation.
-func (m *HotelMutation) CheckOutTime() (r string, exists bool) {
+func (m *HotelMutation) CheckOutTime() (r time.Time, exists bool) {
 	v := m.check_out_time
 	if v == nil {
 		return
@@ -1584,7 +1584,7 @@ func (m *HotelMutation) CheckOutTime() (r string, exists bool) {
 // OldCheckOutTime returns the old "check_out_time" field's value of the Hotel entity.
 // If the Hotel object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *HotelMutation) OldCheckOutTime(ctx context.Context) (v string, err error) {
+func (m *HotelMutation) OldCheckOutTime(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCheckOutTime is only allowed on UpdateOne operations")
 	}
@@ -2704,14 +2704,14 @@ func (m *HotelMutation) SetField(name string, value ent.Value) error {
 		m.SetRoomCount(v)
 		return nil
 	case hotel.FieldCheckInTime:
-		v, ok := value.(string)
+		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCheckInTime(v)
 		return nil
 	case hotel.FieldCheckOutTime:
-		v, ok := value.(string)
+		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

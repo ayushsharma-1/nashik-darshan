@@ -296,8 +296,8 @@ func (r *HotelRepository) Update(ctx context.Context, h *domain.Hotel) error {
 		"name", h.Name,
 	)
 
+	// Note: Slug is immutable and cannot be updated
 	update := client.Hotel.UpdateOneID(h.ID).
-		SetSlug(h.Slug).
 		SetName(h.Name).
 		SetStarRating(h.StarRating).
 		SetRoomCount(h.RoomCount).
@@ -401,7 +401,7 @@ func (r *HotelRepository) Delete(ctx context.Context, h *domain.Hotel) error {
 	)
 
 	_, err := client.Hotel.UpdateOneID(h.ID).
-		SetStatus(string(types.StatusDeleted)).
+		SetStatus(string(types.StatusArchived)).
 		SetUpdatedAt(time.Now().UTC()).
 		SetUpdatedBy(types.GetUserID(ctx)).
 		Save(ctx)
@@ -527,7 +527,7 @@ var _ EntityQueryOptions[HotelQuery, *types.HotelFilter] = (*HotelQueryOptions)(
 
 func (o HotelQueryOptions) ApplyStatusFilter(query HotelQuery, status string) HotelQuery {
 	if status == "" {
-		return query.Where(hotel.StatusNotIn(string(types.StatusDeleted)))
+		return query.Where(hotel.StatusNotIn(string(types.StatusArchived)))
 	}
 	return query.Where(hotel.Status(status))
 }
@@ -573,7 +573,7 @@ func (o HotelQueryOptions) ApplyBaseFilters(
 	filter *types.HotelFilter,
 ) HotelQuery {
 	if filter == nil {
-		return query.Where(hotel.StatusNotIn(string(types.StatusDeleted)))
+		return query.Where(hotel.StatusNotIn(string(types.StatusArchived)))
 	}
 
 	// Apply status filter

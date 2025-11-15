@@ -3,6 +3,7 @@ package dto
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/omkar273/nashikdarshan/internal/domain/hotel"
 	"github.com/omkar273/nashikdarshan/internal/types"
@@ -18,8 +19,8 @@ type CreateHotelRequest struct {
 	Description     *string           `json:"description,omitempty"`
 	StarRating      int               `json:"star_rating" binding:"required,min=1,max=5"`
 	RoomCount       int               `json:"room_count" binding:"omitempty,min=0"`
-	CheckInTime     *string           `json:"check_in_time,omitempty"`
-	CheckOutTime    *string           `json:"check_out_time,omitempty"`
+	CheckInTime     *time.Time        `json:"check_in_time,omitempty"`
+	CheckOutTime    *time.Time        `json:"check_out_time,omitempty"`
 	Address         map[string]string `json:"address,omitempty"`
 	Location        types.Location    `json:"location" binding:"required"`
 	Phone           *string           `json:"phone,omitempty"`
@@ -55,14 +56,14 @@ func (req *CreateHotelRequest) Validate() error {
 }
 
 // UpdateHotelRequest represents a request to update a hotel
+// Note: Slug is immutable and cannot be updated
 type UpdateHotelRequest struct {
-	Slug            *string           `json:"slug,omitempty" binding:"omitempty,min=1"`
 	Name            *string           `json:"name,omitempty" binding:"omitempty,min=1"`
 	Description     *string           `json:"description,omitempty"`
 	StarRating      *int              `json:"star_rating,omitempty" binding:"omitempty,min=1,max=5"`
 	RoomCount       *int              `json:"room_count,omitempty" binding:"omitempty,min=0"`
-	CheckInTime     *string           `json:"check_in_time,omitempty"`
-	CheckOutTime    *string           `json:"check_out_time,omitempty"`
+	CheckInTime     *time.Time        `json:"check_in_time,omitempty"`
+	CheckOutTime    *time.Time        `json:"check_out_time,omitempty"`
 	Address         map[string]string `json:"address,omitempty"`
 	Location        *types.Location   `json:"location,omitempty"`
 	Phone           *string           `json:"phone,omitempty"`
@@ -142,10 +143,8 @@ func (req *CreateHotelRequest) ToHotel(ctx context.Context) (*hotel.Hotel, error
 }
 
 // ApplyToHotel applies UpdateHotelRequest to domain Hotel
+// Note: Slug is immutable and cannot be updated
 func (req *UpdateHotelRequest) ApplyToHotel(ctx context.Context, h *hotel.Hotel) error {
-	if req.Slug != nil {
-		h.Slug = *req.Slug
-	}
 	if req.Name != nil {
 		h.Name = *req.Name
 	}
@@ -194,7 +193,7 @@ func (req *UpdateHotelRequest) ApplyToHotel(ctx context.Context, h *hotel.Hotel)
 	if req.Currency != nil {
 		h.Currency = req.Currency
 	}
-	h.UpdatedBy = types.GetUserID(ctx)
+	// Note: UpdatedBy is handled at repository layer
 	return nil
 }
 

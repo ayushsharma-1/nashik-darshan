@@ -116,12 +116,12 @@ func RoomCount(v int) predicate.Hotel {
 }
 
 // CheckInTime applies equality check predicate on the "check_in_time" field. It's identical to CheckInTimeEQ.
-func CheckInTime(v string) predicate.Hotel {
+func CheckInTime(v time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldEQ(FieldCheckInTime, v))
 }
 
 // CheckOutTime applies equality check predicate on the "check_out_time" field. It's identical to CheckOutTimeEQ.
-func CheckOutTime(v string) predicate.Hotel {
+func CheckOutTime(v time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldEQ(FieldCheckOutTime, v))
 }
 
@@ -791,58 +791,43 @@ func RoomCountLTE(v int) predicate.Hotel {
 }
 
 // CheckInTimeEQ applies the EQ predicate on the "check_in_time" field.
-func CheckInTimeEQ(v string) predicate.Hotel {
+func CheckInTimeEQ(v time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldEQ(FieldCheckInTime, v))
 }
 
 // CheckInTimeNEQ applies the NEQ predicate on the "check_in_time" field.
-func CheckInTimeNEQ(v string) predicate.Hotel {
+func CheckInTimeNEQ(v time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldNEQ(FieldCheckInTime, v))
 }
 
 // CheckInTimeIn applies the In predicate on the "check_in_time" field.
-func CheckInTimeIn(vs ...string) predicate.Hotel {
+func CheckInTimeIn(vs ...time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldIn(FieldCheckInTime, vs...))
 }
 
 // CheckInTimeNotIn applies the NotIn predicate on the "check_in_time" field.
-func CheckInTimeNotIn(vs ...string) predicate.Hotel {
+func CheckInTimeNotIn(vs ...time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldNotIn(FieldCheckInTime, vs...))
 }
 
 // CheckInTimeGT applies the GT predicate on the "check_in_time" field.
-func CheckInTimeGT(v string) predicate.Hotel {
+func CheckInTimeGT(v time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldGT(FieldCheckInTime, v))
 }
 
 // CheckInTimeGTE applies the GTE predicate on the "check_in_time" field.
-func CheckInTimeGTE(v string) predicate.Hotel {
+func CheckInTimeGTE(v time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldGTE(FieldCheckInTime, v))
 }
 
 // CheckInTimeLT applies the LT predicate on the "check_in_time" field.
-func CheckInTimeLT(v string) predicate.Hotel {
+func CheckInTimeLT(v time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldLT(FieldCheckInTime, v))
 }
 
 // CheckInTimeLTE applies the LTE predicate on the "check_in_time" field.
-func CheckInTimeLTE(v string) predicate.Hotel {
+func CheckInTimeLTE(v time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldLTE(FieldCheckInTime, v))
-}
-
-// CheckInTimeContains applies the Contains predicate on the "check_in_time" field.
-func CheckInTimeContains(v string) predicate.Hotel {
-	return predicate.Hotel(sql.FieldContains(FieldCheckInTime, v))
-}
-
-// CheckInTimeHasPrefix applies the HasPrefix predicate on the "check_in_time" field.
-func CheckInTimeHasPrefix(v string) predicate.Hotel {
-	return predicate.Hotel(sql.FieldHasPrefix(FieldCheckInTime, v))
-}
-
-// CheckInTimeHasSuffix applies the HasSuffix predicate on the "check_in_time" field.
-func CheckInTimeHasSuffix(v string) predicate.Hotel {
-	return predicate.Hotel(sql.FieldHasSuffix(FieldCheckInTime, v))
 }
 
 // CheckInTimeIsNil applies the IsNil predicate on the "check_in_time" field.
@@ -855,69 +840,44 @@ func CheckInTimeNotNil() predicate.Hotel {
 	return predicate.Hotel(sql.FieldNotNull(FieldCheckInTime))
 }
 
-// CheckInTimeEqualFold applies the EqualFold predicate on the "check_in_time" field.
-func CheckInTimeEqualFold(v string) predicate.Hotel {
-	return predicate.Hotel(sql.FieldEqualFold(FieldCheckInTime, v))
-}
-
-// CheckInTimeContainsFold applies the ContainsFold predicate on the "check_in_time" field.
-func CheckInTimeContainsFold(v string) predicate.Hotel {
-	return predicate.Hotel(sql.FieldContainsFold(FieldCheckInTime, v))
-}
-
 // CheckOutTimeEQ applies the EQ predicate on the "check_out_time" field.
-func CheckOutTimeEQ(v string) predicate.Hotel {
+func CheckOutTimeEQ(v time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldEQ(FieldCheckOutTime, v))
 }
 
 // CheckOutTimeNEQ applies the NEQ predicate on the "check_out_time" field.
-func CheckOutTimeNEQ(v string) predicate.Hotel {
+func CheckOutTimeNEQ(v time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldNEQ(FieldCheckOutTime, v))
 }
 
 // CheckOutTimeIn applies the In predicate on the "check_out_time" field.
-func CheckOutTimeIn(vs ...string) predicate.Hotel {
+func CheckOutTimeIn(vs ...time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldIn(FieldCheckOutTime, vs...))
 }
 
 // CheckOutTimeNotIn applies the NotIn predicate on the "check_out_time" field.
-func CheckOutTimeNotIn(vs ...string) predicate.Hotel {
+func CheckOutTimeNotIn(vs ...time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldNotIn(FieldCheckOutTime, vs...))
 }
 
 // CheckOutTimeGT applies the GT predicate on the "check_out_time" field.
-func CheckOutTimeGT(v string) predicate.Hotel {
+func CheckOutTimeGT(v time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldGT(FieldCheckOutTime, v))
 }
 
 // CheckOutTimeGTE applies the GTE predicate on the "check_out_time" field.
-func CheckOutTimeGTE(v string) predicate.Hotel {
+func CheckOutTimeGTE(v time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldGTE(FieldCheckOutTime, v))
 }
 
 // CheckOutTimeLT applies the LT predicate on the "check_out_time" field.
-func CheckOutTimeLT(v string) predicate.Hotel {
+func CheckOutTimeLT(v time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldLT(FieldCheckOutTime, v))
 }
 
 // CheckOutTimeLTE applies the LTE predicate on the "check_out_time" field.
-func CheckOutTimeLTE(v string) predicate.Hotel {
+func CheckOutTimeLTE(v time.Time) predicate.Hotel {
 	return predicate.Hotel(sql.FieldLTE(FieldCheckOutTime, v))
-}
-
-// CheckOutTimeContains applies the Contains predicate on the "check_out_time" field.
-func CheckOutTimeContains(v string) predicate.Hotel {
-	return predicate.Hotel(sql.FieldContains(FieldCheckOutTime, v))
-}
-
-// CheckOutTimeHasPrefix applies the HasPrefix predicate on the "check_out_time" field.
-func CheckOutTimeHasPrefix(v string) predicate.Hotel {
-	return predicate.Hotel(sql.FieldHasPrefix(FieldCheckOutTime, v))
-}
-
-// CheckOutTimeHasSuffix applies the HasSuffix predicate on the "check_out_time" field.
-func CheckOutTimeHasSuffix(v string) predicate.Hotel {
-	return predicate.Hotel(sql.FieldHasSuffix(FieldCheckOutTime, v))
 }
 
 // CheckOutTimeIsNil applies the IsNil predicate on the "check_out_time" field.
@@ -928,16 +888,6 @@ func CheckOutTimeIsNil() predicate.Hotel {
 // CheckOutTimeNotNil applies the NotNil predicate on the "check_out_time" field.
 func CheckOutTimeNotNil() predicate.Hotel {
 	return predicate.Hotel(sql.FieldNotNull(FieldCheckOutTime))
-}
-
-// CheckOutTimeEqualFold applies the EqualFold predicate on the "check_out_time" field.
-func CheckOutTimeEqualFold(v string) predicate.Hotel {
-	return predicate.Hotel(sql.FieldEqualFold(FieldCheckOutTime, v))
-}
-
-// CheckOutTimeContainsFold applies the ContainsFold predicate on the "check_out_time" field.
-func CheckOutTimeContainsFold(v string) predicate.Hotel {
-	return predicate.Hotel(sql.FieldContainsFold(FieldCheckOutTime, v))
 }
 
 // AddressIsNil applies the IsNil predicate on the "address" field.

@@ -81,20 +81,6 @@ func (_u *HotelUpdate) ClearMetadata() *HotelUpdate {
 	return _u
 }
 
-// SetSlug sets the "slug" field.
-func (_u *HotelUpdate) SetSlug(v string) *HotelUpdate {
-	_u.mutation.SetSlug(v)
-	return _u
-}
-
-// SetNillableSlug sets the "slug" field if the given value is not nil.
-func (_u *HotelUpdate) SetNillableSlug(v *string) *HotelUpdate {
-	if v != nil {
-		_u.SetSlug(*v)
-	}
-	return _u
-}
-
 // SetName sets the "name" field.
 func (_u *HotelUpdate) SetName(v string) *HotelUpdate {
 	_u.mutation.SetName(v)
@@ -172,13 +158,13 @@ func (_u *HotelUpdate) AddRoomCount(v int) *HotelUpdate {
 }
 
 // SetCheckInTime sets the "check_in_time" field.
-func (_u *HotelUpdate) SetCheckInTime(v string) *HotelUpdate {
+func (_u *HotelUpdate) SetCheckInTime(v time.Time) *HotelUpdate {
 	_u.mutation.SetCheckInTime(v)
 	return _u
 }
 
 // SetNillableCheckInTime sets the "check_in_time" field if the given value is not nil.
-func (_u *HotelUpdate) SetNillableCheckInTime(v *string) *HotelUpdate {
+func (_u *HotelUpdate) SetNillableCheckInTime(v *time.Time) *HotelUpdate {
 	if v != nil {
 		_u.SetCheckInTime(*v)
 	}
@@ -192,13 +178,13 @@ func (_u *HotelUpdate) ClearCheckInTime() *HotelUpdate {
 }
 
 // SetCheckOutTime sets the "check_out_time" field.
-func (_u *HotelUpdate) SetCheckOutTime(v string) *HotelUpdate {
+func (_u *HotelUpdate) SetCheckOutTime(v time.Time) *HotelUpdate {
 	_u.mutation.SetCheckOutTime(v)
 	return _u
 }
 
 // SetNillableCheckOutTime sets the "check_out_time" field if the given value is not nil.
-func (_u *HotelUpdate) SetNillableCheckOutTime(v *string) *HotelUpdate {
+func (_u *HotelUpdate) SetNillableCheckOutTime(v *time.Time) *HotelUpdate {
 	if v != nil {
 		_u.SetCheckOutTime(*v)
 	}
@@ -544,11 +530,6 @@ func (_u *HotelUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *HotelUpdate) check() error {
-	if v, ok := _u.mutation.Slug(); ok {
-		if err := hotel.SlugValidator(v); err != nil {
-			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Hotel.slug": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.Name(); ok {
 		if err := hotel.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Hotel.name": %w`, err)}
@@ -610,9 +591,6 @@ func (_u *HotelUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.MetadataCleared() {
 		_spec.ClearField(hotel.FieldMetadata, field.TypeJSON)
 	}
-	if value, ok := _u.mutation.Slug(); ok {
-		_spec.SetField(hotel.FieldSlug, field.TypeString, value)
-	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(hotel.FieldName, field.TypeString, value)
 	}
@@ -635,16 +613,16 @@ func (_u *HotelUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		_spec.AddField(hotel.FieldRoomCount, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.CheckInTime(); ok {
-		_spec.SetField(hotel.FieldCheckInTime, field.TypeString, value)
+		_spec.SetField(hotel.FieldCheckInTime, field.TypeTime, value)
 	}
 	if _u.mutation.CheckInTimeCleared() {
-		_spec.ClearField(hotel.FieldCheckInTime, field.TypeString)
+		_spec.ClearField(hotel.FieldCheckInTime, field.TypeTime)
 	}
 	if value, ok := _u.mutation.CheckOutTime(); ok {
-		_spec.SetField(hotel.FieldCheckOutTime, field.TypeString, value)
+		_spec.SetField(hotel.FieldCheckOutTime, field.TypeTime, value)
 	}
 	if _u.mutation.CheckOutTimeCleared() {
-		_spec.ClearField(hotel.FieldCheckOutTime, field.TypeString)
+		_spec.ClearField(hotel.FieldCheckOutTime, field.TypeTime)
 	}
 	if value, ok := _u.mutation.Address(); ok {
 		_spec.SetField(hotel.FieldAddress, field.TypeJSON, value)
@@ -802,20 +780,6 @@ func (_u *HotelUpdateOne) ClearMetadata() *HotelUpdateOne {
 	return _u
 }
 
-// SetSlug sets the "slug" field.
-func (_u *HotelUpdateOne) SetSlug(v string) *HotelUpdateOne {
-	_u.mutation.SetSlug(v)
-	return _u
-}
-
-// SetNillableSlug sets the "slug" field if the given value is not nil.
-func (_u *HotelUpdateOne) SetNillableSlug(v *string) *HotelUpdateOne {
-	if v != nil {
-		_u.SetSlug(*v)
-	}
-	return _u
-}
-
 // SetName sets the "name" field.
 func (_u *HotelUpdateOne) SetName(v string) *HotelUpdateOne {
 	_u.mutation.SetName(v)
@@ -893,13 +857,13 @@ func (_u *HotelUpdateOne) AddRoomCount(v int) *HotelUpdateOne {
 }
 
 // SetCheckInTime sets the "check_in_time" field.
-func (_u *HotelUpdateOne) SetCheckInTime(v string) *HotelUpdateOne {
+func (_u *HotelUpdateOne) SetCheckInTime(v time.Time) *HotelUpdateOne {
 	_u.mutation.SetCheckInTime(v)
 	return _u
 }
 
 // SetNillableCheckInTime sets the "check_in_time" field if the given value is not nil.
-func (_u *HotelUpdateOne) SetNillableCheckInTime(v *string) *HotelUpdateOne {
+func (_u *HotelUpdateOne) SetNillableCheckInTime(v *time.Time) *HotelUpdateOne {
 	if v != nil {
 		_u.SetCheckInTime(*v)
 	}
@@ -913,13 +877,13 @@ func (_u *HotelUpdateOne) ClearCheckInTime() *HotelUpdateOne {
 }
 
 // SetCheckOutTime sets the "check_out_time" field.
-func (_u *HotelUpdateOne) SetCheckOutTime(v string) *HotelUpdateOne {
+func (_u *HotelUpdateOne) SetCheckOutTime(v time.Time) *HotelUpdateOne {
 	_u.mutation.SetCheckOutTime(v)
 	return _u
 }
 
 // SetNillableCheckOutTime sets the "check_out_time" field if the given value is not nil.
-func (_u *HotelUpdateOne) SetNillableCheckOutTime(v *string) *HotelUpdateOne {
+func (_u *HotelUpdateOne) SetNillableCheckOutTime(v *time.Time) *HotelUpdateOne {
 	if v != nil {
 		_u.SetCheckOutTime(*v)
 	}
@@ -1278,11 +1242,6 @@ func (_u *HotelUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *HotelUpdateOne) check() error {
-	if v, ok := _u.mutation.Slug(); ok {
-		if err := hotel.SlugValidator(v); err != nil {
-			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Hotel.slug": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.Name(); ok {
 		if err := hotel.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Hotel.name": %w`, err)}
@@ -1361,9 +1320,6 @@ func (_u *HotelUpdateOne) sqlSave(ctx context.Context) (_node *Hotel, err error)
 	if _u.mutation.MetadataCleared() {
 		_spec.ClearField(hotel.FieldMetadata, field.TypeJSON)
 	}
-	if value, ok := _u.mutation.Slug(); ok {
-		_spec.SetField(hotel.FieldSlug, field.TypeString, value)
-	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(hotel.FieldName, field.TypeString, value)
 	}
@@ -1386,16 +1342,16 @@ func (_u *HotelUpdateOne) sqlSave(ctx context.Context) (_node *Hotel, err error)
 		_spec.AddField(hotel.FieldRoomCount, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.CheckInTime(); ok {
-		_spec.SetField(hotel.FieldCheckInTime, field.TypeString, value)
+		_spec.SetField(hotel.FieldCheckInTime, field.TypeTime, value)
 	}
 	if _u.mutation.CheckInTimeCleared() {
-		_spec.ClearField(hotel.FieldCheckInTime, field.TypeString)
+		_spec.ClearField(hotel.FieldCheckInTime, field.TypeTime)
 	}
 	if value, ok := _u.mutation.CheckOutTime(); ok {
-		_spec.SetField(hotel.FieldCheckOutTime, field.TypeString, value)
+		_spec.SetField(hotel.FieldCheckOutTime, field.TypeTime, value)
 	}
 	if _u.mutation.CheckOutTimeCleared() {
-		_spec.ClearField(hotel.FieldCheckOutTime, field.TypeString)
+		_spec.ClearField(hotel.FieldCheckOutTime, field.TypeTime)
 	}
 	if value, ok := _u.mutation.Address(); ok {
 		_spec.SetField(hotel.FieldAddress, field.TypeJSON, value)
