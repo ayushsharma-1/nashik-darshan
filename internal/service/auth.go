@@ -56,6 +56,7 @@ func (s *authService) Signup(ctx context.Context, req *dto.SignupRequest) (*dto.
 	err = s.ServiceParams.DB.WithTx(ctx, func(ctx context.Context) error {
 
 		userReq := req.ToUser(ctx)
+		userReq.ID = claims.ID
 		user, err := userService.Create(ctx, userReq)
 		if err != nil {
 			return err
