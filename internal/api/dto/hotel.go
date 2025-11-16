@@ -193,7 +193,6 @@ func (req *UpdateHotelRequest) ApplyToHotel(ctx context.Context, h *hotel.Hotel)
 	if req.Currency != nil {
 		h.Currency = req.Currency
 	}
-	// Note: UpdatedBy is handled at repository layer
 	return nil
 }
 

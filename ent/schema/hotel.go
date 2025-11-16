@@ -52,7 +52,7 @@ func (Hotel) Fields() []ent.Field {
 			}).
 			Min(1).
 			Max(5).
-			Default(3),
+			Default(0),
 		field.Int("room_count").
 			SchemaType(map[string]string{
 				"postgres": "integer",

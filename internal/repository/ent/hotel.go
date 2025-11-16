@@ -151,7 +151,10 @@ func (r *HotelRepository) GetBySlug(ctx context.Context, slug string) (*domain.H
 	r.log.Debugw("getting hotel by slug", "slug", slug)
 
 	entHotel, err := client.Hotel.Query().
-		Where(hotel.Slug(slug)).
+		Where(
+			hotel.Slug(slug),
+			hotel.Status(string(types.StatusPublished)),
+		).
 		Only(ctx)
 
 	if err != nil {
