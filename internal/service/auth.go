@@ -5,7 +5,6 @@ import (
 
 	"github.com/omkar273/nashikdarshan/internal/api/dto"
 	"github.com/omkar273/nashikdarshan/internal/auth"
-	ierr "github.com/omkar273/nashikdarshan/internal/errors"
 )
 
 type AuthService interface {
@@ -29,19 +28,6 @@ func (s *authService) Signup(ctx context.Context, req *dto.SignupRequest) (*dto.
 	// validate access token
 	if err := req.Validate(); err != nil {
 		return nil, err
-	}
-
-	// check if user already exists
-	existingUser, err := s.ServiceParams.UserRepo.GetByEmail(ctx, req.Email)
-	if err != nil && !ierr.IsNotFound(err) {
-		return nil, err
-	}
-
-	// if user already exists, return error
-	if existingUser != nil {
-		return nil, ierr.NewError("user already exists").
-			WithHint("User already exists").
-			Mark(ierr.ErrAlreadyExists)
 	}
 
 	// check using supabase provider
