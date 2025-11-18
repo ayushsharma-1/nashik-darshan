@@ -14,29 +14,34 @@ import (
 
 // CreateHotelRequest represents a request to create a hotel
 type CreateHotelRequest struct {
-	Slug            string            `json:"slug" binding:"required,min=1"`
-	Name            string            `json:"name" binding:"required,min=1"`
-	Description     *string           `json:"description,omitempty"`
+	Slug            string            `json:"slug" binding:"required,min=3,max=100"`
+	Name            string            `json:"name" binding:"required,min=2,max=255"`
+	Description     *string           `json:"description,omitempty" binding:"omitempty,max=5000"`
 	StarRating      int               `json:"star_rating" binding:"required,min=1,max=5"`
-	RoomCount       int               `json:"room_count" binding:"omitempty,min=0"`
+	RoomCount       int               `json:"room_count" binding:"omitempty,min=0,max=10000"`
 	CheckInTime     *time.Time        `json:"check_in_time,omitempty"`
 	CheckOutTime    *time.Time        `json:"check_out_time,omitempty"`
 	Address         map[string]string `json:"address,omitempty"`
 	Location        types.Location    `json:"location" binding:"required"`
-	Phone           *string           `json:"phone,omitempty"`
-	Email           *string           `json:"email,omitempty" binding:"omitempty,email"`
-	Website         *string           `json:"website,omitempty" binding:"omitempty,url"`
-	PrimaryImageURL *string           `json:"primary_image_url,omitempty" binding:"omitempty,url"`
-	ThumbnailURL    *string           `json:"thumbnail_url,omitempty" binding:"omitempty,url"`
+	Phone           *string           `json:"phone,omitempty" binding:"omitempty,min=10,max=20"`
+	Email           *string           `json:"email,omitempty" binding:"omitempty,email,max=255"`
+	Website         *string           `json:"website,omitempty" binding:"omitempty,url,max=500"`
+	PrimaryImageURL *string           `json:"primary_image_url,omitempty" binding:"omitempty,url,max=500"`
+	ThumbnailURL    *string           `json:"thumbnail_url,omitempty" binding:"omitempty,url,max=500"`
 	PriceMin        *decimal.Decimal  `json:"price_min,omitempty"`
 	PriceMax        *decimal.Decimal  `json:"price_max,omitempty"`
-	Currency        *string           `json:"currency,omitempty"`
+	Currency        *string           `json:"currency,omitempty" binding:"omitempty,len=3,uppercase"`
 }
 
 // Validate validates the CreateHotelRequest
 func (req *CreateHotelRequest) Validate() error {
 	// Validate struct tags
 	if err := validator.ValidateRequest(req); err != nil {
+		return err
+	}
+
+	// Validate slug format (kebab-case: lowercase alphanumeric with hyphens)
+	if err := validator.ValidateSlugFormat(req.Slug); err != nil {
 		return err
 	}
 
@@ -50,6 +55,27 @@ func (req *CreateHotelRequest) Validate() error {
 		if req.PriceMin.GreaterThan(*req.PriceMax) {
 			return fmt.Errorf("price_min cannot be greater than price_max")
 		}
+		// Validate price is not negative
+		if req.PriceMin.LessThan(decimal.Zero) {
+			return fmt.Errorf("price_min cannot be negative")
+		}
+		if req.PriceMax.LessThan(decimal.Zero) {
+			return fmt.Errorf("price_max cannot be negative")
+		}
+	}
+
+	// Validate currency code (if provided)
+	if req.Currency != nil && *req.Currency != "" {
+		if err := validator.ValidateCurrencyCode(*req.Currency); err != nil {
+			return err
+		}
+	}
+
+	// Validate check-in/check-out times
+	if req.CheckInTime != nil && req.CheckOutTime != nil {
+		if !req.CheckOutTime.After(*req.CheckInTime) {
+			return fmt.Errorf("check_out_time must be after check_in_time")
+		}
 	}
 
 	return nil
@@ -58,22 +84,22 @@ func (req *CreateHotelRequest) Validate() error {
 // UpdateHotelRequest represents a request to update a hotel
 // Note: Slug is immutable and cannot be updated
 type UpdateHotelRequest struct {
-	Name            *string           `json:"name,omitempty" binding:"omitempty,min=1"`
-	Description     *string           `json:"description,omitempty"`
+	Name            *string           `json:"name,omitempty" binding:"omitempty,min=2,max=255"`
+	Description     *string           `json:"description,omitempty" binding:"omitempty,max=5000"`
 	StarRating      *int              `json:"star_rating,omitempty" binding:"omitempty,min=1,max=5"`
-	RoomCount       *int              `json:"room_count,omitempty" binding:"omitempty,min=0"`
+	RoomCount       *int              `json:"room_count,omitempty" binding:"omitempty,min=0,max=10000"`
 	CheckInTime     *time.Time        `json:"check_in_time,omitempty"`
 	CheckOutTime    *time.Time        `json:"check_out_time,omitempty"`
 	Address         map[string]string `json:"address,omitempty"`
 	Location        *types.Location   `json:"location,omitempty"`
-	Phone           *string           `json:"phone,omitempty"`
-	Email           *string           `json:"email,omitempty" binding:"omitempty,email"`
-	Website         *string           `json:"website,omitempty" binding:"omitempty,url"`
-	PrimaryImageURL *string           `json:"primary_image_url,omitempty" binding:"omitempty,url"`
-	ThumbnailURL    *string           `json:"thumbnail_url,omitempty" binding:"omitempty,url"`
+	Phone           *string           `json:"phone,omitempty" binding:"omitempty,min=10,max=20"`
+	Email           *string           `json:"email,omitempty" binding:"omitempty,email,max=255"`
+	Website         *string           `json:"website,omitempty" binding:"omitempty,url,max=500"`
+	PrimaryImageURL *string           `json:"primary_image_url,omitempty" binding:"omitempty,url,max=500"`
+	ThumbnailURL    *string           `json:"thumbnail_url,omitempty" binding:"omitempty,url,max=500"`
 	PriceMin        *decimal.Decimal  `json:"price_min,omitempty"`
 	PriceMax        *decimal.Decimal  `json:"price_max,omitempty"`
-	Currency        *string           `json:"currency,omitempty"`
+	Currency        *string           `json:"currency,omitempty" binding:"omitempty,len=3,uppercase"`
 }
 
 // Validate validates the UpdateHotelRequest
@@ -94,6 +120,27 @@ func (req *UpdateHotelRequest) Validate() error {
 	if req.PriceMin != nil && req.PriceMax != nil {
 		if req.PriceMin.GreaterThan(*req.PriceMax) {
 			return fmt.Errorf("price_min cannot be greater than price_max")
+		}
+		// Validate price is not negative
+		if req.PriceMin.LessThan(decimal.Zero) {
+			return fmt.Errorf("price_min cannot be negative")
+		}
+		if req.PriceMax.LessThan(decimal.Zero) {
+			return fmt.Errorf("price_max cannot be negative")
+		}
+	}
+
+	// Validate currency code (if provided)
+	if req.Currency != nil && *req.Currency != "" {
+		if err := validator.ValidateCurrencyCode(*req.Currency); err != nil {
+			return err
+		}
+	}
+
+	// Validate check-in/check-out times
+	if req.CheckInTime != nil && req.CheckOutTime != nil {
+		if !req.CheckOutTime.After(*req.CheckInTime) {
+			return fmt.Errorf("check_out_time must be after check_in_time")
 		}
 	}
 

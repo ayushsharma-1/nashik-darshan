@@ -10,9 +10,9 @@ import (
 )
 
 type CreateCategoryRequest struct {
-	Name        string         `json:"name" binding:"required,min=1,max=255"`
-	Slug        string         `json:"slug" binding:"required,min=1"`
-	Description string         `json:"description,omitempty"`
+	Name        string         `json:"name" binding:"required,min=2,max=255"`
+	Slug        string         `json:"slug" binding:"required,min=3,max=100"`
+	Description string         `json:"description,omitempty" binding:"omitempty,max=2000"`
 	Metdata     types.Metadata `json:"metadata,omitempty"`
 }
 
@@ -23,13 +23,18 @@ func (req *CreateCategoryRequest) Validate() error {
 		return err
 	}
 
+	// Validate slug format (kebab-case)
+	if err := validator.ValidateSlugFormat(req.Slug); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 type UpdateCategoryRequest struct {
-	Name        *string `json:"name,omitempty" binding:"omitempty,min=1,max=255"`
-	Slug        *string `json:"slug,omitempty" binding:"omitempty,min=1"`
-	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty" binding:"omitempty,min=2,max=255"`
+	Slug        *string `json:"slug,omitempty" binding:"omitempty,min=3,max=100"`
+	Description *string `json:"description,omitempty" binding:"omitempty,max=2000"`
 }
 
 // Validate validates the UpdateCategoryRequest
@@ -37,6 +42,13 @@ func (req *UpdateCategoryRequest) Validate() error {
 	// Validate struct tags
 	if err := validator.ValidateRequest(req); err != nil {
 		return err
+	}
+
+	// Validate slug format if provided
+	if req.Slug != nil && *req.Slug != "" {
+		if err := validator.ValidateSlugFormat(*req.Slug); err != nil {
+			return err
+		}
 	}
 
 	return nil
