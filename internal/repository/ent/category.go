@@ -113,7 +113,10 @@ func (r *CategoryRepository) GetBySlug(ctx context.Context, slug string) (*domai
 	r.log.Debugw("getting category by slug", "slug", slug)
 
 	entCategory, err := client.Category.Query().
-		Where(category.Slug(slug)).
+		Where(
+			category.Slug(slug),
+			category.Status(string(types.StatusPublished)),
+		).
 		Only(ctx)
 
 	if err != nil {
@@ -252,7 +255,7 @@ func (r *CategoryRepository) Delete(ctx context.Context, c *domain.Category) err
 	)
 
 	_, err := client.Category.UpdateOneID(c.ID).
-		SetStatus(string(types.StatusDeleted)).
+		SetStatus(string(types.StatusArchived)).
 		SetUpdatedAt(time.Now().UTC()).
 		SetUpdatedBy(types.GetUserID(ctx)).
 		Save(ctx)
@@ -290,7 +293,7 @@ var _ EntityQueryOptions[CategoryQuery, *types.CategoryFilter] = (*CategoryQuery
 
 func (o CategoryQueryOptions) ApplyStatusFilter(query CategoryQuery, status string) CategoryQuery {
 	if status == "" {
-		return query.Where(category.StatusNotIn(string(types.StatusDeleted)))
+		return query.Where(category.StatusNotIn(string(types.StatusArchived)))
 	}
 	return query.Where(category.Status(status))
 }
@@ -330,7 +333,7 @@ func (o CategoryQueryOptions) ApplyBaseFilters(
 	filter *types.CategoryFilter,
 ) CategoryQuery {
 	if filter == nil {
-		return query.Where(category.StatusNotIn(string(types.StatusDeleted)))
+		return query.Where(category.StatusNotIn(string(types.StatusArchived)))
 	}
 
 	// Apply status filter
