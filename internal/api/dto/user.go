@@ -7,6 +7,6 @@ type MeResponse struct {
 }
 
 type UpdateUserRequest struct {
-	Name  string `json:"name,omitempty"`
-	Phone string `json:"phone,omitempty"`
+	Name  string `json:"name,omitempty" binding:"omitempty,min=2,max=255"`
+	Phone string `json:"phone,omitempty" binding:"omitempty,min=10,max=20"`
 }

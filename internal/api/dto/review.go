@@ -11,13 +11,13 @@ import (
 
 // CreateReviewRequest represents the request to create a new review
 type CreateReviewRequest struct {
-	EntityType types.ReviewEntityType `json:"entity_type" binding:"required" validate:"required"`
-	EntityID   string                 `json:"entity_id" binding:"required" validate:"required"`
+	EntityType types.ReviewEntityType `json:"entity_type" binding:"required" validate:"required,max=50"`
+	EntityID   string                 `json:"entity_id" binding:"required,min=1,max=100" validate:"required"`
 	Rating     decimal.Decimal        `json:"rating" binding:"required" validate:"required,min=1,max=5"`
-	Title      *string                `json:"title,omitempty" validate:"omitempty,max=255"`
-	Content    *string                `json:"content,omitempty" validate:"omitempty,max=2000"`
+	Title      *string                `json:"title,omitempty" binding:"omitempty,max=255" validate:"omitempty,max=255"`
+	Content    *string                `json:"content,omitempty" binding:"omitempty,max=3000" validate:"omitempty,max=3000"`
 	Tags       []string               `json:"tags,omitempty" validate:"omitempty,dive,max=50"`
-	Images     []string               `json:"images,omitempty" validate:"omitempty,dive,url"`
+	Images     []string               `json:"images,omitempty" binding:"omitempty,dive,url,max=500" validate:"omitempty,dive,url"`
 }
 
 // Validate validates the CreateReviewRequest
@@ -68,10 +68,10 @@ func (r *CreateReviewRequest) ToReview(ctx context.Context) *review.Review {
 // UpdateReviewRequest represents the request to update an existing review
 type UpdateReviewRequest struct {
 	Rating  *decimal.Decimal `json:"rating,omitempty" validate:"omitempty,min=1,max=5"`
-	Title   *string          `json:"title,omitempty" validate:"omitempty,max=255"`
-	Content *string          `json:"content,omitempty" validate:"omitempty,max=2000"`
+	Title   *string          `json:"title,omitempty" binding:"omitempty,max=255" validate:"omitempty,max=255"`
+	Content *string          `json:"content,omitempty" binding:"omitempty,max=3000" validate:"omitempty,max=3000"`
 	Tags    []string         `json:"tags,omitempty" validate:"omitempty,dive,max=50"`
-	Images  []string         `json:"images,omitempty" validate:"omitempty,dive,url"`
+	Images  []string         `json:"images,omitempty" binding:"omitempty,dive,url,max=500" validate:"omitempty,dive,url"`
 }
 
 // Validate validates the UpdateReviewRequest

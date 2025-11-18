@@ -13,17 +13,17 @@ import (
 
 // CreatePlaceRequest represents a request to create a place
 type CreatePlaceRequest struct {
-	Slug             string            `json:"slug" binding:"required,min=1"`
-	Title            string            `json:"title" binding:"required,min=1"`
-	Subtitle         *string           `json:"subtitle,omitempty"`
-	ShortDescription *string           `json:"short_description,omitempty"`
-	LongDescription  *string           `json:"long_description,omitempty"`
-	PlaceType        string            `json:"place_type" binding:"required"`
+	Slug             string            `json:"slug" binding:"required,min=3,max=100"`
+	Title            string            `json:"title" binding:"required,min=2,max=255"`
+	Subtitle         *string           `json:"subtitle,omitempty" binding:"omitempty,max=500"`
+	ShortDescription *string           `json:"short_description,omitempty" binding:"omitempty,max=1000"`
+	LongDescription  *string           `json:"long_description,omitempty" binding:"omitempty,max=10000"`
+	PlaceType        string            `json:"place_type" binding:"required,min=2,max=50"`
 	Categories       []string          `json:"categories,omitempty"`
 	Address          map[string]string `json:"address,omitempty"`
 	Location         types.Location    `json:"location" binding:"required"`
-	PrimaryImageURL  *string           `json:"primary_image_url,omitempty"`
-	ThumbnailURL     *string           `json:"thumbnail_url,omitempty"`
+	PrimaryImageURL  *string           `json:"primary_image_url,omitempty" binding:"omitempty,url,max=500"`
+	ThumbnailURL     *string           `json:"thumbnail_url,omitempty" binding:"omitempty,url,max=500"`
 	Amenities        []string          `json:"amenities,omitempty"`
 }
 
@@ -31,6 +31,11 @@ type CreatePlaceRequest struct {
 func (req *CreatePlaceRequest) Validate() error {
 	// Validate struct tags
 	if err := validator.ValidateRequest(req); err != nil {
+		return err
+	}
+
+	// Validate slug format (kebab-case)
+	if err := validator.ValidateSlugFormat(req.Slug); err != nil {
 		return err
 	}
 
@@ -44,17 +49,17 @@ func (req *CreatePlaceRequest) Validate() error {
 
 // UpdatePlaceRequest represents a request to update a place
 type UpdatePlaceRequest struct {
-	Slug             *string           `json:"slug,omitempty" binding:"omitempty,min=1"`
-	Title            *string           `json:"title,omitempty" binding:"omitempty,min=1"`
-	Subtitle         *string           `json:"subtitle,omitempty"`
-	ShortDescription *string           `json:"short_description,omitempty"`
-	LongDescription  *string           `json:"long_description,omitempty"`
-	PlaceType        *string           `json:"place_type,omitempty"`
+	Slug             *string           `json:"slug,omitempty" binding:"omitempty,min=3,max=100"`
+	Title            *string           `json:"title,omitempty" binding:"omitempty,min=2,max=255"`
+	Subtitle         *string           `json:"subtitle,omitempty" binding:"omitempty,max=500"`
+	ShortDescription *string           `json:"short_description,omitempty" binding:"omitempty,max=1000"`
+	LongDescription  *string           `json:"long_description,omitempty" binding:"omitempty,max=10000"`
+	PlaceType        *string           `json:"place_type,omitempty" binding:"omitempty,min=2,max=50"`
 	Categories       []string          `json:"categories,omitempty"`
 	Address          map[string]string `json:"address,omitempty"`
 	Location         *types.Location   `json:"location,omitempty"`
-	PrimaryImageURL  *string           `json:"primary_image_url,omitempty"`
-	ThumbnailURL     *string           `json:"thumbnail_url,omitempty"`
+	PrimaryImageURL  *string           `json:"primary_image_url,omitempty" binding:"omitempty,url,max=500"`
+	ThumbnailURL     *string           `json:"thumbnail_url,omitempty" binding:"omitempty,url,max=500"`
 	Amenities        []string          `json:"amenities,omitempty"`
 }
 
@@ -63,6 +68,13 @@ func (req *UpdatePlaceRequest) Validate() error {
 	// Validate struct tags
 	if err := validator.ValidateRequest(req); err != nil {
 		return err
+	}
+
+	// Validate slug format if provided
+	if req.Slug != nil && *req.Slug != "" {
+		if err := validator.ValidateSlugFormat(*req.Slug); err != nil {
+			return err
+		}
 	}
 
 	// Validate location coordinates if provided
@@ -88,9 +100,9 @@ type PlaceImageResponse struct {
 
 // CreatePlaceImageRequest represents a request to create a place image
 type CreatePlaceImageRequest struct {
-	URL      string  `json:"url" binding:"required,url"`
-	Alt      *string `json:"alt,omitempty"`
-	Pos      int     `json:"pos" binding:"min=0"`
+	URL      string  `json:"url" binding:"required,url,max=500"`
+	Alt      *string `json:"alt,omitempty" binding:"omitempty,max=255"`
+	Pos      int     `json:"pos" binding:"min=0,max=100"`
 	Metadata *types.Metadata
 }
 
