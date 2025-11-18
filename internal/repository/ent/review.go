@@ -63,7 +63,16 @@ func (r *ReviewRepository) Create(ctx context.Context, rev *reviewDomain.Review)
 		create = create.SetContent(*rev.Content)
 	}
 	if len(rev.Tags) > 0 {
-		create = create.SetTags(rev.Tags)
+		// Filter out empty strings to avoid PostgreSQL array issues
+		validTags := []string{}
+		for _, tag := range rev.Tags {
+			if tag != "" {
+				validTags = append(validTags, tag)
+			}
+		}
+		if len(validTags) > 0 {
+			create = create.SetTags(validTags)
+		}
 	}
 	if len(rev.Images) > 0 {
 		create = create.SetImages(rev.Images)
@@ -124,7 +133,16 @@ func (r *ReviewRepository) Update(ctx context.Context, id string, rev *reviewDom
 		query = query.SetContent(*rev.Content)
 	}
 	if len(rev.Tags) > 0 {
-		query = query.SetTags(rev.Tags)
+		// Filter out empty strings to avoid PostgreSQL array issues
+		validTags := []string{}
+		for _, tag := range rev.Tags {
+			if tag != "" {
+				validTags = append(validTags, tag)
+			}
+		}
+		if len(validTags) > 0 {
+			query = query.SetTags(validTags)
+		}
 	}
 	if len(rev.Images) > 0 {
 		query = query.SetImages(rev.Images)

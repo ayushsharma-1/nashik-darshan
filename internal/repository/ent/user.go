@@ -109,7 +109,7 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*domainU
 	entUser, err := client.User.Query().
 		Where(
 			user.Email(email),
-			user.StatusNotIn(string(types.StatusDeleted)),
+			user.StatusNotIn(string(types.StatusArchived)),
 		).
 		Only(ctx)
 
@@ -245,7 +245,7 @@ func (r *UserRepository) Delete(ctx context.Context, userData *domainUser.User) 
 	)
 
 	_, err := client.User.UpdateOneID(userData.ID).
-		SetStatus(string(types.StatusDeleted)).
+		SetStatus(string(types.StatusArchived)).
 		SetUpdatedAt(time.Now().UTC()).
 		SetUpdatedBy(types.GetUserID(ctx)).
 		Save(ctx)
@@ -283,7 +283,7 @@ var _ EntityQueryOptions[UserQuery, *types.UserFilter] = (*UserQueryOptions)(nil
 
 func (o UserQueryOptions) ApplyStatusFilter(query UserQuery, status string) UserQuery {
 	if status == "" {
-		return query.Where(user.StatusNotIn(string(types.StatusDeleted)))
+		return query.Where(user.StatusNotIn(string(types.StatusArchived)))
 	}
 	return query.Where(user.Status(status))
 }
@@ -325,7 +325,7 @@ func (o UserQueryOptions) ApplyBaseFilters(
 	filter *types.UserFilter,
 ) UserQuery {
 	if filter == nil {
-		return query.Where(user.StatusNotIn(string(types.StatusDeleted)))
+		return query.Where(user.StatusNotIn(string(types.StatusArchived)))
 	}
 
 	// Apply status filter
