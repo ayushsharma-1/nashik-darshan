@@ -354,3 +354,58 @@ func (h *PlaceHandler) DeleteImage(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
+
+// @Summary Get feed data
+// @Description Get feed data with multiple sections (trending, popular, latest, nearby)
+// @Tags Place
+// @Accept json
+// @Produce json
+// @Param request body dto.FeedRequest true "Feed request with sections"
+// @Success 200 {object} dto.FeedResponse
+// @Failure 400 {object} ierr.ErrorResponse
+// @Failure 500 {object} ierr.ErrorResponse
+// @Router /feed [post]
+func (h *PlaceHandler) GetFeed(c *gin.Context) {
+	var req dto.FeedRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Error(ierr.WithError(err).
+			WithHint("Please check the request payload").
+			Mark(ierr.ErrValidation))
+		return
+	}
+
+	response, err := h.placeService.GetFeed(c.Request.Context(), &req)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response)
+}
+
+// @Summary Increment view count for a place
+// @Description Increment the view count for a specific place
+// @Tags Place
+// @Accept json
+// @Produce json
+// @Param id path string true "Place ID"
+// @Success 204
+// @Failure 400 {object} ierr.ErrorResponse
+// @Failure 404 {object} ierr.ErrorResponse
+// @Failure 500 {object} ierr.ErrorResponse
+// @Router /places/{id}/view [post]
+func (h *PlaceHandler) IncrementViewCount(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.Error(ierr.NewError("place ID is required").
+			WithHint("Please provide a valid place ID").
+			Mark(ierr.ErrValidation))
+		return
+	}
+
+	err := h.placeService.IncrementViewCount(c.Request.Context(), id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}

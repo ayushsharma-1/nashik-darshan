@@ -27,6 +27,8 @@ definitions:
     properties:
       description:
         type: string
+      metadata:
+        $ref: '#/definitions/types.Metadata'
       name:
         maxLength: 255
         minLength: 1
@@ -38,11 +40,315 @@ definitions:
     - name
     - slug
     type: object
+  dto.CreateHotelRequest:
+    properties:
+      address:
+        additionalProperties:
+          type: string
+        type: object
+      check_in_time:
+        type: string
+      check_out_time:
+        type: string
+      currency:
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      location:
+        $ref: '#/definitions/types.Location'
+      name:
+        minLength: 1
+        type: string
+      phone:
+        type: string
+      price_max:
+        type: number
+      price_min:
+        type: number
+      primary_image_url:
+        type: string
+      room_count:
+        minimum: 0
+        type: integer
+      slug:
+        minLength: 1
+        type: string
+      star_rating:
+        maximum: 5
+        minimum: 1
+        type: integer
+      thumbnail_url:
+        type: string
+      website:
+        type: string
+    required:
+    - location
+    - name
+    - slug
+    - star_rating
+    type: object
+  dto.CreatePlaceImageRequest:
+    properties:
+      alt:
+        type: string
+      metadata:
+        $ref: '#/definitions/types.Metadata'
+      pos:
+        minimum: 0
+        type: integer
+      url:
+        type: string
+    required:
+    - url
+    type: object
+  dto.CreatePlaceRequest:
+    properties:
+      address:
+        additionalProperties:
+          type: string
+        type: object
+      amenities:
+        items:
+          type: string
+        type: array
+      categories:
+        items:
+          type: string
+        type: array
+      location:
+        $ref: '#/definitions/types.Location'
+      long_description:
+        type: string
+      place_type:
+        type: string
+      primary_image_url:
+        type: string
+      short_description:
+        type: string
+      slug:
+        minLength: 1
+        type: string
+      subtitle:
+        type: string
+      thumbnail_url:
+        type: string
+      title:
+        minLength: 1
+        type: string
+    required:
+    - location
+    - place_type
+    - slug
+    - title
+    type: object
+  dto.CreateReviewRequest:
+    properties:
+      content:
+        maxLength: 2000
+        type: string
+      entity_id:
+        type: string
+      entity_type:
+        $ref: '#/definitions/types.ReviewEntityType'
+      images:
+        items:
+          type: string
+        type: array
+      rating:
+        maximum: 5
+        minimum: 1
+        type: number
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        maxLength: 255
+        type: string
+    required:
+    - entity_id
+    - entity_type
+    - rating
+    type: object
+  dto.FeedRequest:
+    properties:
+      end_time:
+        type: string
+      expand:
+        type: string
+      limit:
+        maximum: 1000
+        minimum: 1
+        type: integer
+      offset:
+        minimum: 0
+        type: integer
+      order:
+        enum:
+        - asc
+        - desc
+        type: string
+      sections:
+        items:
+          $ref: '#/definitions/dto.FeedSectionRequest'
+        maxItems: 10
+        minItems: 1
+        type: array
+      sort:
+        type: string
+      start_time:
+        type: string
+      status:
+        $ref: '#/definitions/types.Status'
+    required:
+    - sections
+    type: object
+  dto.FeedResponse:
+    properties:
+      sections:
+        items:
+          $ref: '#/definitions/dto.FeedSectionResponse'
+        type: array
+    type: object
+  dto.FeedSectionRequest:
+    properties:
+      end_time:
+        type: string
+      expand:
+        type: string
+      latitude:
+        description: Geospatial fields (for nearby section)
+        type: number
+      limit:
+        maximum: 1000
+        minimum: 1
+        type: integer
+      longitude:
+        type: number
+      offset:
+        minimum: 0
+        type: integer
+      order:
+        enum:
+        - asc
+        - desc
+        type: string
+      radius_km:
+        default: 5
+        maximum: 50
+        minimum: 0.1
+        type: number
+      sort:
+        type: string
+      start_time:
+        type: string
+      status:
+        $ref: '#/definitions/types.Status'
+      type:
+        $ref: '#/definitions/types.FeedSectionType'
+    required:
+    - type
+    type: object
+  dto.FeedSectionResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.PlaceResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/types.PaginationResponse'
+      type:
+        $ref: '#/definitions/types.FeedSectionType'
+    type: object
+  dto.HotelResponse:
+    properties:
+      address:
+        additionalProperties:
+          type: string
+        type: object
+      check_in_time:
+        type: string
+      check_out_time:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      currency:
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      last_viewed_at:
+        type: string
+      location:
+        $ref: '#/definitions/types.Location'
+      metadata:
+        $ref: '#/definitions/types.Metadata'
+      name:
+        type: string
+      phone:
+        type: string
+      popularity_score:
+        type: number
+      price_max:
+        type: number
+      price_min:
+        type: number
+      primary_image_url:
+        type: string
+      rating_avg:
+        type: number
+      rating_count:
+        type: integer
+      room_count:
+        type: integer
+      slug:
+        type: string
+      star_rating:
+        type: integer
+      status:
+        $ref: '#/definitions/types.Status'
+      thumbnail_url:
+        type: string
+      updated_at:
+        type: string
+      updated_by:
+        type: string
+      view_count:
+        description: Engagement fields
+        type: integer
+      website:
+        type: string
+    type: object
   dto.ListCategoriesResponse:
     properties:
       items:
         items:
           $ref: '#/definitions/dto.CategoryResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/types.PaginationResponse'
+    type: object
+  dto.ListHotelsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.HotelResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/types.PaginationResponse'
+    type: object
+  dto.ListPlacesResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.PlaceResponse'
         type: array
       pagination:
         $ref: '#/definitions/types.PaginationResponse'
@@ -70,6 +376,166 @@ definitions:
       updated_at:
         type: string
       updated_by:
+        type: string
+    type: object
+  dto.PlaceImageResponse:
+    properties:
+      alt:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      id:
+        type: string
+      metadata:
+        $ref: '#/definitions/types.Metadata'
+      place_id:
+        type: string
+      pos:
+        type: integer
+      status:
+        $ref: '#/definitions/types.Status'
+      updated_at:
+        type: string
+      updated_by:
+        type: string
+      url:
+        type: string
+    type: object
+  dto.PlaceResponse:
+    properties:
+      address:
+        additionalProperties:
+          type: string
+        type: object
+      amenities:
+        items:
+          type: string
+        type: array
+      categories:
+        items:
+          type: string
+        type: array
+      created_at:
+        type: string
+      created_by:
+        type: string
+      id:
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/dto.PlaceImageResponse'
+        type: array
+      last_viewed_at:
+        type: string
+      location:
+        $ref: '#/definitions/types.Location'
+      long_description:
+        type: string
+      place_type:
+        type: string
+      popularity_score:
+        type: number
+      primary_image_url:
+        type: string
+      rating_avg:
+        type: number
+      rating_count:
+        type: integer
+      short_description:
+        type: string
+      slug:
+        type: string
+      status:
+        $ref: '#/definitions/types.Status'
+      subtitle:
+        type: string
+      thumbnail_url:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      updated_by:
+        type: string
+      view_count:
+        description: Engagement fields for feed functionality
+        type: integer
+    type: object
+  dto.RatingStatsResponse:
+    properties:
+      average_rating:
+        type: number
+      entity_id:
+        type: string
+      entity_type:
+        $ref: '#/definitions/types.ReviewEntityType'
+      five_star_count:
+        type: integer
+      four_star_count:
+        type: integer
+      one_star_count:
+        type: integer
+      rating_distribution:
+        additionalProperties:
+          type: integer
+        description: rating -> count
+        type: object
+      reviews_with_content:
+        type: integer
+      reviews_with_images:
+        type: integer
+      three_star_count:
+        type: integer
+      total_reviews:
+        type: integer
+      two_star_count:
+        type: integer
+      verified_reviews:
+        type: integer
+    type: object
+  dto.ReviewResponse:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      entity_id:
+        type: string
+      entity_type:
+        $ref: '#/definitions/types.ReviewEntityType'
+      helpful_count:
+        type: integer
+      id:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      is_featured:
+        type: boolean
+      is_verified:
+        type: boolean
+      not_helpful_count:
+        type: integer
+      rating:
+        type: number
+      status:
+        $ref: '#/definitions/types.Status'
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      updated_at:
+        type: string
+      updated_by:
+        type: string
+      user_id:
         type: string
     type: object
   dto.SignupRequest:
@@ -108,6 +574,115 @@ definitions:
         minLength: 1
         type: string
     type: object
+  dto.UpdateHotelRequest:
+    properties:
+      address:
+        additionalProperties:
+          type: string
+        type: object
+      check_in_time:
+        type: string
+      check_out_time:
+        type: string
+      currency:
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      location:
+        $ref: '#/definitions/types.Location'
+      name:
+        minLength: 1
+        type: string
+      phone:
+        type: string
+      price_max:
+        type: number
+      price_min:
+        type: number
+      primary_image_url:
+        type: string
+      room_count:
+        minimum: 0
+        type: integer
+      star_rating:
+        maximum: 5
+        minimum: 1
+        type: integer
+      thumbnail_url:
+        type: string
+      website:
+        type: string
+    type: object
+  dto.UpdatePlaceImageRequest:
+    properties:
+      alt:
+        type: string
+      metadata:
+        $ref: '#/definitions/types.Metadata'
+      pos:
+        minimum: 0
+        type: integer
+      url:
+        type: string
+    type: object
+  dto.UpdatePlaceRequest:
+    properties:
+      address:
+        additionalProperties:
+          type: string
+        type: object
+      amenities:
+        items:
+          type: string
+        type: array
+      categories:
+        items:
+          type: string
+        type: array
+      location:
+        $ref: '#/definitions/types.Location'
+      long_description:
+        type: string
+      place_type:
+        type: string
+      primary_image_url:
+        type: string
+      short_description:
+        type: string
+      slug:
+        minLength: 1
+        type: string
+      subtitle:
+        type: string
+      thumbnail_url:
+        type: string
+      title:
+        minLength: 1
+        type: string
+    type: object
+  dto.UpdateReviewRequest:
+    properties:
+      content:
+        maxLength: 2000
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      rating:
+        maximum: 5
+        minimum: 1
+        type: number
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        maxLength: 255
+        type: string
+    type: object
   dto.UpdateUserRequest:
     properties:
       name:
@@ -132,6 +707,59 @@ definitions:
       success:
         type: boolean
     type: object
+  place.PlaceImage:
+    properties:
+      alt:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      id:
+        type: string
+      metadata:
+        $ref: '#/definitions/types.Metadata'
+      place_id:
+        type: string
+      pos:
+        type: integer
+      status:
+        $ref: '#/definitions/types.Status'
+      updated_at:
+        type: string
+      updated_by:
+        type: string
+      url:
+        type: string
+    type: object
+  types.FeedSectionType:
+    enum:
+    - latest
+    - trending
+    - popular
+    - nearby
+    type: string
+    x-enum-varnames:
+    - SectionTypeLatest
+    - SectionTypeTrending
+    - SectionTypePopular
+    - SectionTypeNearby
+  types.ListResponse-dto_ReviewResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.ReviewResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/types.PaginationResponse'
+    type: object
+  types.Location:
+    properties:
+      latitude:
+        type: number
+      longitude:
+        type: number
+    type: object
   types.Metadata:
     additionalProperties:
       type: string
@@ -145,6 +773,22 @@ definitions:
       total:
         type: integer
     type: object
+  types.ReviewEntityType:
+    enum:
+    - place
+    - hotel
+    - restaurant
+    - event
+    - experience
+    - attraction
+    type: string
+    x-enum-varnames:
+    - EntityTypePlace
+    - EntityTypeHotel
+    - EntityTypeRestaurant
+    - EntityTypeEvent
+    - EntityTypeExperience
+    - EntityTypeAttraction
   types.Status:
     enum:
     - published
@@ -422,6 +1066,957 @@ paths:
       summary: Get category by slug
       tags:
       - Category
+  /feed:
+    post:
+      consumes:
+      - application/json
+      description: Get feed data with multiple sections (trending, popular, latest,
+        nearby)
+      parameters:
+      - description: Feed request with sections
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.FeedRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FeedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Get feed data
+      tags:
+      - Feed
+  /hotels:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of hotels with filtering and pagination
+      parameters:
+      - in: query
+        name: end_time
+        type: string
+      - in: query
+        name: expand
+        type: string
+      - description: Trending filter
+        in: query
+        name: last_viewed_after
+        type: string
+      - description: Geospatial filters
+        in: query
+        name: latitude
+        type: number
+      - in: query
+        maximum: 1000
+        minimum: 1
+        name: limit
+        type: integer
+      - in: query
+        name: longitude
+        type: number
+      - in: query
+        name: max_price
+        type: number
+      - description: Price range filters
+        in: query
+        name: min_price
+        type: number
+      - in: query
+        minimum: 0
+        name: offset
+        type: integer
+      - enum:
+        - asc
+        - desc
+        in: query
+        name: order
+        type: string
+      - description: radius in meters
+        in: query
+        name: radius_m
+        type: number
+      - description: Search
+        in: query
+        name: search_query
+        type: string
+      - collectionFormat: csv
+        description: Custom filters
+        in: query
+        items:
+          type: string
+        name: slug
+        type: array
+      - in: query
+        name: sort
+        type: string
+      - collectionFormat: csv
+        in: query
+        items:
+          type: integer
+        name: star_rating
+        type: array
+      - in: query
+        name: start_time
+        type: string
+      - enum:
+        - published
+        - deleted
+        - archived
+        - inactive
+        - pending
+        in: query
+        name: status
+        type: string
+        x-enum-varnames:
+        - StatusPublished
+        - StatusDeleted
+        - StatusArchived
+        - StatusInactive
+        - StatusPending
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListHotelsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: List hotels
+      tags:
+      - Hotel
+    post:
+      consumes:
+      - application/json
+      description: Create a new hotel with the provided details
+      parameters:
+      - description: Create hotel request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateHotelRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.HotelResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Create a new hotel
+      tags:
+      - Hotel
+  /hotels/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete a hotel
+      parameters:
+      - description: Hotel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Delete a hotel
+      tags:
+      - Hotel
+    get:
+      consumes:
+      - application/json
+      description: Get a hotel by its ID
+      parameters:
+      - description: Hotel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HotelResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Get hotel by ID
+      tags:
+      - Hotel
+    put:
+      consumes:
+      - application/json
+      description: Update an existing hotel
+      parameters:
+      - description: Hotel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update hotel request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateHotelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HotelResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Update a hotel
+      tags:
+      - Hotel
+  /hotels/slug/{slug}:
+    get:
+      consumes:
+      - application/json
+      description: Get a hotel by its slug
+      parameters:
+      - description: Hotel slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HotelResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Get hotel by slug
+      tags:
+      - Hotel
+  /places:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of places with filtering and pagination
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Status
+        in: query
+        name: status
+        type: string
+      - description: Sort field
+        in: query
+        name: sort
+        type: string
+      - description: Sort order (asc/desc)
+        in: query
+        name: order
+        type: string
+      - collectionFormat: csv
+        description: Filter by slugs
+        in: query
+        items:
+          type: string
+        name: slug
+        type: array
+      - collectionFormat: csv
+        description: Filter by place types
+        in: query
+        items:
+          type: string
+        name: place_types
+        type: array
+      - collectionFormat: csv
+        description: Filter by categories
+        in: query
+        items:
+          type: string
+        name: categories
+        type: array
+      - collectionFormat: csv
+        description: Filter by amenities
+        in: query
+        items:
+          type: string
+        name: amenities
+        type: array
+      - description: Minimum rating
+        in: query
+        name: min_rating
+        type: number
+      - description: Maximum rating
+        in: query
+        name: max_rating
+        type: number
+      - description: Latitude for geospatial filtering
+        in: query
+        name: latitude
+        type: number
+      - description: Longitude for geospatial filtering
+        in: query
+        name: longitude
+        type: number
+      - description: Radius in kilometers for geospatial filtering
+        in: query
+        name: radius_km
+        type: number
+      - description: Search query
+        in: query
+        name: search_query
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListPlacesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: List places
+      tags:
+      - Place
+    post:
+      consumes:
+      - application/json
+      description: Create a new place with the provided details
+      parameters:
+      - description: Create place request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePlaceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.PlaceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Create a new place
+      tags:
+      - Place
+  /places/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete a place
+      parameters:
+      - description: Place ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Delete a place
+      tags:
+      - Place
+    get:
+      consumes:
+      - application/json
+      description: Get a place by its ID
+      parameters:
+      - description: Place ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PlaceResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Get place by ID
+      tags:
+      - Place
+    put:
+      consumes:
+      - application/json
+      description: Update an existing place
+      parameters:
+      - description: Place ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update place request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePlaceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PlaceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Update a place
+      tags:
+      - Place
+  /places/{id}/images:
+    get:
+      consumes:
+      - application/json
+      description: Get all images for a place
+      parameters:
+      - description: Place ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.PlaceImageResponse'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Get place images
+      tags:
+      - Place
+    post:
+      consumes:
+      - application/json
+      description: Add an image to a place
+      parameters:
+      - description: Place ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Create place image request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePlaceImageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.PlaceImageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Add image to place
+      tags:
+      - Place
+  /places/{id}/view:
+    post:
+      consumes:
+      - application/json
+      description: Increment the view count for a specific place
+      parameters:
+      - description: Place ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Increment view count for a place
+      tags:
+      - Feed
+  /places/images/{image_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a place image
+      parameters:
+      - description: Image ID
+        in: path
+        name: image_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Delete place image
+      tags:
+      - Place
+    put:
+      consumes:
+      - application/json
+      description: Update an existing place image
+      parameters:
+      - description: Image ID
+        in: path
+        name: image_id
+        required: true
+        type: string
+      - description: Update place image request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePlaceImageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PlaceImageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Update place image
+      tags:
+      - Place
+  /places/slug/{slug}:
+    get:
+      consumes:
+      - application/json
+      description: Get a place by its slug
+      parameters:
+      - description: Place slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PlaceResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Get place by slug
+      tags:
+      - Place
+  /reviews:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of reviews with filtering
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Entity type (place, experience, etc.)
+        in: query
+        name: entity_type
+        type: string
+      - description: Entity ID
+        in: query
+        name: entity_id
+        type: string
+      - description: User ID
+        in: query
+        name: user_id
+        type: string
+      - description: Minimum rating
+        in: query
+        name: min_rating
+        type: number
+      - description: Maximum rating
+        in: query
+        name: max_rating
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ListResponse-dto_ReviewResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: List reviews
+      tags:
+      - Reviews
+    post:
+      consumes:
+      - application/json
+      description: Create a new review for a place or other entity
+      parameters:
+      - description: Create review request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateReviewRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.ReviewResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Create a new review
+      tags:
+      - Reviews
+  /reviews/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a review
+      parameters:
+      - description: Review ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Delete a review
+      tags:
+      - Reviews
+    get:
+      consumes:
+      - application/json
+      description: Get a review by its ID
+      parameters:
+      - description: Review ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ReviewResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Get review by ID
+      tags:
+      - Reviews
+    put:
+      consumes:
+      - application/json
+      description: Update an existing review
+      parameters:
+      - description: Review ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update review request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateReviewRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ReviewResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Update a review
+      tags:
+      - Reviews
+  /reviews/stats/{entityType}/{entityId}:
+    get:
+      consumes:
+      - application/json
+      description: Get rating statistics for an entity (place, experience, etc.)
+      parameters:
+      - description: Entity type (place, experience, etc.)
+        in: path
+        name: entityType
+        required: true
+        type: string
+      - description: Entity ID
+        in: path
+        name: entityId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.RatingStatsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Get rating statistics
+      tags:
+      - Reviews
   /user:
     put:
       consumes:

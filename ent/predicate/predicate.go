@@ -9,6 +9,9 @@ import (
 // Category is the predicate function for category builders.
 type Category func(*sql.Selector)
 
+// Hotel is the predicate function for hotel builders.
+type Hotel func(*sql.Selector)
+
 // Place is the predicate function for place builders.
 type Place func(*sql.Selector)
 

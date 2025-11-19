@@ -209,7 +209,10 @@ func (r *PlaceRepository) GetBySlug(ctx context.Context, slug string) (*domain.P
 	r.log.Debugw("getting place by slug", "slug", slug)
 
 	entPlace, err := client.Place.Query().
-		Where(place.Slug(slug)).
+		Where(
+			place.Slug(slug),
+			place.Status(string(types.StatusPublished)),
+		).
 		WithImages().
 		Only(ctx)
 
@@ -386,7 +389,18 @@ func (r *PlaceRepository) Update(ctx context.Context, p *domain.Place) error {
 		update = update.ClearLongDescription()
 	}
 	if len(p.Categories) > 0 {
-		update = update.SetCategories(p.Categories)
+		// Filter out empty strings to avoid PostgreSQL array issues
+		validCategories := []string{}
+		for _, cat := range p.Categories {
+			if cat != "" {
+				validCategories = append(validCategories, cat)
+			}
+		}
+		if len(validCategories) > 0 {
+			update = update.SetCategories(validCategories)
+		} else {
+			update = update.ClearCategories()
+		}
 	} else {
 		update = update.ClearCategories()
 	}
@@ -406,7 +420,18 @@ func (r *PlaceRepository) Update(ctx context.Context, p *domain.Place) error {
 		update = update.ClearThumbnailURL()
 	}
 	if len(p.Amenities) > 0 {
-		update = update.SetAmenities(p.Amenities)
+		// Filter out empty strings to avoid PostgreSQL array issues
+		validAmenities := []string{}
+		for _, amenity := range p.Amenities {
+			if amenity != "" {
+				validAmenities = append(validAmenities, amenity)
+			}
+		}
+		if len(validAmenities) > 0 {
+			update = update.SetAmenities(validAmenities)
+		} else {
+			update = update.ClearAmenities()
+		}
 	} else {
 		update = update.ClearAmenities()
 	}
@@ -450,7 +475,7 @@ func (r *PlaceRepository) Delete(ctx context.Context, p *domain.Place) error {
 	)
 
 	_, err := client.Place.UpdateOneID(p.ID).
-		SetStatus(string(types.StatusDeleted)).
+		SetStatus(string(types.StatusArchived)).
 		SetUpdatedAt(time.Now().UTC()).
 		SetUpdatedBy(types.GetUserID(ctx)).
 		Save(ctx)
@@ -629,7 +654,7 @@ func (r *PlaceRepository) DeleteImage(ctx context.Context, imageID string) error
 	r.log.Debugw("deleting place image", "image_id", imageID)
 
 	_, err := client.PlaceImage.UpdateOneID(imageID).
-		SetStatus(string(types.StatusDeleted)).
+		SetStatus(string(types.StatusArchived)).
 		SetUpdatedAt(time.Now().UTC()).
 		SetUpdatedBy(types.GetUserID(ctx)).
 		Save(ctx)

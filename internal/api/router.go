@@ -16,8 +16,8 @@ type Handlers struct {
 	User     *v1.UserHandler
 	Category *v1.CategoryHandler
 	Place    *v1.PlaceHandler
-	Feed     *v1.FeedHandler
 	Review   *v1.ReviewHandler
+	Hotel    *v1.HotelHandler
 }
 
 func NewRouter(handlers *Handlers, cfg *config.Configuration, logger *logger.Logger) *gin.Engine {
@@ -87,10 +87,10 @@ func NewRouter(handlers *Handlers, cfg *config.Configuration, logger *logger.Log
 	}
 
 	// Feed routes (public)
-	v1Router.POST("/feed", handlers.Feed.GetFeed)
+	v1Router.POST("/feed", handlers.Place.GetFeed)
 
 	// Engagement tracking routes
-	v1Router.POST("/places/:id/view", handlers.Feed.IncrementViewCount) // Public for analytics
+	v1Router.POST("/places/:id/view", handlers.Place.IncrementViewCount) // Public for analytics
 
 	// Review routes
 	v1Review := v1Router.Group("/reviews")
@@ -105,6 +105,19 @@ func NewRouter(handlers *Handlers, cfg *config.Configuration, logger *logger.Log
 		v1Review.POST("", handlers.Review.CreateReview)
 		v1Review.PUT("/:id", handlers.Review.UpdateReview)
 		v1Review.DELETE("/:id", handlers.Review.DeleteReview)
+	}
+
+	// Hotel routes
+	v1Hotel := v1Router.Group("/hotels")
+	{
+		v1Hotel.GET("", handlers.Hotel.List)
+		v1Hotel.GET("/slug/:slug", handlers.Hotel.GetBySlug)
+		v1Hotel.GET("/:id", handlers.Hotel.Get)
+
+		v1Hotel.Use(middleware.AuthenticateMiddleware(cfg, logger))
+		v1Hotel.POST("", handlers.Hotel.Create)
+		v1Hotel.PUT("/:id", handlers.Hotel.Update)
+		v1Hotel.DELETE("/:id", handlers.Hotel.Delete)
 	}
 
 	return router

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/omkar273/nashikdarshan/ent/category"
+	"github.com/omkar273/nashikdarshan/ent/hotel"
 	"github.com/omkar273/nashikdarshan/ent/place"
 	"github.com/omkar273/nashikdarshan/ent/placeimage"
 	"github.com/omkar273/nashikdarshan/ent/review"
@@ -55,6 +56,109 @@ func init() {
 	categoryDescID := categoryFields[0].Descriptor()
 	// category.IDValidator is a validator for the "id" field. It is called by the builders before save.
 	category.IDValidator = categoryDescID.Validators[0].(func(string) error)
+	hotelMixin := schema.Hotel{}.Mixin()
+	hotelMixinFields0 := hotelMixin[0].Fields()
+	_ = hotelMixinFields0
+	hotelMixinFields1 := hotelMixin[1].Fields()
+	_ = hotelMixinFields1
+	hotelFields := schema.Hotel{}.Fields()
+	_ = hotelFields
+	// hotelDescStatus is the schema descriptor for status field.
+	hotelDescStatus := hotelMixinFields0[0].Descriptor()
+	// hotel.DefaultStatus holds the default value on creation for the status field.
+	hotel.DefaultStatus = hotelDescStatus.Default.(string)
+	// hotelDescCreatedAt is the schema descriptor for created_at field.
+	hotelDescCreatedAt := hotelMixinFields0[1].Descriptor()
+	// hotel.DefaultCreatedAt holds the default value on creation for the created_at field.
+	hotel.DefaultCreatedAt = hotelDescCreatedAt.Default.(func() time.Time)
+	// hotelDescUpdatedAt is the schema descriptor for updated_at field.
+	hotelDescUpdatedAt := hotelMixinFields0[2].Descriptor()
+	// hotel.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	hotel.DefaultUpdatedAt = hotelDescUpdatedAt.Default.(func() time.Time)
+	// hotel.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	hotel.UpdateDefaultUpdatedAt = hotelDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// hotelDescMetadata is the schema descriptor for metadata field.
+	hotelDescMetadata := hotelMixinFields1[0].Descriptor()
+	// hotel.DefaultMetadata holds the default value on creation for the metadata field.
+	hotel.DefaultMetadata = hotelDescMetadata.Default.(map[string]string)
+	// hotelDescSlug is the schema descriptor for slug field.
+	hotelDescSlug := hotelFields[1].Descriptor()
+	// hotel.SlugValidator is a validator for the "slug" field. It is called by the builders before save.
+	hotel.SlugValidator = hotelDescSlug.Validators[0].(func(string) error)
+	// hotelDescName is the schema descriptor for name field.
+	hotelDescName := hotelFields[2].Descriptor()
+	// hotel.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	hotel.NameValidator = hotelDescName.Validators[0].(func(string) error)
+	// hotelDescStarRating is the schema descriptor for star_rating field.
+	hotelDescStarRating := hotelFields[4].Descriptor()
+	// hotel.DefaultStarRating holds the default value on creation for the star_rating field.
+	hotel.DefaultStarRating = hotelDescStarRating.Default.(int)
+	// hotel.StarRatingValidator is a validator for the "star_rating" field. It is called by the builders before save.
+	hotel.StarRatingValidator = func() func(int) error {
+		validators := hotelDescStarRating.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(star_rating int) error {
+			for _, fn := range fns {
+				if err := fn(star_rating); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// hotelDescRoomCount is the schema descriptor for room_count field.
+	hotelDescRoomCount := hotelFields[5].Descriptor()
+	// hotel.DefaultRoomCount holds the default value on creation for the room_count field.
+	hotel.DefaultRoomCount = hotelDescRoomCount.Default.(int)
+	// hotel.RoomCountValidator is a validator for the "room_count" field. It is called by the builders before save.
+	hotel.RoomCountValidator = hotelDescRoomCount.Validators[0].(func(int) error)
+	// hotelDescLatitude is the schema descriptor for latitude field.
+	hotelDescLatitude := hotelFields[9].Descriptor()
+	// hotel.DefaultLatitude holds the default value on creation for the latitude field.
+	hotel.DefaultLatitude = hotelDescLatitude.Default.(decimal.Decimal)
+	// hotelDescLongitude is the schema descriptor for longitude field.
+	hotelDescLongitude := hotelFields[10].Descriptor()
+	// hotel.DefaultLongitude holds the default value on creation for the longitude field.
+	hotel.DefaultLongitude = hotelDescLongitude.Default.(decimal.Decimal)
+	// hotelDescPriceMin is the schema descriptor for price_min field.
+	hotelDescPriceMin := hotelFields[16].Descriptor()
+	// hotel.DefaultPriceMin holds the default value on creation for the price_min field.
+	hotel.DefaultPriceMin = hotelDescPriceMin.Default.(decimal.Decimal)
+	// hotelDescPriceMax is the schema descriptor for price_max field.
+	hotelDescPriceMax := hotelFields[17].Descriptor()
+	// hotel.DefaultPriceMax holds the default value on creation for the price_max field.
+	hotel.DefaultPriceMax = hotelDescPriceMax.Default.(decimal.Decimal)
+	// hotelDescCurrency is the schema descriptor for currency field.
+	hotelDescCurrency := hotelFields[18].Descriptor()
+	// hotel.DefaultCurrency holds the default value on creation for the currency field.
+	hotel.DefaultCurrency = hotelDescCurrency.Default.(string)
+	// hotelDescViewCount is the schema descriptor for view_count field.
+	hotelDescViewCount := hotelFields[19].Descriptor()
+	// hotel.DefaultViewCount holds the default value on creation for the view_count field.
+	hotel.DefaultViewCount = hotelDescViewCount.Default.(int)
+	// hotel.ViewCountValidator is a validator for the "view_count" field. It is called by the builders before save.
+	hotel.ViewCountValidator = hotelDescViewCount.Validators[0].(func(int) error)
+	// hotelDescRatingAvg is the schema descriptor for rating_avg field.
+	hotelDescRatingAvg := hotelFields[20].Descriptor()
+	// hotel.DefaultRatingAvg holds the default value on creation for the rating_avg field.
+	hotel.DefaultRatingAvg = hotelDescRatingAvg.Default.(decimal.Decimal)
+	// hotelDescRatingCount is the schema descriptor for rating_count field.
+	hotelDescRatingCount := hotelFields[21].Descriptor()
+	// hotel.DefaultRatingCount holds the default value on creation for the rating_count field.
+	hotel.DefaultRatingCount = hotelDescRatingCount.Default.(int)
+	// hotel.RatingCountValidator is a validator for the "rating_count" field. It is called by the builders before save.
+	hotel.RatingCountValidator = hotelDescRatingCount.Validators[0].(func(int) error)
+	// hotelDescPopularityScore is the schema descriptor for popularity_score field.
+	hotelDescPopularityScore := hotelFields[23].Descriptor()
+	// hotel.DefaultPopularityScore holds the default value on creation for the popularity_score field.
+	hotel.DefaultPopularityScore = hotelDescPopularityScore.Default.(decimal.Decimal)
+	// hotelDescID is the schema descriptor for id field.
+	hotelDescID := hotelFields[0].Descriptor()
+	// hotel.DefaultID holds the default value on creation for the id field.
+	hotel.DefaultID = hotelDescID.Default.(func() string)
 	placeMixin := schema.Place{}.Mixin()
 	placeMixinFields0 := placeMixin[0].Fields()
 	_ = placeMixinFields0

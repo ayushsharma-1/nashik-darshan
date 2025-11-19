@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Category is the client for interacting with the Category builders.
 	Category *CategoryClient
+	// Hotel is the client for interacting with the Hotel builders.
+	Hotel *HotelClient
 	// Place is the client for interacting with the Place builders.
 	Place *PlaceClient
 	// PlaceImage is the client for interacting with the PlaceImage builders.
@@ -154,6 +156,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Category = NewCategoryClient(tx.config)
+	tx.Hotel = NewHotelClient(tx.config)
 	tx.Place = NewPlaceClient(tx.config)
 	tx.PlaceImage = NewPlaceImageClient(tx.config)
 	tx.Review = NewReviewClient(tx.config)

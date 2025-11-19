@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/omkar273/nashikdarshan/ent/category"
+	"github.com/omkar273/nashikdarshan/ent/hotel"
 	"github.com/omkar273/nashikdarshan/ent/place"
 	"github.com/omkar273/nashikdarshan/ent/placeimage"
 	"github.com/omkar273/nashikdarshan/ent/predicate"
@@ -30,6 +31,7 @@ const (
 
 	// Node types.
 	TypeCategory   = "Category"
+	TypeHotel      = "Hotel"
 	TypePlace      = "Place"
 	TypePlaceImage = "PlaceImage"
 	TypeReview     = "Review"
@@ -877,6 +879,2292 @@ func (m *CategoryMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *CategoryMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Category edge %s", name)
+}
+
+// HotelMutation represents an operation that mutates the Hotel nodes in the graph.
+type HotelMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *string
+	status            *string
+	created_at        *time.Time
+	updated_at        *time.Time
+	created_by        *string
+	updated_by        *string
+	metadata          *map[string]string
+	slug              *string
+	name              *string
+	description       *string
+	star_rating       *int
+	addstar_rating    *int
+	room_count        *int
+	addroom_count     *int
+	check_in_time     *time.Time
+	check_out_time    *time.Time
+	address           *map[string]string
+	latitude          *decimal.Decimal
+	longitude         *decimal.Decimal
+	phone             *string
+	email             *string
+	website           *string
+	primary_image_url *string
+	thumbnail_url     *string
+	price_min         *decimal.Decimal
+	price_max         *decimal.Decimal
+	currency          *string
+	view_count        *int
+	addview_count     *int
+	rating_avg        *decimal.Decimal
+	rating_count      *int
+	addrating_count   *int
+	last_viewed_at    *time.Time
+	popularity_score  *decimal.Decimal
+	clearedFields     map[string]struct{}
+	done              bool
+	oldValue          func(context.Context) (*Hotel, error)
+	predicates        []predicate.Hotel
+}
+
+var _ ent.Mutation = (*HotelMutation)(nil)
+
+// hotelOption allows management of the mutation configuration using functional options.
+type hotelOption func(*HotelMutation)
+
+// newHotelMutation creates new mutation for the Hotel entity.
+func newHotelMutation(c config, op Op, opts ...hotelOption) *HotelMutation {
+	m := &HotelMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeHotel,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withHotelID sets the ID field of the mutation.
+func withHotelID(id string) hotelOption {
+	return func(m *HotelMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Hotel
+		)
+		m.oldValue = func(ctx context.Context) (*Hotel, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Hotel.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withHotel sets the old Hotel of the mutation.
+func withHotel(node *Hotel) hotelOption {
+	return func(m *HotelMutation) {
+		m.oldValue = func(context.Context) (*Hotel, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m HotelMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m HotelMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Hotel entities.
+func (m *HotelMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *HotelMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *HotelMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Hotel.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetStatus sets the "status" field.
+func (m *HotelMutation) SetStatus(s string) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *HotelMutation) Status() (r string, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldStatus(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *HotelMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *HotelMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *HotelMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *HotelMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *HotelMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *HotelMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *HotelMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *HotelMutation) SetCreatedBy(s string) {
+	m.created_by = &s
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *HotelMutation) CreatedBy() (r string, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *HotelMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.clearedFields[hotel.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *HotelMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[hotel.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *HotelMutation) ResetCreatedBy() {
+	m.created_by = nil
+	delete(m.clearedFields, hotel.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *HotelMutation) SetUpdatedBy(s string) {
+	m.updated_by = &s
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *HotelMutation) UpdatedBy() (r string, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldUpdatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *HotelMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.clearedFields[hotel.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *HotelMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[hotel.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *HotelMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	delete(m.clearedFields, hotel.FieldUpdatedBy)
+}
+
+// SetMetadata sets the "metadata" field.
+func (m *HotelMutation) SetMetadata(value map[string]string) {
+	m.metadata = &value
+}
+
+// Metadata returns the value of the "metadata" field in the mutation.
+func (m *HotelMutation) Metadata() (r map[string]string, exists bool) {
+	v := m.metadata
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMetadata returns the old "metadata" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldMetadata(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMetadata is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMetadata requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMetadata: %w", err)
+	}
+	return oldValue.Metadata, nil
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (m *HotelMutation) ClearMetadata() {
+	m.metadata = nil
+	m.clearedFields[hotel.FieldMetadata] = struct{}{}
+}
+
+// MetadataCleared returns if the "metadata" field was cleared in this mutation.
+func (m *HotelMutation) MetadataCleared() bool {
+	_, ok := m.clearedFields[hotel.FieldMetadata]
+	return ok
+}
+
+// ResetMetadata resets all changes to the "metadata" field.
+func (m *HotelMutation) ResetMetadata() {
+	m.metadata = nil
+	delete(m.clearedFields, hotel.FieldMetadata)
+}
+
+// SetSlug sets the "slug" field.
+func (m *HotelMutation) SetSlug(s string) {
+	m.slug = &s
+}
+
+// Slug returns the value of the "slug" field in the mutation.
+func (m *HotelMutation) Slug() (r string, exists bool) {
+	v := m.slug
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSlug returns the old "slug" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldSlug(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSlug is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSlug requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSlug: %w", err)
+	}
+	return oldValue.Slug, nil
+}
+
+// ResetSlug resets all changes to the "slug" field.
+func (m *HotelMutation) ResetSlug() {
+	m.slug = nil
+}
+
+// SetName sets the "name" field.
+func (m *HotelMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *HotelMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *HotelMutation) ResetName() {
+	m.name = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *HotelMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *HotelMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ClearDescription clears the value of the "description" field.
+func (m *HotelMutation) ClearDescription() {
+	m.description = nil
+	m.clearedFields[hotel.FieldDescription] = struct{}{}
+}
+
+// DescriptionCleared returns if the "description" field was cleared in this mutation.
+func (m *HotelMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[hotel.FieldDescription]
+	return ok
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *HotelMutation) ResetDescription() {
+	m.description = nil
+	delete(m.clearedFields, hotel.FieldDescription)
+}
+
+// SetStarRating sets the "star_rating" field.
+func (m *HotelMutation) SetStarRating(i int) {
+	m.star_rating = &i
+	m.addstar_rating = nil
+}
+
+// StarRating returns the value of the "star_rating" field in the mutation.
+func (m *HotelMutation) StarRating() (r int, exists bool) {
+	v := m.star_rating
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStarRating returns the old "star_rating" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldStarRating(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStarRating is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStarRating requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStarRating: %w", err)
+	}
+	return oldValue.StarRating, nil
+}
+
+// AddStarRating adds i to the "star_rating" field.
+func (m *HotelMutation) AddStarRating(i int) {
+	if m.addstar_rating != nil {
+		*m.addstar_rating += i
+	} else {
+		m.addstar_rating = &i
+	}
+}
+
+// AddedStarRating returns the value that was added to the "star_rating" field in this mutation.
+func (m *HotelMutation) AddedStarRating() (r int, exists bool) {
+	v := m.addstar_rating
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetStarRating resets all changes to the "star_rating" field.
+func (m *HotelMutation) ResetStarRating() {
+	m.star_rating = nil
+	m.addstar_rating = nil
+}
+
+// SetRoomCount sets the "room_count" field.
+func (m *HotelMutation) SetRoomCount(i int) {
+	m.room_count = &i
+	m.addroom_count = nil
+}
+
+// RoomCount returns the value of the "room_count" field in the mutation.
+func (m *HotelMutation) RoomCount() (r int, exists bool) {
+	v := m.room_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRoomCount returns the old "room_count" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldRoomCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRoomCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRoomCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRoomCount: %w", err)
+	}
+	return oldValue.RoomCount, nil
+}
+
+// AddRoomCount adds i to the "room_count" field.
+func (m *HotelMutation) AddRoomCount(i int) {
+	if m.addroom_count != nil {
+		*m.addroom_count += i
+	} else {
+		m.addroom_count = &i
+	}
+}
+
+// AddedRoomCount returns the value that was added to the "room_count" field in this mutation.
+func (m *HotelMutation) AddedRoomCount() (r int, exists bool) {
+	v := m.addroom_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRoomCount resets all changes to the "room_count" field.
+func (m *HotelMutation) ResetRoomCount() {
+	m.room_count = nil
+	m.addroom_count = nil
+}
+
+// SetCheckInTime sets the "check_in_time" field.
+func (m *HotelMutation) SetCheckInTime(t time.Time) {
+	m.check_in_time = &t
+}
+
+// CheckInTime returns the value of the "check_in_time" field in the mutation.
+func (m *HotelMutation) CheckInTime() (r time.Time, exists bool) {
+	v := m.check_in_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCheckInTime returns the old "check_in_time" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldCheckInTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCheckInTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCheckInTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCheckInTime: %w", err)
+	}
+	return oldValue.CheckInTime, nil
+}
+
+// ClearCheckInTime clears the value of the "check_in_time" field.
+func (m *HotelMutation) ClearCheckInTime() {
+	m.check_in_time = nil
+	m.clearedFields[hotel.FieldCheckInTime] = struct{}{}
+}
+
+// CheckInTimeCleared returns if the "check_in_time" field was cleared in this mutation.
+func (m *HotelMutation) CheckInTimeCleared() bool {
+	_, ok := m.clearedFields[hotel.FieldCheckInTime]
+	return ok
+}
+
+// ResetCheckInTime resets all changes to the "check_in_time" field.
+func (m *HotelMutation) ResetCheckInTime() {
+	m.check_in_time = nil
+	delete(m.clearedFields, hotel.FieldCheckInTime)
+}
+
+// SetCheckOutTime sets the "check_out_time" field.
+func (m *HotelMutation) SetCheckOutTime(t time.Time) {
+	m.check_out_time = &t
+}
+
+// CheckOutTime returns the value of the "check_out_time" field in the mutation.
+func (m *HotelMutation) CheckOutTime() (r time.Time, exists bool) {
+	v := m.check_out_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCheckOutTime returns the old "check_out_time" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldCheckOutTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCheckOutTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCheckOutTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCheckOutTime: %w", err)
+	}
+	return oldValue.CheckOutTime, nil
+}
+
+// ClearCheckOutTime clears the value of the "check_out_time" field.
+func (m *HotelMutation) ClearCheckOutTime() {
+	m.check_out_time = nil
+	m.clearedFields[hotel.FieldCheckOutTime] = struct{}{}
+}
+
+// CheckOutTimeCleared returns if the "check_out_time" field was cleared in this mutation.
+func (m *HotelMutation) CheckOutTimeCleared() bool {
+	_, ok := m.clearedFields[hotel.FieldCheckOutTime]
+	return ok
+}
+
+// ResetCheckOutTime resets all changes to the "check_out_time" field.
+func (m *HotelMutation) ResetCheckOutTime() {
+	m.check_out_time = nil
+	delete(m.clearedFields, hotel.FieldCheckOutTime)
+}
+
+// SetAddress sets the "address" field.
+func (m *HotelMutation) SetAddress(value map[string]string) {
+	m.address = &value
+}
+
+// Address returns the value of the "address" field in the mutation.
+func (m *HotelMutation) Address() (r map[string]string, exists bool) {
+	v := m.address
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAddress returns the old "address" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldAddress(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAddress is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAddress requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAddress: %w", err)
+	}
+	return oldValue.Address, nil
+}
+
+// ClearAddress clears the value of the "address" field.
+func (m *HotelMutation) ClearAddress() {
+	m.address = nil
+	m.clearedFields[hotel.FieldAddress] = struct{}{}
+}
+
+// AddressCleared returns if the "address" field was cleared in this mutation.
+func (m *HotelMutation) AddressCleared() bool {
+	_, ok := m.clearedFields[hotel.FieldAddress]
+	return ok
+}
+
+// ResetAddress resets all changes to the "address" field.
+func (m *HotelMutation) ResetAddress() {
+	m.address = nil
+	delete(m.clearedFields, hotel.FieldAddress)
+}
+
+// SetLatitude sets the "latitude" field.
+func (m *HotelMutation) SetLatitude(d decimal.Decimal) {
+	m.latitude = &d
+}
+
+// Latitude returns the value of the "latitude" field in the mutation.
+func (m *HotelMutation) Latitude() (r decimal.Decimal, exists bool) {
+	v := m.latitude
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLatitude returns the old "latitude" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldLatitude(ctx context.Context) (v decimal.Decimal, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLatitude is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLatitude requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLatitude: %w", err)
+	}
+	return oldValue.Latitude, nil
+}
+
+// ResetLatitude resets all changes to the "latitude" field.
+func (m *HotelMutation) ResetLatitude() {
+	m.latitude = nil
+}
+
+// SetLongitude sets the "longitude" field.
+func (m *HotelMutation) SetLongitude(d decimal.Decimal) {
+	m.longitude = &d
+}
+
+// Longitude returns the value of the "longitude" field in the mutation.
+func (m *HotelMutation) Longitude() (r decimal.Decimal, exists bool) {
+	v := m.longitude
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLongitude returns the old "longitude" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldLongitude(ctx context.Context) (v decimal.Decimal, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLongitude is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLongitude requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLongitude: %w", err)
+	}
+	return oldValue.Longitude, nil
+}
+
+// ResetLongitude resets all changes to the "longitude" field.
+func (m *HotelMutation) ResetLongitude() {
+	m.longitude = nil
+}
+
+// SetPhone sets the "phone" field.
+func (m *HotelMutation) SetPhone(s string) {
+	m.phone = &s
+}
+
+// Phone returns the value of the "phone" field in the mutation.
+func (m *HotelMutation) Phone() (r string, exists bool) {
+	v := m.phone
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPhone returns the old "phone" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldPhone(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPhone is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPhone requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPhone: %w", err)
+	}
+	return oldValue.Phone, nil
+}
+
+// ClearPhone clears the value of the "phone" field.
+func (m *HotelMutation) ClearPhone() {
+	m.phone = nil
+	m.clearedFields[hotel.FieldPhone] = struct{}{}
+}
+
+// PhoneCleared returns if the "phone" field was cleared in this mutation.
+func (m *HotelMutation) PhoneCleared() bool {
+	_, ok := m.clearedFields[hotel.FieldPhone]
+	return ok
+}
+
+// ResetPhone resets all changes to the "phone" field.
+func (m *HotelMutation) ResetPhone() {
+	m.phone = nil
+	delete(m.clearedFields, hotel.FieldPhone)
+}
+
+// SetEmail sets the "email" field.
+func (m *HotelMutation) SetEmail(s string) {
+	m.email = &s
+}
+
+// Email returns the value of the "email" field in the mutation.
+func (m *HotelMutation) Email() (r string, exists bool) {
+	v := m.email
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEmail returns the old "email" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldEmail(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEmail is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEmail requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEmail: %w", err)
+	}
+	return oldValue.Email, nil
+}
+
+// ClearEmail clears the value of the "email" field.
+func (m *HotelMutation) ClearEmail() {
+	m.email = nil
+	m.clearedFields[hotel.FieldEmail] = struct{}{}
+}
+
+// EmailCleared returns if the "email" field was cleared in this mutation.
+func (m *HotelMutation) EmailCleared() bool {
+	_, ok := m.clearedFields[hotel.FieldEmail]
+	return ok
+}
+
+// ResetEmail resets all changes to the "email" field.
+func (m *HotelMutation) ResetEmail() {
+	m.email = nil
+	delete(m.clearedFields, hotel.FieldEmail)
+}
+
+// SetWebsite sets the "website" field.
+func (m *HotelMutation) SetWebsite(s string) {
+	m.website = &s
+}
+
+// Website returns the value of the "website" field in the mutation.
+func (m *HotelMutation) Website() (r string, exists bool) {
+	v := m.website
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWebsite returns the old "website" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldWebsite(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWebsite is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWebsite requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWebsite: %w", err)
+	}
+	return oldValue.Website, nil
+}
+
+// ClearWebsite clears the value of the "website" field.
+func (m *HotelMutation) ClearWebsite() {
+	m.website = nil
+	m.clearedFields[hotel.FieldWebsite] = struct{}{}
+}
+
+// WebsiteCleared returns if the "website" field was cleared in this mutation.
+func (m *HotelMutation) WebsiteCleared() bool {
+	_, ok := m.clearedFields[hotel.FieldWebsite]
+	return ok
+}
+
+// ResetWebsite resets all changes to the "website" field.
+func (m *HotelMutation) ResetWebsite() {
+	m.website = nil
+	delete(m.clearedFields, hotel.FieldWebsite)
+}
+
+// SetPrimaryImageURL sets the "primary_image_url" field.
+func (m *HotelMutation) SetPrimaryImageURL(s string) {
+	m.primary_image_url = &s
+}
+
+// PrimaryImageURL returns the value of the "primary_image_url" field in the mutation.
+func (m *HotelMutation) PrimaryImageURL() (r string, exists bool) {
+	v := m.primary_image_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPrimaryImageURL returns the old "primary_image_url" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldPrimaryImageURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPrimaryImageURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPrimaryImageURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPrimaryImageURL: %w", err)
+	}
+	return oldValue.PrimaryImageURL, nil
+}
+
+// ClearPrimaryImageURL clears the value of the "primary_image_url" field.
+func (m *HotelMutation) ClearPrimaryImageURL() {
+	m.primary_image_url = nil
+	m.clearedFields[hotel.FieldPrimaryImageURL] = struct{}{}
+}
+
+// PrimaryImageURLCleared returns if the "primary_image_url" field was cleared in this mutation.
+func (m *HotelMutation) PrimaryImageURLCleared() bool {
+	_, ok := m.clearedFields[hotel.FieldPrimaryImageURL]
+	return ok
+}
+
+// ResetPrimaryImageURL resets all changes to the "primary_image_url" field.
+func (m *HotelMutation) ResetPrimaryImageURL() {
+	m.primary_image_url = nil
+	delete(m.clearedFields, hotel.FieldPrimaryImageURL)
+}
+
+// SetThumbnailURL sets the "thumbnail_url" field.
+func (m *HotelMutation) SetThumbnailURL(s string) {
+	m.thumbnail_url = &s
+}
+
+// ThumbnailURL returns the value of the "thumbnail_url" field in the mutation.
+func (m *HotelMutation) ThumbnailURL() (r string, exists bool) {
+	v := m.thumbnail_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldThumbnailURL returns the old "thumbnail_url" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldThumbnailURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldThumbnailURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldThumbnailURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldThumbnailURL: %w", err)
+	}
+	return oldValue.ThumbnailURL, nil
+}
+
+// ClearThumbnailURL clears the value of the "thumbnail_url" field.
+func (m *HotelMutation) ClearThumbnailURL() {
+	m.thumbnail_url = nil
+	m.clearedFields[hotel.FieldThumbnailURL] = struct{}{}
+}
+
+// ThumbnailURLCleared returns if the "thumbnail_url" field was cleared in this mutation.
+func (m *HotelMutation) ThumbnailURLCleared() bool {
+	_, ok := m.clearedFields[hotel.FieldThumbnailURL]
+	return ok
+}
+
+// ResetThumbnailURL resets all changes to the "thumbnail_url" field.
+func (m *HotelMutation) ResetThumbnailURL() {
+	m.thumbnail_url = nil
+	delete(m.clearedFields, hotel.FieldThumbnailURL)
+}
+
+// SetPriceMin sets the "price_min" field.
+func (m *HotelMutation) SetPriceMin(d decimal.Decimal) {
+	m.price_min = &d
+}
+
+// PriceMin returns the value of the "price_min" field in the mutation.
+func (m *HotelMutation) PriceMin() (r decimal.Decimal, exists bool) {
+	v := m.price_min
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPriceMin returns the old "price_min" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldPriceMin(ctx context.Context) (v decimal.Decimal, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPriceMin is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPriceMin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPriceMin: %w", err)
+	}
+	return oldValue.PriceMin, nil
+}
+
+// ClearPriceMin clears the value of the "price_min" field.
+func (m *HotelMutation) ClearPriceMin() {
+	m.price_min = nil
+	m.clearedFields[hotel.FieldPriceMin] = struct{}{}
+}
+
+// PriceMinCleared returns if the "price_min" field was cleared in this mutation.
+func (m *HotelMutation) PriceMinCleared() bool {
+	_, ok := m.clearedFields[hotel.FieldPriceMin]
+	return ok
+}
+
+// ResetPriceMin resets all changes to the "price_min" field.
+func (m *HotelMutation) ResetPriceMin() {
+	m.price_min = nil
+	delete(m.clearedFields, hotel.FieldPriceMin)
+}
+
+// SetPriceMax sets the "price_max" field.
+func (m *HotelMutation) SetPriceMax(d decimal.Decimal) {
+	m.price_max = &d
+}
+
+// PriceMax returns the value of the "price_max" field in the mutation.
+func (m *HotelMutation) PriceMax() (r decimal.Decimal, exists bool) {
+	v := m.price_max
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPriceMax returns the old "price_max" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldPriceMax(ctx context.Context) (v decimal.Decimal, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPriceMax is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPriceMax requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPriceMax: %w", err)
+	}
+	return oldValue.PriceMax, nil
+}
+
+// ClearPriceMax clears the value of the "price_max" field.
+func (m *HotelMutation) ClearPriceMax() {
+	m.price_max = nil
+	m.clearedFields[hotel.FieldPriceMax] = struct{}{}
+}
+
+// PriceMaxCleared returns if the "price_max" field was cleared in this mutation.
+func (m *HotelMutation) PriceMaxCleared() bool {
+	_, ok := m.clearedFields[hotel.FieldPriceMax]
+	return ok
+}
+
+// ResetPriceMax resets all changes to the "price_max" field.
+func (m *HotelMutation) ResetPriceMax() {
+	m.price_max = nil
+	delete(m.clearedFields, hotel.FieldPriceMax)
+}
+
+// SetCurrency sets the "currency" field.
+func (m *HotelMutation) SetCurrency(s string) {
+	m.currency = &s
+}
+
+// Currency returns the value of the "currency" field in the mutation.
+func (m *HotelMutation) Currency() (r string, exists bool) {
+	v := m.currency
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCurrency returns the old "currency" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldCurrency(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCurrency is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCurrency requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCurrency: %w", err)
+	}
+	return oldValue.Currency, nil
+}
+
+// ClearCurrency clears the value of the "currency" field.
+func (m *HotelMutation) ClearCurrency() {
+	m.currency = nil
+	m.clearedFields[hotel.FieldCurrency] = struct{}{}
+}
+
+// CurrencyCleared returns if the "currency" field was cleared in this mutation.
+func (m *HotelMutation) CurrencyCleared() bool {
+	_, ok := m.clearedFields[hotel.FieldCurrency]
+	return ok
+}
+
+// ResetCurrency resets all changes to the "currency" field.
+func (m *HotelMutation) ResetCurrency() {
+	m.currency = nil
+	delete(m.clearedFields, hotel.FieldCurrency)
+}
+
+// SetViewCount sets the "view_count" field.
+func (m *HotelMutation) SetViewCount(i int) {
+	m.view_count = &i
+	m.addview_count = nil
+}
+
+// ViewCount returns the value of the "view_count" field in the mutation.
+func (m *HotelMutation) ViewCount() (r int, exists bool) {
+	v := m.view_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldViewCount returns the old "view_count" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldViewCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldViewCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldViewCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldViewCount: %w", err)
+	}
+	return oldValue.ViewCount, nil
+}
+
+// AddViewCount adds i to the "view_count" field.
+func (m *HotelMutation) AddViewCount(i int) {
+	if m.addview_count != nil {
+		*m.addview_count += i
+	} else {
+		m.addview_count = &i
+	}
+}
+
+// AddedViewCount returns the value that was added to the "view_count" field in this mutation.
+func (m *HotelMutation) AddedViewCount() (r int, exists bool) {
+	v := m.addview_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetViewCount resets all changes to the "view_count" field.
+func (m *HotelMutation) ResetViewCount() {
+	m.view_count = nil
+	m.addview_count = nil
+}
+
+// SetRatingAvg sets the "rating_avg" field.
+func (m *HotelMutation) SetRatingAvg(d decimal.Decimal) {
+	m.rating_avg = &d
+}
+
+// RatingAvg returns the value of the "rating_avg" field in the mutation.
+func (m *HotelMutation) RatingAvg() (r decimal.Decimal, exists bool) {
+	v := m.rating_avg
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRatingAvg returns the old "rating_avg" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldRatingAvg(ctx context.Context) (v decimal.Decimal, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRatingAvg is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRatingAvg requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRatingAvg: %w", err)
+	}
+	return oldValue.RatingAvg, nil
+}
+
+// ResetRatingAvg resets all changes to the "rating_avg" field.
+func (m *HotelMutation) ResetRatingAvg() {
+	m.rating_avg = nil
+}
+
+// SetRatingCount sets the "rating_count" field.
+func (m *HotelMutation) SetRatingCount(i int) {
+	m.rating_count = &i
+	m.addrating_count = nil
+}
+
+// RatingCount returns the value of the "rating_count" field in the mutation.
+func (m *HotelMutation) RatingCount() (r int, exists bool) {
+	v := m.rating_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRatingCount returns the old "rating_count" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldRatingCount(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRatingCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRatingCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRatingCount: %w", err)
+	}
+	return oldValue.RatingCount, nil
+}
+
+// AddRatingCount adds i to the "rating_count" field.
+func (m *HotelMutation) AddRatingCount(i int) {
+	if m.addrating_count != nil {
+		*m.addrating_count += i
+	} else {
+		m.addrating_count = &i
+	}
+}
+
+// AddedRatingCount returns the value that was added to the "rating_count" field in this mutation.
+func (m *HotelMutation) AddedRatingCount() (r int, exists bool) {
+	v := m.addrating_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRatingCount resets all changes to the "rating_count" field.
+func (m *HotelMutation) ResetRatingCount() {
+	m.rating_count = nil
+	m.addrating_count = nil
+}
+
+// SetLastViewedAt sets the "last_viewed_at" field.
+func (m *HotelMutation) SetLastViewedAt(t time.Time) {
+	m.last_viewed_at = &t
+}
+
+// LastViewedAt returns the value of the "last_viewed_at" field in the mutation.
+func (m *HotelMutation) LastViewedAt() (r time.Time, exists bool) {
+	v := m.last_viewed_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastViewedAt returns the old "last_viewed_at" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldLastViewedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastViewedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastViewedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastViewedAt: %w", err)
+	}
+	return oldValue.LastViewedAt, nil
+}
+
+// ClearLastViewedAt clears the value of the "last_viewed_at" field.
+func (m *HotelMutation) ClearLastViewedAt() {
+	m.last_viewed_at = nil
+	m.clearedFields[hotel.FieldLastViewedAt] = struct{}{}
+}
+
+// LastViewedAtCleared returns if the "last_viewed_at" field was cleared in this mutation.
+func (m *HotelMutation) LastViewedAtCleared() bool {
+	_, ok := m.clearedFields[hotel.FieldLastViewedAt]
+	return ok
+}
+
+// ResetLastViewedAt resets all changes to the "last_viewed_at" field.
+func (m *HotelMutation) ResetLastViewedAt() {
+	m.last_viewed_at = nil
+	delete(m.clearedFields, hotel.FieldLastViewedAt)
+}
+
+// SetPopularityScore sets the "popularity_score" field.
+func (m *HotelMutation) SetPopularityScore(d decimal.Decimal) {
+	m.popularity_score = &d
+}
+
+// PopularityScore returns the value of the "popularity_score" field in the mutation.
+func (m *HotelMutation) PopularityScore() (r decimal.Decimal, exists bool) {
+	v := m.popularity_score
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPopularityScore returns the old "popularity_score" field's value of the Hotel entity.
+// If the Hotel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *HotelMutation) OldPopularityScore(ctx context.Context) (v decimal.Decimal, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPopularityScore is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPopularityScore requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPopularityScore: %w", err)
+	}
+	return oldValue.PopularityScore, nil
+}
+
+// ResetPopularityScore resets all changes to the "popularity_score" field.
+func (m *HotelMutation) ResetPopularityScore() {
+	m.popularity_score = nil
+}
+
+// Where appends a list predicates to the HotelMutation builder.
+func (m *HotelMutation) Where(ps ...predicate.Hotel) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the HotelMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *HotelMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Hotel, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *HotelMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *HotelMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Hotel).
+func (m *HotelMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *HotelMutation) Fields() []string {
+	fields := make([]string, 0, 29)
+	if m.status != nil {
+		fields = append(fields, hotel.FieldStatus)
+	}
+	if m.created_at != nil {
+		fields = append(fields, hotel.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, hotel.FieldUpdatedAt)
+	}
+	if m.created_by != nil {
+		fields = append(fields, hotel.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, hotel.FieldUpdatedBy)
+	}
+	if m.metadata != nil {
+		fields = append(fields, hotel.FieldMetadata)
+	}
+	if m.slug != nil {
+		fields = append(fields, hotel.FieldSlug)
+	}
+	if m.name != nil {
+		fields = append(fields, hotel.FieldName)
+	}
+	if m.description != nil {
+		fields = append(fields, hotel.FieldDescription)
+	}
+	if m.star_rating != nil {
+		fields = append(fields, hotel.FieldStarRating)
+	}
+	if m.room_count != nil {
+		fields = append(fields, hotel.FieldRoomCount)
+	}
+	if m.check_in_time != nil {
+		fields = append(fields, hotel.FieldCheckInTime)
+	}
+	if m.check_out_time != nil {
+		fields = append(fields, hotel.FieldCheckOutTime)
+	}
+	if m.address != nil {
+		fields = append(fields, hotel.FieldAddress)
+	}
+	if m.latitude != nil {
+		fields = append(fields, hotel.FieldLatitude)
+	}
+	if m.longitude != nil {
+		fields = append(fields, hotel.FieldLongitude)
+	}
+	if m.phone != nil {
+		fields = append(fields, hotel.FieldPhone)
+	}
+	if m.email != nil {
+		fields = append(fields, hotel.FieldEmail)
+	}
+	if m.website != nil {
+		fields = append(fields, hotel.FieldWebsite)
+	}
+	if m.primary_image_url != nil {
+		fields = append(fields, hotel.FieldPrimaryImageURL)
+	}
+	if m.thumbnail_url != nil {
+		fields = append(fields, hotel.FieldThumbnailURL)
+	}
+	if m.price_min != nil {
+		fields = append(fields, hotel.FieldPriceMin)
+	}
+	if m.price_max != nil {
+		fields = append(fields, hotel.FieldPriceMax)
+	}
+	if m.currency != nil {
+		fields = append(fields, hotel.FieldCurrency)
+	}
+	if m.view_count != nil {
+		fields = append(fields, hotel.FieldViewCount)
+	}
+	if m.rating_avg != nil {
+		fields = append(fields, hotel.FieldRatingAvg)
+	}
+	if m.rating_count != nil {
+		fields = append(fields, hotel.FieldRatingCount)
+	}
+	if m.last_viewed_at != nil {
+		fields = append(fields, hotel.FieldLastViewedAt)
+	}
+	if m.popularity_score != nil {
+		fields = append(fields, hotel.FieldPopularityScore)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *HotelMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case hotel.FieldStatus:
+		return m.Status()
+	case hotel.FieldCreatedAt:
+		return m.CreatedAt()
+	case hotel.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case hotel.FieldCreatedBy:
+		return m.CreatedBy()
+	case hotel.FieldUpdatedBy:
+		return m.UpdatedBy()
+	case hotel.FieldMetadata:
+		return m.Metadata()
+	case hotel.FieldSlug:
+		return m.Slug()
+	case hotel.FieldName:
+		return m.Name()
+	case hotel.FieldDescription:
+		return m.Description()
+	case hotel.FieldStarRating:
+		return m.StarRating()
+	case hotel.FieldRoomCount:
+		return m.RoomCount()
+	case hotel.FieldCheckInTime:
+		return m.CheckInTime()
+	case hotel.FieldCheckOutTime:
+		return m.CheckOutTime()
+	case hotel.FieldAddress:
+		return m.Address()
+	case hotel.FieldLatitude:
+		return m.Latitude()
+	case hotel.FieldLongitude:
+		return m.Longitude()
+	case hotel.FieldPhone:
+		return m.Phone()
+	case hotel.FieldEmail:
+		return m.Email()
+	case hotel.FieldWebsite:
+		return m.Website()
+	case hotel.FieldPrimaryImageURL:
+		return m.PrimaryImageURL()
+	case hotel.FieldThumbnailURL:
+		return m.ThumbnailURL()
+	case hotel.FieldPriceMin:
+		return m.PriceMin()
+	case hotel.FieldPriceMax:
+		return m.PriceMax()
+	case hotel.FieldCurrency:
+		return m.Currency()
+	case hotel.FieldViewCount:
+		return m.ViewCount()
+	case hotel.FieldRatingAvg:
+		return m.RatingAvg()
+	case hotel.FieldRatingCount:
+		return m.RatingCount()
+	case hotel.FieldLastViewedAt:
+		return m.LastViewedAt()
+	case hotel.FieldPopularityScore:
+		return m.PopularityScore()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *HotelMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case hotel.FieldStatus:
+		return m.OldStatus(ctx)
+	case hotel.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case hotel.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case hotel.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case hotel.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
+	case hotel.FieldMetadata:
+		return m.OldMetadata(ctx)
+	case hotel.FieldSlug:
+		return m.OldSlug(ctx)
+	case hotel.FieldName:
+		return m.OldName(ctx)
+	case hotel.FieldDescription:
+		return m.OldDescription(ctx)
+	case hotel.FieldStarRating:
+		return m.OldStarRating(ctx)
+	case hotel.FieldRoomCount:
+		return m.OldRoomCount(ctx)
+	case hotel.FieldCheckInTime:
+		return m.OldCheckInTime(ctx)
+	case hotel.FieldCheckOutTime:
+		return m.OldCheckOutTime(ctx)
+	case hotel.FieldAddress:
+		return m.OldAddress(ctx)
+	case hotel.FieldLatitude:
+		return m.OldLatitude(ctx)
+	case hotel.FieldLongitude:
+		return m.OldLongitude(ctx)
+	case hotel.FieldPhone:
+		return m.OldPhone(ctx)
+	case hotel.FieldEmail:
+		return m.OldEmail(ctx)
+	case hotel.FieldWebsite:
+		return m.OldWebsite(ctx)
+	case hotel.FieldPrimaryImageURL:
+		return m.OldPrimaryImageURL(ctx)
+	case hotel.FieldThumbnailURL:
+		return m.OldThumbnailURL(ctx)
+	case hotel.FieldPriceMin:
+		return m.OldPriceMin(ctx)
+	case hotel.FieldPriceMax:
+		return m.OldPriceMax(ctx)
+	case hotel.FieldCurrency:
+		return m.OldCurrency(ctx)
+	case hotel.FieldViewCount:
+		return m.OldViewCount(ctx)
+	case hotel.FieldRatingAvg:
+		return m.OldRatingAvg(ctx)
+	case hotel.FieldRatingCount:
+		return m.OldRatingCount(ctx)
+	case hotel.FieldLastViewedAt:
+		return m.OldLastViewedAt(ctx)
+	case hotel.FieldPopularityScore:
+		return m.OldPopularityScore(ctx)
+	}
+	return nil, fmt.Errorf("unknown Hotel field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *HotelMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case hotel.FieldStatus:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case hotel.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case hotel.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case hotel.FieldCreatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case hotel.FieldUpdatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
+		return nil
+	case hotel.FieldMetadata:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMetadata(v)
+		return nil
+	case hotel.FieldSlug:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSlug(v)
+		return nil
+	case hotel.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case hotel.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case hotel.FieldStarRating:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStarRating(v)
+		return nil
+	case hotel.FieldRoomCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRoomCount(v)
+		return nil
+	case hotel.FieldCheckInTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCheckInTime(v)
+		return nil
+	case hotel.FieldCheckOutTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCheckOutTime(v)
+		return nil
+	case hotel.FieldAddress:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAddress(v)
+		return nil
+	case hotel.FieldLatitude:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLatitude(v)
+		return nil
+	case hotel.FieldLongitude:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLongitude(v)
+		return nil
+	case hotel.FieldPhone:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPhone(v)
+		return nil
+	case hotel.FieldEmail:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEmail(v)
+		return nil
+	case hotel.FieldWebsite:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWebsite(v)
+		return nil
+	case hotel.FieldPrimaryImageURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPrimaryImageURL(v)
+		return nil
+	case hotel.FieldThumbnailURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetThumbnailURL(v)
+		return nil
+	case hotel.FieldPriceMin:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPriceMin(v)
+		return nil
+	case hotel.FieldPriceMax:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPriceMax(v)
+		return nil
+	case hotel.FieldCurrency:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCurrency(v)
+		return nil
+	case hotel.FieldViewCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetViewCount(v)
+		return nil
+	case hotel.FieldRatingAvg:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRatingAvg(v)
+		return nil
+	case hotel.FieldRatingCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRatingCount(v)
+		return nil
+	case hotel.FieldLastViewedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastViewedAt(v)
+		return nil
+	case hotel.FieldPopularityScore:
+		v, ok := value.(decimal.Decimal)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPopularityScore(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Hotel field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *HotelMutation) AddedFields() []string {
+	var fields []string
+	if m.addstar_rating != nil {
+		fields = append(fields, hotel.FieldStarRating)
+	}
+	if m.addroom_count != nil {
+		fields = append(fields, hotel.FieldRoomCount)
+	}
+	if m.addview_count != nil {
+		fields = append(fields, hotel.FieldViewCount)
+	}
+	if m.addrating_count != nil {
+		fields = append(fields, hotel.FieldRatingCount)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *HotelMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case hotel.FieldStarRating:
+		return m.AddedStarRating()
+	case hotel.FieldRoomCount:
+		return m.AddedRoomCount()
+	case hotel.FieldViewCount:
+		return m.AddedViewCount()
+	case hotel.FieldRatingCount:
+		return m.AddedRatingCount()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *HotelMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case hotel.FieldStarRating:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddStarRating(v)
+		return nil
+	case hotel.FieldRoomCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRoomCount(v)
+		return nil
+	case hotel.FieldViewCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddViewCount(v)
+		return nil
+	case hotel.FieldRatingCount:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRatingCount(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Hotel numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *HotelMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(hotel.FieldCreatedBy) {
+		fields = append(fields, hotel.FieldCreatedBy)
+	}
+	if m.FieldCleared(hotel.FieldUpdatedBy) {
+		fields = append(fields, hotel.FieldUpdatedBy)
+	}
+	if m.FieldCleared(hotel.FieldMetadata) {
+		fields = append(fields, hotel.FieldMetadata)
+	}
+	if m.FieldCleared(hotel.FieldDescription) {
+		fields = append(fields, hotel.FieldDescription)
+	}
+	if m.FieldCleared(hotel.FieldCheckInTime) {
+		fields = append(fields, hotel.FieldCheckInTime)
+	}
+	if m.FieldCleared(hotel.FieldCheckOutTime) {
+		fields = append(fields, hotel.FieldCheckOutTime)
+	}
+	if m.FieldCleared(hotel.FieldAddress) {
+		fields = append(fields, hotel.FieldAddress)
+	}
+	if m.FieldCleared(hotel.FieldPhone) {
+		fields = append(fields, hotel.FieldPhone)
+	}
+	if m.FieldCleared(hotel.FieldEmail) {
+		fields = append(fields, hotel.FieldEmail)
+	}
+	if m.FieldCleared(hotel.FieldWebsite) {
+		fields = append(fields, hotel.FieldWebsite)
+	}
+	if m.FieldCleared(hotel.FieldPrimaryImageURL) {
+		fields = append(fields, hotel.FieldPrimaryImageURL)
+	}
+	if m.FieldCleared(hotel.FieldThumbnailURL) {
+		fields = append(fields, hotel.FieldThumbnailURL)
+	}
+	if m.FieldCleared(hotel.FieldPriceMin) {
+		fields = append(fields, hotel.FieldPriceMin)
+	}
+	if m.FieldCleared(hotel.FieldPriceMax) {
+		fields = append(fields, hotel.FieldPriceMax)
+	}
+	if m.FieldCleared(hotel.FieldCurrency) {
+		fields = append(fields, hotel.FieldCurrency)
+	}
+	if m.FieldCleared(hotel.FieldLastViewedAt) {
+		fields = append(fields, hotel.FieldLastViewedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *HotelMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *HotelMutation) ClearField(name string) error {
+	switch name {
+	case hotel.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case hotel.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	case hotel.FieldMetadata:
+		m.ClearMetadata()
+		return nil
+	case hotel.FieldDescription:
+		m.ClearDescription()
+		return nil
+	case hotel.FieldCheckInTime:
+		m.ClearCheckInTime()
+		return nil
+	case hotel.FieldCheckOutTime:
+		m.ClearCheckOutTime()
+		return nil
+	case hotel.FieldAddress:
+		m.ClearAddress()
+		return nil
+	case hotel.FieldPhone:
+		m.ClearPhone()
+		return nil
+	case hotel.FieldEmail:
+		m.ClearEmail()
+		return nil
+	case hotel.FieldWebsite:
+		m.ClearWebsite()
+		return nil
+	case hotel.FieldPrimaryImageURL:
+		m.ClearPrimaryImageURL()
+		return nil
+	case hotel.FieldThumbnailURL:
+		m.ClearThumbnailURL()
+		return nil
+	case hotel.FieldPriceMin:
+		m.ClearPriceMin()
+		return nil
+	case hotel.FieldPriceMax:
+		m.ClearPriceMax()
+		return nil
+	case hotel.FieldCurrency:
+		m.ClearCurrency()
+		return nil
+	case hotel.FieldLastViewedAt:
+		m.ClearLastViewedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Hotel nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *HotelMutation) ResetField(name string) error {
+	switch name {
+	case hotel.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case hotel.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case hotel.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case hotel.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case hotel.FieldUpdatedBy:
+		m.ResetUpdatedBy()
+		return nil
+	case hotel.FieldMetadata:
+		m.ResetMetadata()
+		return nil
+	case hotel.FieldSlug:
+		m.ResetSlug()
+		return nil
+	case hotel.FieldName:
+		m.ResetName()
+		return nil
+	case hotel.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case hotel.FieldStarRating:
+		m.ResetStarRating()
+		return nil
+	case hotel.FieldRoomCount:
+		m.ResetRoomCount()
+		return nil
+	case hotel.FieldCheckInTime:
+		m.ResetCheckInTime()
+		return nil
+	case hotel.FieldCheckOutTime:
+		m.ResetCheckOutTime()
+		return nil
+	case hotel.FieldAddress:
+		m.ResetAddress()
+		return nil
+	case hotel.FieldLatitude:
+		m.ResetLatitude()
+		return nil
+	case hotel.FieldLongitude:
+		m.ResetLongitude()
+		return nil
+	case hotel.FieldPhone:
+		m.ResetPhone()
+		return nil
+	case hotel.FieldEmail:
+		m.ResetEmail()
+		return nil
+	case hotel.FieldWebsite:
+		m.ResetWebsite()
+		return nil
+	case hotel.FieldPrimaryImageURL:
+		m.ResetPrimaryImageURL()
+		return nil
+	case hotel.FieldThumbnailURL:
+		m.ResetThumbnailURL()
+		return nil
+	case hotel.FieldPriceMin:
+		m.ResetPriceMin()
+		return nil
+	case hotel.FieldPriceMax:
+		m.ResetPriceMax()
+		return nil
+	case hotel.FieldCurrency:
+		m.ResetCurrency()
+		return nil
+	case hotel.FieldViewCount:
+		m.ResetViewCount()
+		return nil
+	case hotel.FieldRatingAvg:
+		m.ResetRatingAvg()
+		return nil
+	case hotel.FieldRatingCount:
+		m.ResetRatingCount()
+		return nil
+	case hotel.FieldLastViewedAt:
+		m.ResetLastViewedAt()
+		return nil
+	case hotel.FieldPopularityScore:
+		m.ResetPopularityScore()
+		return nil
+	}
+	return fmt.Errorf("unknown Hotel field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *HotelMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *HotelMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *HotelMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *HotelMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *HotelMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *HotelMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *HotelMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Hotel unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *HotelMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Hotel edge %s", name)
 }
 
 // PlaceMutation represents an operation that mutates the Place nodes in the graph.

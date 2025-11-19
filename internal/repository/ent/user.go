@@ -245,7 +245,7 @@ func (r *UserRepository) Delete(ctx context.Context, userData *domainUser.User) 
 	)
 
 	_, err := client.User.UpdateOneID(userData.ID).
-		SetStatus(string(types.StatusDeleted)).
+		SetStatus(string(types.StatusArchived)).
 		SetUpdatedAt(time.Now().UTC()).
 		SetUpdatedBy(types.GetUserID(ctx)).
 		Save(ctx)

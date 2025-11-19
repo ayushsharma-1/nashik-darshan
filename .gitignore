@@ -6,6 +6,10 @@
 *.log
 *.log.*
 
+# Binaries - never commit compiled executables
+bin/
+*.exe
+
 # Keys and secrets - never commit these!
 keys/
 *.pem

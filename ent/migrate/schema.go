@@ -34,6 +34,92 @@ var (
 			},
 		},
 	}
+	// HotelsColumns holds the columns for the "hotels" table.
+	HotelsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(255)"}},
+		{Name: "status", Type: field.TypeString, Default: "published", SchemaType: map[string]string{"postgres": "varchar(20)"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "created_by", Type: field.TypeString, Nullable: true},
+		{Name: "updated_by", Type: field.TypeString, Nullable: true},
+		{Name: "metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "slug", Type: field.TypeString, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "name", Type: field.TypeString, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "description", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "star_rating", Type: field.TypeInt, Default: 3, SchemaType: map[string]string{"postgres": "integer"}},
+		{Name: "room_count", Type: field.TypeInt, Default: 0, SchemaType: map[string]string{"postgres": "integer"}},
+		{Name: "check_in_time", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "time"}},
+		{Name: "check_out_time", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "time"}},
+		{Name: "address", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "latitude", Type: field.TypeOther, SchemaType: map[string]string{"postgres": "decimal(10,8)"}},
+		{Name: "longitude", Type: field.TypeOther, SchemaType: map[string]string{"postgres": "decimal(11,8)"}},
+		{Name: "phone", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(20)"}},
+		{Name: "email", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(255)"}},
+		{Name: "website", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "primary_image_url", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "thumbnail_url", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "price_min", Type: field.TypeOther, Nullable: true, SchemaType: map[string]string{"postgres": "decimal(10,2)"}},
+		{Name: "price_max", Type: field.TypeOther, Nullable: true, SchemaType: map[string]string{"postgres": "decimal(10,2)"}},
+		{Name: "currency", Type: field.TypeString, Nullable: true, Default: "INR", SchemaType: map[string]string{"postgres": "varchar(3)"}},
+		{Name: "view_count", Type: field.TypeInt, Default: 0, SchemaType: map[string]string{"postgres": "integer"}},
+		{Name: "rating_avg", Type: field.TypeOther, SchemaType: map[string]string{"postgres": "decimal(3,2)"}},
+		{Name: "rating_count", Type: field.TypeInt, Default: 0, SchemaType: map[string]string{"postgres": "integer"}},
+		{Name: "last_viewed_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp with time zone"}},
+		{Name: "popularity_score", Type: field.TypeOther, SchemaType: map[string]string{"postgres": "decimal(10,4)"}},
+	}
+	// HotelsTable holds the schema information for the "hotels" table.
+	HotelsTable = &schema.Table{
+		Name:       "hotels",
+		Columns:    HotelsColumns,
+		PrimaryKey: []*schema.Column{HotelsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "hotel_slug_status",
+				Unique:  true,
+				Columns: []*schema.Column{HotelsColumns[7], HotelsColumns[1]},
+			},
+			{
+				Name:    "hotel_latitude_longitude",
+				Unique:  false,
+				Columns: []*schema.Column{HotelsColumns[15], HotelsColumns[16]},
+			},
+			{
+				Name:    "hotel_star_rating",
+				Unique:  false,
+				Columns: []*schema.Column{HotelsColumns[10]},
+			},
+			{
+				Name:    "hotel_price_min_price_max",
+				Unique:  false,
+				Columns: []*schema.Column{HotelsColumns[22], HotelsColumns[23]},
+			},
+			{
+				Name:    "hotel_popularity_score",
+				Unique:  false,
+				Columns: []*schema.Column{HotelsColumns[29]},
+			},
+			{
+				Name:    "hotel_view_count",
+				Unique:  false,
+				Columns: []*schema.Column{HotelsColumns[25]},
+			},
+			{
+				Name:    "hotel_rating_avg",
+				Unique:  false,
+				Columns: []*schema.Column{HotelsColumns[26]},
+			},
+			{
+				Name:    "hotel_last_viewed_at",
+				Unique:  false,
+				Columns: []*schema.Column{HotelsColumns[28]},
+			},
+			{
+				Name:    "hotel_last_viewed_at_popularity_score",
+				Unique:  false,
+				Columns: []*schema.Column{HotelsColumns[28], HotelsColumns[29]},
+			},
+		},
+	}
 	// PlacesColumns holds the columns for the "places" table.
 	PlacesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(255)"}},
@@ -255,6 +341,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		CategoriesTable,
+		HotelsTable,
 		PlacesTable,
 		PlaceImagesTable,
 		ReviewsTable,

@@ -16,6 +16,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/omkar273/nashikdarshan/ent/category"
+	"github.com/omkar273/nashikdarshan/ent/hotel"
 	"github.com/omkar273/nashikdarshan/ent/place"
 	"github.com/omkar273/nashikdarshan/ent/placeimage"
 	"github.com/omkar273/nashikdarshan/ent/review"
@@ -29,6 +30,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Category is the client for interacting with the Category builders.
 	Category *CategoryClient
+	// Hotel is the client for interacting with the Hotel builders.
+	Hotel *HotelClient
 	// Place is the client for interacting with the Place builders.
 	Place *PlaceClient
 	// PlaceImage is the client for interacting with the PlaceImage builders.
@@ -49,6 +52,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Category = NewCategoryClient(c.config)
+	c.Hotel = NewHotelClient(c.config)
 	c.Place = NewPlaceClient(c.config)
 	c.PlaceImage = NewPlaceImageClient(c.config)
 	c.Review = NewReviewClient(c.config)
@@ -146,6 +150,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:        ctx,
 		config:     cfg,
 		Category:   NewCategoryClient(cfg),
+		Hotel:      NewHotelClient(cfg),
 		Place:      NewPlaceClient(cfg),
 		PlaceImage: NewPlaceImageClient(cfg),
 		Review:     NewReviewClient(cfg),
@@ -170,6 +175,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:        ctx,
 		config:     cfg,
 		Category:   NewCategoryClient(cfg),
+		Hotel:      NewHotelClient(cfg),
 		Place:      NewPlaceClient(cfg),
 		PlaceImage: NewPlaceImageClient(cfg),
 		Review:     NewReviewClient(cfg),
@@ -202,21 +208,21 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.Category.Use(hooks...)
-	c.Place.Use(hooks...)
-	c.PlaceImage.Use(hooks...)
-	c.Review.Use(hooks...)
-	c.User.Use(hooks...)
+	for _, n := range []interface{ Use(...Hook) }{
+		c.Category, c.Hotel, c.Place, c.PlaceImage, c.Review, c.User,
+	} {
+		n.Use(hooks...)
+	}
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.Category.Intercept(interceptors...)
-	c.Place.Intercept(interceptors...)
-	c.PlaceImage.Intercept(interceptors...)
-	c.Review.Intercept(interceptors...)
-	c.User.Intercept(interceptors...)
+	for _, n := range []interface{ Intercept(...Interceptor) }{
+		c.Category, c.Hotel, c.Place, c.PlaceImage, c.Review, c.User,
+	} {
+		n.Intercept(interceptors...)
+	}
 }
 
 // Mutate implements the ent.Mutator interface.
@@ -224,6 +230,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *CategoryMutation:
 		return c.Category.mutate(ctx, m)
+	case *HotelMutation:
+		return c.Hotel.mutate(ctx, m)
 	case *PlaceMutation:
 		return c.Place.mutate(ctx, m)
 	case *PlaceImageMutation:
@@ -367,6 +375,139 @@ func (c *CategoryClient) mutate(ctx context.Context, m *CategoryMutation) (Value
 		return (&CategoryDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Category mutation op: %q", m.Op())
+	}
+}
+
+// HotelClient is a client for the Hotel schema.
+type HotelClient struct {
+	config
+}
+
+// NewHotelClient returns a client for the Hotel from the given config.
+func NewHotelClient(c config) *HotelClient {
+	return &HotelClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `hotel.Hooks(f(g(h())))`.
+func (c *HotelClient) Use(hooks ...Hook) {
+	c.hooks.Hotel = append(c.hooks.Hotel, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `hotel.Intercept(f(g(h())))`.
+func (c *HotelClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Hotel = append(c.inters.Hotel, interceptors...)
+}
+
+// Create returns a builder for creating a Hotel entity.
+func (c *HotelClient) Create() *HotelCreate {
+	mutation := newHotelMutation(c.config, OpCreate)
+	return &HotelCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Hotel entities.
+func (c *HotelClient) CreateBulk(builders ...*HotelCreate) *HotelCreateBulk {
+	return &HotelCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *HotelClient) MapCreateBulk(slice any, setFunc func(*HotelCreate, int)) *HotelCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &HotelCreateBulk{err: fmt.Errorf("calling to HotelClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*HotelCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &HotelCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Hotel.
+func (c *HotelClient) Update() *HotelUpdate {
+	mutation := newHotelMutation(c.config, OpUpdate)
+	return &HotelUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *HotelClient) UpdateOne(_m *Hotel) *HotelUpdateOne {
+	mutation := newHotelMutation(c.config, OpUpdateOne, withHotel(_m))
+	return &HotelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *HotelClient) UpdateOneID(id string) *HotelUpdateOne {
+	mutation := newHotelMutation(c.config, OpUpdateOne, withHotelID(id))
+	return &HotelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Hotel.
+func (c *HotelClient) Delete() *HotelDelete {
+	mutation := newHotelMutation(c.config, OpDelete)
+	return &HotelDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *HotelClient) DeleteOne(_m *Hotel) *HotelDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *HotelClient) DeleteOneID(id string) *HotelDeleteOne {
+	builder := c.Delete().Where(hotel.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &HotelDeleteOne{builder}
+}
+
+// Query returns a query builder for Hotel.
+func (c *HotelClient) Query() *HotelQuery {
+	return &HotelQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeHotel},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Hotel entity by its id.
+func (c *HotelClient) Get(ctx context.Context, id string) (*Hotel, error) {
+	return c.Query().Where(hotel.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *HotelClient) GetX(ctx context.Context, id string) *Hotel {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *HotelClient) Hooks() []Hook {
+	return c.hooks.Hotel
+}
+
+// Interceptors returns the client interceptors.
+func (c *HotelClient) Interceptors() []Interceptor {
+	return c.inters.Hotel
+}
+
+func (c *HotelClient) mutate(ctx context.Context, m *HotelMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&HotelCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&HotelUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&HotelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&HotelDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Hotel mutation op: %q", m.Op())
 	}
 }
 
@@ -937,9 +1078,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Category, Place, PlaceImage, Review, User []ent.Hook
+		Category, Hotel, Place, PlaceImage, Review, User []ent.Hook
 	}
 	inters struct {
-		Category, Place, PlaceImage, Review, User []ent.Interceptor
+		Category, Hotel, Place, PlaceImage, Review, User []ent.Interceptor
 	}
 )
