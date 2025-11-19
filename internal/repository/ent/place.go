@@ -692,7 +692,7 @@ var _ EntityQueryOptions[PlaceQuery, *types.PlaceFilter] = (*PlaceQueryOptions)(
 
 func (o PlaceQueryOptions) ApplyStatusFilter(query PlaceQuery, status string) PlaceQuery {
 	if status == "" {
-		return query.Where(place.StatusNotIn(string(types.StatusArchived)))
+		return query.Where(place.StatusNotIn(string(types.StatusDeleted)))
 	}
 	return query.Where(place.Status(status))
 }
@@ -734,7 +734,7 @@ func (o PlaceQueryOptions) ApplyBaseFilters(
 	filter *types.PlaceFilter,
 ) PlaceQuery {
 	if filter == nil {
-		return query.Where(place.StatusNotIn(string(types.StatusArchived)))
+		return query.Where(place.StatusNotIn(string(types.StatusDeleted)))
 	}
 
 	// Apply status filter

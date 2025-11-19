@@ -530,7 +530,7 @@ var _ EntityQueryOptions[HotelQuery, *types.HotelFilter] = (*HotelQueryOptions)(
 
 func (o HotelQueryOptions) ApplyStatusFilter(query HotelQuery, status string) HotelQuery {
 	if status == "" {
-		return query.Where(hotel.StatusNotIn(string(types.StatusArchived)))
+		return query.Where(hotel.StatusNotIn(string(types.StatusDeleted)))
 	}
 	return query.Where(hotel.Status(status))
 }
@@ -576,7 +576,7 @@ func (o HotelQueryOptions) ApplyBaseFilters(
 	filter *types.HotelFilter,
 ) HotelQuery {
 	if filter == nil {
-		return query.Where(hotel.StatusNotIn(string(types.StatusArchived)))
+		return query.Where(hotel.StatusNotIn(string(types.StatusDeleted)))
 	}
 
 	// Apply status filter
