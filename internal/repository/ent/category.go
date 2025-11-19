@@ -293,7 +293,7 @@ var _ EntityQueryOptions[CategoryQuery, *types.CategoryFilter] = (*CategoryQuery
 
 func (o CategoryQueryOptions) ApplyStatusFilter(query CategoryQuery, status string) CategoryQuery {
 	if status == "" {
-		return query.Where(category.StatusNotIn(string(types.StatusArchived)))
+		return query.Where(category.StatusNotIn(string(types.StatusDeleted)))
 	}
 	return query.Where(category.Status(status))
 }
@@ -333,7 +333,7 @@ func (o CategoryQueryOptions) ApplyBaseFilters(
 	filter *types.CategoryFilter,
 ) CategoryQuery {
 	if filter == nil {
-		return query.Where(category.StatusNotIn(string(types.StatusArchived)))
+		return query.Where(category.StatusNotIn(string(types.StatusDeleted)))
 	}
 
 	// Apply status filter

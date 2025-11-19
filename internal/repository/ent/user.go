@@ -109,7 +109,7 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*domainU
 	entUser, err := client.User.Query().
 		Where(
 			user.Email(email),
-			user.StatusNotIn(string(types.StatusArchived)),
+			user.StatusNotIn(string(types.StatusDeleted)),
 		).
 		Only(ctx)
 
@@ -283,7 +283,7 @@ var _ EntityQueryOptions[UserQuery, *types.UserFilter] = (*UserQueryOptions)(nil
 
 func (o UserQueryOptions) ApplyStatusFilter(query UserQuery, status string) UserQuery {
 	if status == "" {
-		return query.Where(user.StatusNotIn(string(types.StatusArchived)))
+		return query.Where(user.StatusNotIn(string(types.StatusDeleted)))
 	}
 	return query.Where(user.Status(status))
 }
@@ -325,7 +325,7 @@ func (o UserQueryOptions) ApplyBaseFilters(
 	filter *types.UserFilter,
 ) UserQuery {
 	if filter == nil {
-		return query.Where(user.StatusNotIn(string(types.StatusArchived)))
+		return query.Where(user.StatusNotIn(string(types.StatusDeleted)))
 	}
 
 	// Apply status filter

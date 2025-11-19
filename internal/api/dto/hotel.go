@@ -2,10 +2,10 @@ package dto
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/omkar273/nashikdarshan/internal/domain/hotel"
+	ierr "github.com/omkar273/nashikdarshan/internal/errors"
 	"github.com/omkar273/nashikdarshan/internal/types"
 	"github.com/omkar273/nashikdarshan/internal/validator"
 	"github.com/samber/lo"
@@ -53,14 +53,20 @@ func (req *CreateHotelRequest) Validate() error {
 	// Validate price range
 	if req.PriceMin != nil && req.PriceMax != nil {
 		if req.PriceMin.GreaterThan(*req.PriceMax) {
-			return fmt.Errorf("price_min cannot be greater than price_max")
+			return ierr.NewError("price_min cannot be greater than price_max").
+				WithHint("Please ensure price_min is less than or equal to price_max").
+				Mark(ierr.ErrValidation)
 		}
 		// Validate price is not negative
 		if req.PriceMin.LessThan(decimal.Zero) {
-			return fmt.Errorf("price_min cannot be negative")
+			return ierr.NewError("price_min cannot be negative").
+				WithHint("Please provide a non-negative price value").
+				Mark(ierr.ErrValidation)
 		}
 		if req.PriceMax.LessThan(decimal.Zero) {
-			return fmt.Errorf("price_max cannot be negative")
+			return ierr.NewError("price_max cannot be negative").
+				WithHint("Please provide a non-negative price value").
+				Mark(ierr.ErrValidation)
 		}
 	}
 
@@ -74,7 +80,9 @@ func (req *CreateHotelRequest) Validate() error {
 	// Validate check-in/check-out times
 	if req.CheckInTime != nil && req.CheckOutTime != nil {
 		if !req.CheckOutTime.After(*req.CheckInTime) {
-			return fmt.Errorf("check_out_time must be after check_in_time")
+			return ierr.NewError("check_out_time must be after check_in_time").
+				WithHint("Please ensure check-out time is later than check-in time").
+				Mark(ierr.ErrValidation)
 		}
 	}
 
@@ -119,14 +127,20 @@ func (req *UpdateHotelRequest) Validate() error {
 	// Validate price range
 	if req.PriceMin != nil && req.PriceMax != nil {
 		if req.PriceMin.GreaterThan(*req.PriceMax) {
-			return fmt.Errorf("price_min cannot be greater than price_max")
+			return ierr.NewError("price_min cannot be greater than price_max").
+				WithHint("Please ensure price_min is less than or equal to price_max").
+				Mark(ierr.ErrValidation)
 		}
 		// Validate price is not negative
 		if req.PriceMin.LessThan(decimal.Zero) {
-			return fmt.Errorf("price_min cannot be negative")
+			return ierr.NewError("price_min cannot be negative").
+				WithHint("Please provide a non-negative price value").
+				Mark(ierr.ErrValidation)
 		}
 		if req.PriceMax.LessThan(decimal.Zero) {
-			return fmt.Errorf("price_max cannot be negative")
+			return ierr.NewError("price_max cannot be negative").
+				WithHint("Please provide a non-negative price value").
+				Mark(ierr.ErrValidation)
 		}
 	}
 
@@ -140,7 +154,9 @@ func (req *UpdateHotelRequest) Validate() error {
 	// Validate check-in/check-out times
 	if req.CheckInTime != nil && req.CheckOutTime != nil {
 		if !req.CheckOutTime.After(*req.CheckInTime) {
-			return fmt.Errorf("check_out_time must be after check_in_time")
+			return ierr.NewError("check_out_time must be after check_in_time").
+				WithHint("Please ensure check-out time is later than check-in time").
+				Mark(ierr.ErrValidation)
 		}
 	}
 
