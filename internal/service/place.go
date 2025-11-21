@@ -59,13 +59,7 @@ func (s *placeService) Create(ctx context.Context, req *dto.CreatePlaceRequest) 
 		return nil, err
 	}
 
-	// Fetch the created place to get all fields including ID
-	createdPlace, err := s.PlaceRepo.Get(ctx, p.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	return dto.NewPlaceResponse(createdPlace), nil
+	return dto.NewPlaceResponse(p), nil
 }
 
 // Get retrieves a place by ID
