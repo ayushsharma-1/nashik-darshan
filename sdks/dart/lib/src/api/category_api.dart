@@ -4,7 +4,6 @@
 
 import 'dart:async';
 
-import 'package:built_value/json_object.dart';
 import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
@@ -14,7 +13,6 @@ import 'package:nashik_darshan_sdk/src/model/dto_category_response.dart';
 import 'package:nashik_darshan_sdk/src/model/dto_create_category_request.dart';
 import 'package:nashik_darshan_sdk/src/model/dto_list_categories_response.dart';
 import 'package:nashik_darshan_sdk/src/model/dto_update_category_request.dart';
-import 'package:nashik_darshan_sdk/src/model/ierr_error_response.dart';
 
 class CategoryApi {
 

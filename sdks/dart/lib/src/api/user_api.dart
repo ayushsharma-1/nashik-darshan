@@ -4,13 +4,11 @@
 
 import 'dart:async';
 
-import 'package:built_value/json_object.dart';
 import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:nashik_darshan_sdk/src/model/dto_me_response.dart';
 import 'package:nashik_darshan_sdk/src/model/dto_update_user_request.dart';
-import 'package:nashik_darshan_sdk/src/model/ierr_error_response.dart';
 
 class UserApi {
 

@@ -203,6 +203,44 @@ main() {
     cd "$PROJECT_ROOT"
     echo ""
 
+    # Clean up common unused imports in generated API files
+    log_step "Cleaning up unused imports in generated files..."
+    UNUSED_IMPORTS_FIXED=0
+    
+    # Remove unused json_object imports
+    for api_file in "$SDK_DIR/lib/src/api"/*.dart; do
+        if [ -f "$api_file" ] && grep -q "import 'package:built_value/json_object.dart';" "$api_file" 2>/dev/null; then
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i '' "/^import 'package:built_value\/json_object\.dart';$/d" "$api_file"
+            else
+                sed -i "/^import 'package:built_value\/json_object\.dart';$/d" "$api_file"
+            fi
+            UNUSED_IMPORTS_FIXED=$((UNUSED_IMPORTS_FIXED + 1))
+        fi
+    done
+    
+    # Remove unused ierr_error_response imports (if not used in the file)
+    for api_file in "$SDK_DIR/lib/src/api"/*.dart; do
+        if [ -f "$api_file" ] && grep -q "import 'package:nashik_darshan_sdk/src/model/ierr_error_response.dart';" "$api_file" 2>/dev/null; then
+            # Check if IerrErrorResponse is actually used in the file
+            if ! grep -q "IerrErrorResponse" "$api_file" 2>/dev/null; then
+                if [[ "$OSTYPE" == "darwin"* ]]; then
+                    sed -i '' "/^import 'package:nashik_darshan_sdk\/src\/model\/ierr_error_response\.dart';$/d" "$api_file"
+                else
+                    sed -i "/^import 'package:nashik_darshan_sdk\/src\/model\/ierr_error_response\.dart';$/d" "$api_file"
+                fi
+                UNUSED_IMPORTS_FIXED=$((UNUSED_IMPORTS_FIXED + 1))
+            fi
+        fi
+    done
+    
+    if [ "$UNUSED_IMPORTS_FIXED" -gt 0 ]; then
+        log_success "Removed $UNUSED_IMPORTS_FIXED unused import(s)"
+    else
+        log_info "No unused imports to clean up"
+    fi
+    echo ""
+
     # Verify generated files
     echo ""
     log_step "Verifying generated SDK files"
