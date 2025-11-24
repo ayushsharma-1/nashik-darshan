@@ -1,5 +1,5 @@
 name: nashik_darshan_sdk
-version: 1.0.0
+version: 1.0.1
 description: Official Dart SDK for Nashik Darshan API - A tourism and travel discovery platform
 homepage: https://github.com/Caygnus/nashik-darshan-v2
 repository: https://github.com/Caygnus/nashik-darshan-v2/tree/main/sdks/dart
