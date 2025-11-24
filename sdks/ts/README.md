@@ -49,6 +49,390 @@ const configuration = new Configuration({
 });
 ```
 
+### Using Custom Axios Instance
+
+You can configure the SDK to use your own axios instance with custom interceptors, default headers, or other configurations. This is useful when you want to share axios configuration across your application.
+
+#### Basic Custom Axios Setup
+
+```typescript
+import { Configuration, PlaceApi } from "@caygnus/nashik-darshan-sdk";
+import axios, { AxiosInstance } from "axios";
+
+// Create your custom axios instance
+const customAxios: AxiosInstance = axios.create({
+  baseURL: "https://api.nashikdarshan.com/api/v1",
+  timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Add request interceptor (e.g., for authentication)
+customAxios.interceptors.request.use(
+  (config) => {
+    // Add auth token from your auth system
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor (e.g., for error handling)
+customAxios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Handle unauthorized - redirect to login, refresh token, etc.
+      console.error("Unauthorized - please login");
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Use custom axios instance with SDK
+const configuration = new Configuration({
+  basePath: "https://api.nashikdarshan.com/api/v1",
+});
+
+// Pass axios instance as third parameter to API constructor
+const placeApi = new PlaceApi(
+  configuration,
+  "https://api.nashikdarshan.com/api/v1",
+  customAxios
+);
+```
+
+#### Using Global Axios Configuration
+
+If you have a global axios instance configured elsewhere in your application, you can reuse it:
+
+```typescript
+import { Configuration, PlaceApi, AuthApi } from "@caygnus/nashik-darshan-sdk";
+import axios from "axios";
+
+// Your global axios instance (configured elsewhere in your app)
+// This might be in a separate axios config file like: src/lib/axios.ts
+const globalAxios = axios.create({
+  baseURL:
+    process.env.REACT_APP_API_URL || "https://api.nashikdarshan.com/api/v1",
+  timeout: 30000,
+});
+
+// Add global interceptors (if not already added)
+globalAxios.interceptors.request.use(/* your request interceptor */);
+globalAxios.interceptors.response.use(/* your response interceptor */);
+
+// Use with SDK
+const basePath = "https://api.nashikdarshan.com/api/v1";
+const configuration = new Configuration({ basePath });
+
+// All API clients will use your global axios instance
+const placeApi = new PlaceApi(configuration, basePath, globalAxios);
+const authApi = new AuthApi(configuration, basePath, globalAxios);
+```
+
+#### Advanced: Shared Axios Instance Across All APIs
+
+For better code organization, create a helper function to initialize all APIs with a shared axios instance:
+
+```typescript
+import {
+  Configuration,
+  AuthApi,
+  PlaceApi,
+  CategoryApi,
+  FeedApi,
+  ReviewsApi,
+  UserApi,
+} from "@caygnus/nashik-darshan-sdk";
+import axios, { AxiosInstance } from "axios";
+
+// Create shared axios instance with interceptors
+function createAxiosInstance(): AxiosInstance {
+  const instance = axios.create({
+    baseURL:
+      process.env.NEXT_PUBLIC_API_URL || "https://api.nashikdarshan.com/api/v1",
+    timeout: 30000,
+  });
+
+  // Request interceptor
+  instance.interceptors.request.use(
+    (config) => {
+      const token = getAuthToken(); // Your token retrieval logic
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+
+  // Response interceptor
+  instance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      if (error.response?.status === 401) {
+        // Handle token refresh or redirect
+        await handleUnauthorized();
+      }
+      return Promise.reject(error);
+    }
+  );
+
+  return instance;
+}
+
+// Initialize all APIs with shared axios instance
+const basePath =
+  process.env.NEXT_PUBLIC_API_URL || "https://api.nashikdarshan.com/api/v1";
+const configuration = new Configuration({ basePath });
+const axiosInstance = createAxiosInstance();
+
+export const apis = {
+  auth: new AuthApi(configuration, basePath, axiosInstance),
+  places: new PlaceApi(configuration, basePath, axiosInstance),
+  categories: new CategoryApi(configuration, basePath, axiosInstance),
+  feed: new FeedApi(configuration, basePath, axiosInstance),
+  reviews: new ReviewsApi(configuration, basePath, axiosInstance),
+  user: new UserApi(configuration, basePath, axiosInstance),
+};
+
+// Use in your application
+const places = await apis.places.placesGet({ limit: 10 });
+```
+
+#### React/Next.js Example with Axios Provider
+
+For React applications, you can create a context provider for your axios instance:
+
+```typescript
+// lib/api-client.tsx
+import { createContext, useContext, ReactNode } from "react";
+import { Configuration, AuthApi, PlaceApi } from "@caygnus/nashik-darshan-sdk";
+import axios, { AxiosInstance } from "axios";
+
+const ApiClientContext = createContext<{
+  authApi: AuthApi;
+  placeApi: PlaceApi;
+} | null>(null);
+
+export function ApiClientProvider({ children }: { children: ReactNode }) {
+  const axiosInstance: AxiosInstance = axios.create({
+    baseURL:
+      process.env.NEXT_PUBLIC_API_URL || "https://api.nashikdarshan.com/api/v1",
+  });
+
+  // Add interceptors
+  axiosInstance.interceptors.request.use((config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  });
+
+  const basePath =
+    process.env.NEXT_PUBLIC_API_URL || "https://api.nashikdarshan.com/api/v1";
+  const config = new Configuration({ basePath });
+
+  const apis = {
+    authApi: new AuthApi(config, basePath, axiosInstance),
+    placeApi: new PlaceApi(config, basePath, axiosInstance),
+  };
+
+  return (
+    <ApiClientContext.Provider value={apis}>
+      {children}
+    </ApiClientContext.Provider>
+  );
+}
+
+export function useApiClient() {
+  const context = useContext(ApiClientContext);
+  if (!context) {
+    throw new Error("useApiClient must be used within ApiClientProvider");
+  }
+  return context;
+}
+
+// Usage in components
+function MyComponent() {
+  const { placeApi } = useApiClient();
+  // Use placeApi...
+}
+```
+
+### Using Custom Axios Instance
+
+You can configure the SDK to use your own axios instance with custom interceptors, default headers, or other configurations:
+
+```typescript
+import { Configuration, PlaceApi } from "@caygnus/nashik-darshan-sdk";
+import axios, { AxiosInstance } from "axios";
+
+// Create your custom axios instance
+const customAxios: AxiosInstance = axios.create({
+  baseURL: "https://api.nashikdarshan.com/api/v1",
+  timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Add request interceptor (e.g., for authentication)
+customAxios.interceptors.request.use(
+  (config) => {
+    // Add auth token from your auth system
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor (e.g., for error handling)
+customAxios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Handle unauthorized - redirect to login, refresh token, etc.
+      console.error("Unauthorized - please login");
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Use custom axios instance with SDK
+const configuration = new Configuration({
+  basePath: "https://api.nashikdarshan.com/api/v1",
+});
+
+// Pass axios instance to API client constructor
+const placeApi = new PlaceApi(
+  configuration,
+  "https://api.nashikdarshan.com/api/v1",
+  customAxios
+);
+```
+
+### Using Global Axios Configuration
+
+If you have a global axios instance configured elsewhere in your application, you can reuse it:
+
+```typescript
+import { Configuration, PlaceApi, AuthApi } from "@caygnus/nashik-darshan-sdk";
+import axios from "axios";
+
+// Your global axios instance (configured elsewhere in your app)
+// This might be in a separate axios config file
+const globalAxios = axios.create({
+  baseURL:
+    process.env.REACT_APP_API_URL || "https://api.nashikdarshan.com/api/v1",
+  timeout: 30000,
+});
+
+// Add global interceptors
+globalAxios.interceptors.request.use(/* your request interceptor */);
+globalAxios.interceptors.response.use(/* your response interceptor */);
+
+// Use with SDK
+const configuration = new Configuration({
+  basePath: "https://api.nashikdarshan.com/api/v1",
+});
+
+// All API clients will use your global axios instance
+const placeApi = new PlaceApi(
+  configuration,
+  "https://api.nashikdarshan.com/api/v1",
+  globalAxios
+);
+const authApi = new AuthApi(
+  configuration,
+  "https://api.nashikdarshan.com/api/v1",
+  globalAxios
+);
+```
+
+### Advanced: Shared Axios Instance Across All APIs
+
+For better code organization, create a helper function to initialize all APIs with a shared axios instance:
+
+```typescript
+import {
+  Configuration,
+  AuthApi,
+  PlaceApi,
+  CategoryApi,
+  FeedApi,
+  ReviewsApi,
+  UserApi,
+} from "@caygnus/nashik-darshan-sdk";
+import axios, { AxiosInstance } from "axios";
+
+// Create shared axios instance
+function createAxiosInstance(): AxiosInstance {
+  const instance = axios.create({
+    baseURL:
+      process.env.NEXT_PUBLIC_API_URL || "https://api.nashikdarshan.com/api/v1",
+    timeout: 30000,
+  });
+
+  // Request interceptor
+  instance.interceptors.request.use(
+    (config) => {
+      const token = getAuthToken(); // Your token retrieval logic
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+
+  // Response interceptor
+  instance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      if (error.response?.status === 401) {
+        // Handle token refresh or redirect
+        await handleUnauthorized();
+      }
+      return Promise.reject(error);
+    }
+  );
+
+  return instance;
+}
+
+// Initialize all APIs with shared axios instance
+const basePath =
+  process.env.NEXT_PUBLIC_API_URL || "https://api.nashikdarshan.com/api/v1";
+const configuration = new Configuration({ basePath });
+const axiosInstance = createAxiosInstance();
+
+export const apis = {
+  auth: new AuthApi(configuration, basePath, axiosInstance),
+  places: new PlaceApi(configuration, basePath, axiosInstance),
+  categories: new CategoryApi(configuration, basePath, axiosInstance),
+  feed: new FeedApi(configuration, basePath, axiosInstance),
+  reviews: new ReviewsApi(configuration, basePath, axiosInstance),
+  user: new UserApi(configuration, basePath, axiosInstance),
+};
+
+// Use in your application
+const places = await apis.places.placesGet({ limit: 10 });
+```
+
 ### Example: User Signup
 
 ```typescript
