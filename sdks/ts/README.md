@@ -132,8 +132,7 @@ import axios from "axios";
 // This might be in a separate axios config file like: src/lib/axios.ts
 // If baseURL is set in axios, you don't need basePath in Configuration
 const globalAxios = axios.create({
-  baseURL:
-    process.env.REACT_APP_API_URL || "https://api.example.com/api/v1", // Full URL
+  baseURL: process.env.REACT_APP_API_URL || "https://api.example.com/api/v1", // Full URL
   timeout: 30000,
 });
 
@@ -557,8 +556,7 @@ For production, configure the API base URL via environment variables:
 ```typescript
 const configuration = new Configuration({
   basePath:
-    process.env.NASHIK_DARSHAN_API_URL ||
-    "https://api.example.com/api/v1",
+    process.env.NASHIK_DARSHAN_API_URL || "https://api.example.com/api/v1",
   accessToken: process.env.NASHIK_DARSHAN_ACCESS_TOKEN,
 });
 ```
