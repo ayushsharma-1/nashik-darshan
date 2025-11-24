@@ -27,7 +27,7 @@ import { Configuration, AuthApi, PlaceApi } from "@caygnus/nashik-darshan-sdk";
 // Configure the SDK
 // basePath should be the FULL URL including protocol (http:// or https://)
 const configuration = new Configuration({
-  basePath: "https://api.nashikdarshan.com/api/v1", // Full URL required
+  basePath: "https://api.example.com/api/v1", // Full URL required
   // Optional: Add authentication token
   accessToken: "your-access-token-here",
 });
@@ -55,7 +55,7 @@ The SDK supports Bearer token authentication. Set your access token when creatin
 import { Configuration } from "@caygnus/nashik-darshan-sdk";
 
 const configuration = new Configuration({
-  basePath: "https://api.nashikdarshan.com/api/v1",
+  basePath: "https://api.example.com/api/v1",
   accessToken: "your-bearer-token",
 });
 ```
@@ -73,7 +73,7 @@ import axios, { AxiosInstance } from "axios";
 // Create your custom axios instance
 // If you set baseURL in axios, you don't need to set basePath in Configuration
 const customAxios: AxiosInstance = axios.create({
-  baseURL: "https://api.nashikdarshan.com/api/v1", // Full URL with protocol
+  baseURL: "https://api.example.com/api/v1", // Full URL with protocol
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -112,7 +112,7 @@ customAxios.interceptors.response.use(
 // Since axios has baseURL set, basePath in Configuration is optional
 const configuration = new Configuration({
   // basePath is optional if axios.defaults.baseURL is set
-  // If not using axios baseURL, set full URL: basePath: "https://api.nashikdarshan.com/api/v1"
+  // If not using axios baseURL, set full URL: basePath: "https://api.example.com/api/v1"
 });
 
 // Pass axios instance as third parameter to API constructor
@@ -133,7 +133,7 @@ import axios from "axios";
 // If baseURL is set in axios, you don't need basePath in Configuration
 const globalAxios = axios.create({
   baseURL:
-    process.env.REACT_APP_API_URL || "https://api.nashikdarshan.com/api/v1", // Full URL
+    process.env.REACT_APP_API_URL || "https://api.example.com/api/v1", // Full URL
   timeout: 30000,
 });
 
@@ -173,7 +173,7 @@ import axios, { AxiosInstance } from "axios";
 function createAxiosInstance(): AxiosInstance {
   const instance = axios.create({
     baseURL:
-      process.env.NEXT_PUBLIC_API_URL || "https://api.nashikdarshan.com/api/v1",
+      process.env.NEXT_PUBLIC_API_URL || "https://api.example.com/api/v1",
     timeout: 30000,
   });
 
@@ -206,7 +206,7 @@ function createAxiosInstance(): AxiosInstance {
 
 // Initialize all APIs with shared axios instance
 const basePath =
-  process.env.NEXT_PUBLIC_API_URL || "https://api.nashikdarshan.com/api/v1";
+  process.env.NEXT_PUBLIC_API_URL || "https://api.example.com/api/v1";
 const configuration = new Configuration({ basePath });
 const axiosInstance = createAxiosInstance();
 
@@ -241,7 +241,7 @@ const ApiClientContext = createContext<{
 export function ApiClientProvider({ children }: { children: ReactNode }) {
   const axiosInstance: AxiosInstance = axios.create({
     baseURL:
-      process.env.NEXT_PUBLIC_API_URL || "https://api.nashikdarshan.com/api/v1",
+      process.env.NEXT_PUBLIC_API_URL || "https://api.example.com/api/v1",
   });
 
   // Add interceptors
@@ -294,6 +294,7 @@ function MyComponent() {
 3. **Otherwise** → Uses default `http://localhost:8080/api/v1`
 
 **Key points:**
+
 - Set the URL **once** in either `Configuration.basePath` OR `axios.defaults.baseURL`
 - `basePath` must be the **complete URL** including protocol (e.g., `https://api.example.com/api/v1`)
 - If using custom axios with `baseURL`, you can omit `basePath` in Configuration
@@ -319,7 +320,7 @@ import axios, { AxiosInstance } from "axios";
 function createAxiosInstance(): AxiosInstance {
   const instance = axios.create({
     baseURL:
-      process.env.NEXT_PUBLIC_API_URL || "https://api.nashikdarshan.com/api/v1",
+      process.env.NEXT_PUBLIC_API_URL || "https://api.example.com/api/v1",
     timeout: 30000,
   });
 
@@ -352,7 +353,7 @@ function createAxiosInstance(): AxiosInstance {
 
 // Initialize all APIs with shared axios instance
 const basePath =
-  process.env.NEXT_PUBLIC_API_URL || "https://api.nashikdarshan.com/api/v1";
+  process.env.NEXT_PUBLIC_API_URL || "https://api.example.com/api/v1";
 const configuration = new Configuration({ basePath });
 const axiosInstance = createAxiosInstance();
 
@@ -557,7 +558,7 @@ For production, configure the API base URL via environment variables:
 const configuration = new Configuration({
   basePath:
     process.env.NASHIK_DARSHAN_API_URL ||
-    "https://api.nashikdarshan.com/api/v1",
+    "https://api.example.com/api/v1",
   accessToken: process.env.NASHIK_DARSHAN_ACCESS_TOKEN,
 });
 ```
