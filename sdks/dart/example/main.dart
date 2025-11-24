@@ -1,13 +1,16 @@
+import 'package:built_collection/built_collection.dart';
+import 'package:dio/dio.dart';
 import 'package:nashik_darshan_sdk/nashik_darshan_sdk.dart';
 
 void main() async {
   // Initialize the SDK
   final openapi = Openapi(
+    dio: Dio(),
     basePathOverride: 'https://api.example.com/api/v1',
   );
 
   // Get API clients
-  final authApi = openapi.getAuthApi();
+  openapi.getAuthApi();
   final placeApi = openapi.getPlaceApi();
   final feedApi = openapi.getFeedApi();
 
@@ -38,7 +41,7 @@ void main() async {
     print('\nSearching for hotels...');
     final searchResponse = await placeApi.placesGet(
       searchQuery: 'hotel',
-      placeTypes: ['hotel'],
+      placeTypes: BuiltList.of(['hotel']),
       limit: 3,
     );
 
@@ -60,17 +63,17 @@ void main() async {
     print('\nFetching feed data...');
     final feedRequest = DtoFeedRequest(
       (b) => b
-        ..sections = [
+        ..sections.replace([
           DtoFeedSectionRequest((b) => b
-            ..type = TypesFeedSectionType.sectionTypeTrending
+            ..type = TypesFeedSectionType.SectionTypeLatest
             ..limit = 5),
           DtoFeedSectionRequest((b) => b
-            ..type = TypesFeedSectionType.sectionTypePopular
+            ..type = TypesFeedSectionType.SectionTypePopular
             ..limit = 5),
-        ],
+        ]),
     );
 
-    final feedResponse = await feedApi.feedPost(feedRequest);
+    final feedResponse = await feedApi.feedPost(request: feedRequest);
 
     if (feedResponse.data?.sections != null) {
       print('Feed sections:');
