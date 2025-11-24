@@ -1,0 +1,94 @@
+name: Publish SDKs
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "SDK version to publish (e.g., 1.0.1)"
+        required: true
+        type: string
+
+jobs:
+  publish-sdks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          dart-version: "3.0.0"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Install dependencies
+        run: make install-deps
+
+      - name: Generate SDKs
+        run: make generate-sdks
+
+      - name: Extract version from release tag or input
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+            # Remove 'v' prefix if present
+            VERSION=${VERSION#v}
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Publishing version: $VERSION"
+
+      - name: Update SDK versions
+        run: make version-sdks VERSION=${{ steps.version.outputs.VERSION }}
+
+      - name: Verify SDKs
+        run: make verify-sdks
+
+      - name: Publish TypeScript SDK to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          cd sdks/ts
+          npm publish --access restricted
+        continue-on-error: true
+
+      - name: Publish Dart SDK to pub.dev
+        env:
+          PUB_CREDENTIALS: ${{ secrets.PUB_CREDENTIALS }}
+        run: |
+          cd sdks/dart
+          if [ -n "$PUB_CREDENTIALS" ]; then
+            echo "$PUB_CREDENTIALS" > ~/.pub-cache/credentials.json
+          fi
+          dart pub publish --force
+        continue-on-error: true
+
+      - name: Create summary
+        if: always()
+        run: |
+          echo "## SDK Publishing Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version**: ${{ steps.version.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Published Packages:" >> $GITHUB_STEP_SUMMARY
+          echo "- TypeScript: \`@caygnus/nashik-darshan-sdk@${{ steps.version.outputs.VERSION }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Dart: \`nashik_darshan_sdk@${{ steps.version.outputs.VERSION }}\`" >> $GITHUB_STEP_SUMMARY

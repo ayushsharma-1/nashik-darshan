@@ -1,5 +1,6 @@
 .env
 .env.*
+!.env.example
 
 
 # Go
@@ -33,3 +34,57 @@ cmd/server/nashik-darshan-*
 # But allow source files
 !cmd/server/main.go
 !cmd/server/*.go
+
+# ============================================================================
+# Generated SDKs - OpenAPI Generator artifacts
+# ============================================================================
+# Ignore OpenAPI Generator metadata directories
+**/.openapi-generator/
+.openapi-generator/
+
+# Ignore generated git push scripts
+sdks/**/git_push.sh
+sdks/**/.git/
+
+# SDK build artifacts and dependencies
+sdks/**/node_modules/
+sdks/**/dist/
+sdks/**/build/
+sdks/**/.dart_tool/
+sdks/**/pubspec.lock
+sdks/**/*.iml
+sdks/**/.idea/
+sdks/**/.vscode/
+sdks/**/.DS_Store
+
+# Never commit .npmrc files (may contain tokens)
+sdks/**/.npmrc
+**/.npmrc
+!.npmrc.example
+
+# SDK test coverage
+sdks/**/coverage/
+sdks/**/.coverage
+sdks/**/htmlcov/
+
+# SDK package manager files (keep pubspec.yaml, package.json for reference)
+sdks/**/package-lock.json
+sdks/**/yarn.lock
+sdks/**/pnpm-lock.yaml
+
+# SDK logs
+sdks/**/*.log
+sdks/**/npm-debug.log*
+sdks/**/yarn-debug.log*
+sdks/**/yarn-error.log*
+
+# TypeScript specific
+sdks/ts/.tsbuildinfo
+sdks/ts/*.tsbuildinfo
+
+# Dart specific
+sdks/dart/.dart_tool/
+sdks/dart/pubspec.lock
+
+# Keep version.json for version tracking
+!sdks/version.json

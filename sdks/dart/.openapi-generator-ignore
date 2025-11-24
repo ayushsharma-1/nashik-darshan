@@ -1,0 +1,28 @@
+# OpenAPI Generator Ignore File for Dart SDK
+# Files and directories listed here will be preserved during regeneration
+
+# Preserve custom configurations (IMPORTANT: These files are customized for publishing)
+pubspec.yaml
+analysis_options.yaml
+README.md
+CHANGELOG.md
+.gitignore
+LICENSE
+
+# Preserve the renamed library file (generator creates openapi.dart, we rename it)
+lib/nashik_darshan_sdk.dart
+
+# Preserve generated .g.dart files (created by build_runner)
+lib/**/*.g.dart
+
+# Preserve custom source files (if any)
+# lib/custom/
+
+# Preserve examples directory
+example/
+
+# Preserve test files (if customized)
+# test/custom/
+
+# Ignore generated git push script
+git_push.sh

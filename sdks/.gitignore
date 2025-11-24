@@ -1,0 +1,3 @@
+# Ignore generated SDK files but keep version.json
+!version.json
+

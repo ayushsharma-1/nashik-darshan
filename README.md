@@ -11,7 +11,9 @@ A modern, scalable tourism and travel discovery platform backend for Nashik city
 - [Getting Started](#getting-started)
 - [Configuration](#configuration)
 - [API Documentation](#api-documentation)
+- [SDK Generation & Publishing](#sdk-generation--publishing)
 - [Development Workflow](#development-workflow)
+- [Documentation Guide](#documentation-guide)
 - [Deployment](#deployment)
 - [Future Scope](#future-scope)
 - [Project Structure](#project-structure)
@@ -321,6 +323,8 @@ Expected response:
 
 ## Configuration
 
+> 📖 **For complete configuration documentation with all options and examples, see [CONFIG.md](./CONFIG.md)**
+
 This application supports multiple configuration methods with the following priority:
 
 1. **Environment Variables** (highest priority)
@@ -370,6 +374,8 @@ Place RSA key files in the `./keys/` directory:
 
 For comprehensive configuration documentation, including all available options, validation rules, and security best practices, see **[CONFIG.md](./CONFIG.md)**.
 
+> 📖 **See [Documentation Guide](#documentation-guide) for complete documentation navigation**
+
 ## API Documentation
 
 ### Swagger UI
@@ -395,8 +401,8 @@ All API endpoints are versioned under `/api/v1/`:
 - `/api/v1/health` - Health check
 - `/api/v1/places` - Places management
 - `/api/v1/categories` - Categories
+- `/api/v1/hotels` - Hotels management
 - `/api/v1/reviews` - Reviews
-- `/api/v1/feed` - Feed system
 - `/api/v1/users` - User management
 - `/api/v1/auth` - Authentication
 
@@ -412,31 +418,134 @@ This command:
 2. Converts to OpenAPI 3.0
 3. Fixes any reference issues
 
+## SDK Generation & Publishing
+
+The project includes automated SDK generation for TypeScript and Dart. SDKs are generated from the OpenAPI specification and can be published to npm and pub.dev.
+
+> 📖 **For complete SDK documentation, see:**
+>
+> - [sdks/README.md](./sdks/README.md) - SDK generation guide
+> - [sdks/PUBLISHING.md](./sdks/PUBLISHING.md) - Publishing instructions
+> - [sdks/ARCHITECTURE.md](./sdks/ARCHITECTURE.md) - Architecture decisions
+
+### SDK Generation
+
+**Quick Start:**
+
+```bash
+# Generate both SDKs
+make generate-sdks
+
+# Publish SDKs (after updating versions)
+make version-sdks VERSION=1.0.1
+make publish-sdks
+```
+
+**Generated SDKs:**
+
+- **TypeScript SDK**: `@caygnus/nashik-darshan-sdk` (npm) - **Public package**
+- **Dart SDK**: `nashik_darshan_sdk` (pub.dev) - **Public package**
+
+**Publishing Setup:**
+
+SDKs are published as **public packages**. To publish, set up authentication:
+
+1. **Create `.env` file** (copy from `.env.example`):
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Add your tokens** to `.env`:
+
+   ```bash
+   NPM_TOKEN=your_npm_token_here
+   PUB_CREDENTIALS='{"accessToken":"...","refreshToken":"..."}'
+   ```
+
+3. **Publish**:
+   ```bash
+   make publish-sdks
+   ```
+
+The scripts will automatically use tokens from `.env` if available, otherwise fallback to `npm login` or `dart pub token`.
+
 ## Development Workflow
+
+> 📖 **For a comprehensive developer guide with complete command reference, workflows, and troubleshooting, see [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)**
+
+This section provides a quick overview. For detailed information, refer to the [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md).
 
 ### Available Make Commands
 
+#### 🏗️ Code Generation
+
 ```bash
-# Code Generation
 make generate-ent          # Generate Ent ORM code from schema
-make swagger              # Generate API documentation
+make swagger              # Generate API documentation (Swagger 2.0 + OpenAPI 3.0)
+make swagger-2-0          # Generate Swagger 2.0 only
+make swagger-3-0          # Convert to OpenAPI 3.0
+make swagger-clean        # Clean generated swagger files
+```
 
-# Database
+#### 🗄️ Database
+
+```bash
 make migrate-ent          # Run database migrations
+```
 
-# Development
+#### 🚀 Development
+
+```bash
 make run                  # Start development server
 make build                # Build production binary
+```
 
-# Code Quality
+#### 📦 SDK Generation & Publishing
+
+```bash
+# SDK Generation
+make generate-sdks       # Generate both TypeScript and Dart SDKs
+make generate-ts-sdk      # Generate TypeScript SDK only
+make generate-dart-sdk    # Generate Dart SDK only
+make clean-sdks           # Clean generated SDK directories
+make verify-sdks          # Verify generated SDKs are complete
+
+# SDK Version Management
+make show-sdk-version                 # Show current SDK versions from sdks/version.json
+make version-sdks [VERSION=1.0.1]    # Update both SDK versions (reads from sdks/version.json if VERSION not provided)
+make version-ts-sdk [VERSION=1.0.1]  # Update TypeScript SDK version (reads from sdks/version.json if VERSION not provided)
+make version-dart-sdk [VERSION=1.0.1] # Update Dart SDK version (reads from sdks/version.json if VERSION not provided)
+# Note: Versions are tracked in sdks/version.json - edit that file or pass VERSION via CLI
+
+# SDK Publishing
+make publish-sdks                 # Publish both SDKs to registries
+make publish-ts-sdk               # Publish TypeScript SDK to npm
+make publish-dart-sdk              # Publish Dart SDK to pub.dev
+make publish-ts-sdk-dry-run       # Test TypeScript SDK publish (dry-run)
+make publish-dart-sdk-dry-run      # Test Dart SDK publish (dry-run)
+
+# SDK Setup & Dependencies
+make install-deps          # Install openapi-generator-cli if missing
+make check-env             # Verify all required tools are installed
+```
+
+#### 🧹 Code Quality
+
+```bash
 make lint-fix             # Auto-fix linting issues
 make install-hooks        # Install git pre-commit hooks
 make run-hooks            # Manually run git hooks
+```
 
-# Security
+#### 🔐 Security
+
+```bash
 make generate-dev-keys    # Generate unencrypted RSA keys (dev only)
 make generate-keys        # Generate encrypted RSA keys (production)
 ```
+
+> 📖 **For detailed command reference and workflows, see [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)**
 
 ### Development Process
 
@@ -463,6 +572,7 @@ After modifying API handlers or DTOs:
 
 ```bash
 make swagger              # Update documentation
+make generate-sdks        # Regenerate SDKs with latest API changes
 ```
 
 #### 4. Code Quality
@@ -961,14 +1071,14 @@ nashik-darshan-v2-be/
 │   │   │   ├── auth.go
 │   │   │   ├── place.go
 │   │   │   ├── review.go
-│   │   │   ├── feed.go
 │   │   │   ├── category.go
+│   │   │   ├── hotel.go
 │   │   │   └── user.go
 │   │   ├── v1/                   # API version 1 handlers
 │   │   │   ├── place.go
 │   │   │   ├── review.go
-│   │   │   ├── feed.go
 │   │   │   ├── category.go
+│   │   │   ├── hotel.go
 │   │   │   ├── user.go
 │   │   │   ├── auth.go
 │   │   │   └── health.go
@@ -992,6 +1102,9 @@ nashik-darshan-v2-be/
 │   │   ├── category/
 │   │   │   ├── model.go
 │   │   │   └── repository.go
+│   │   ├── hotel/
+│   │   │   ├── model.go
+│   │   │   └── repository.go
 │   │   └── user/
 │   │       ├── model.go
 │   │       └── repository.go
@@ -1012,6 +1125,7 @@ nashik-darshan-v2-be/
 │   │   │   ├── place.go
 │   │   │   ├── review.go
 │   │   │   ├── category.go
+│   │   │   ├── hotel.go
 │   │   │   ├── user.go
 │   │   │   └── queryoptions.go   # Query builders
 │   │   └── factory.go            # Repository factory
@@ -1028,9 +1142,10 @@ nashik-darshan-v2-be/
 │   │
 │   ├── service/                  # Service layer (business logic)
 │   │   ├── place.go              # Place service
+│   │   ├── place.go              # Place service
 │   │   ├── review.go             # Review service
-│   │   ├── feed.go               # Feed service
 │   │   ├── category.go           # Category service
+│   │   ├── hotel.go              # Hotel service
 │   │   ├── user.go               # User service
 │   │   ├── auth.go               # Auth service
 │   │   ├── onboarding.go         # Onboarding service
@@ -1039,8 +1154,8 @@ nashik-darshan-v2-be/
 │   ├── types/                    # Shared type definitions
 │   │   ├── place.go              # Place types & filters
 │   │   ├── review.go             # Review types
-│   │   ├── feed.go               # Feed types
 │   │   ├── category.go           # Category types
+│   │   ├── hotel.go              # Hotel types
 │   │   ├── user.go               # User types
 │   │   ├── filter.go             # Base filter types
 │   │   ├── pagination.go         # Pagination types
@@ -1058,11 +1173,12 @@ nashik-darshan-v2-be/
 │   │   ├── swagger.json         # Swagger 2.0 spec
 │   │   ├── swagger-3-0.json     # OpenAPI 3.0 spec
 │   │   └── swagger.yaml         # YAML spec
-│   └── GEOGRAPHY_COMPARISON.md   # Technical documentation
+│   └── prds/                      # Product requirement documents
+│       ├── events.md
+│       └── HOTELS_API_REFERENCE.md
 │
 ├── scripts/                      # Utility scripts
-│   ├── generate-keys.sh          # Production key generation
-│   ├── generate-dev-keys.sh      # Development key generation
+│   ├── assert.sh                 # Environment assertion script
 │   ├── fix_swagger_refs.sh       # Swagger post-processing
 │   ├── internal/
 │   │   └── generate_ent.go       # Ent code generation
