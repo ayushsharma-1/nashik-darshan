@@ -441,22 +441,10 @@ make version-sdks VERSION=1.0.1
 make publish-sdks
 ```
 
-**For detailed SDK documentation, see:**
-
-- [`sdks/README.md`](./sdks/README.md) - SDK generation guide
-- [`sdks/PUBLISHING.md`](./sdks/PUBLISHING.md) - Publishing instructions
-- [`sdks/ARCHITECTURE.md`](./sdks/ARCHITECTURE.md) - Architecture decisions
-
 **Generated SDKs:**
 
 - **TypeScript SDK**: `@caygnus/nashik-darshan-sdk` (npm)
 - **Dart SDK**: `nashik_darshan_sdk` (pub.dev)
-
-> 📚 **For complete SDK documentation, see:**
->
-> - [`sdks/README.md`](./sdks/README.md) - SDK generation guide
-> - [`sdks/PUBLISHING.md`](./sdks/PUBLISHING.md) - Publishing instructions
-> - [`sdks/ARCHITECTURE.md`](./sdks/ARCHITECTURE.md) - Monorepo architecture decisions
 
 ## Development Workflow
 
