@@ -1,0 +1,56 @@
+PROPRIETARY SOFTWARE LICENSE
+
+Copyright (c) 2024 Caygnus. All rights reserved.
+
+NOTICE: This software and associated documentation files (the "Software") are the
+proprietary and confidential property of Caygnus. Unauthorized copying, modification,
+distribution, or use of this Software, via any medium, is strictly prohibited.
+
+LICENSE TERMS:
+
+1. PUBLIC DISTRIBUTION
+   This Software is publicly distributed via package registries (npm, pub.dev) for
+   the purpose of enabling integration with the Nashik Darshan API.
+
+2. PERSONAL AND NON-COMMERCIAL USE
+   You may use this Software for personal, non-commercial purposes, including:
+
+   - Personal projects
+   - Educational purposes
+   - Testing and evaluation
+
+3. COMMERCIAL AND CORPORATE USE RESTRICTIONS
+   Commercial or corporate use of this Software requires explicit written permission
+   from Caygnus. Commercial use includes, but is not limited to:
+
+   - Use in commercial applications or services
+   - Use by corporations, businesses, or organizations
+   - Use in products or services offered for sale
+   - Use in internal business operations
+
+4. RESTRICTIONS
+   You may NOT:
+
+   - Use this Software for commercial purposes without permission
+   - Redistribute this Software except as part of your application
+   - Modify, reverse engineer, or create derivative works for commercial purposes
+   - Remove or alter copyright notices or proprietary markings
+
+5. PERMISSIONS
+   To obtain a commercial license, please contact:
+
+   - Email: support@caygnus.com
+   - Website: https://github.com/Caygnus/nashik-darshan-v2
+
+6. NO WARRANTY
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+   PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+7. LIMITATION OF LIABILITY
+   IN NO EVENT SHALL CAYGNUS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+By using this Software, you agree to be bound by the terms of this License. If you do
+not agree to these terms, do not use the Software.

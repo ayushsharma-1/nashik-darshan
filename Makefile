@@ -256,12 +256,17 @@ setup-sdk-dirs:
 	@if [ ! -f $(SDK_TS_DIR)/.openapi-generator-ignore ]; then \
 		echo "Creating .openapi-generator-ignore for TypeScript SDK..."; \
 		cp sdks/ts/.openapi-generator-ignore $(SDK_TS_DIR)/.openapi-generator-ignore 2>/dev/null || \
-		echo -e "# OpenAPI Generator Ignore File for TypeScript SDK\npackage.json\ntsconfig.json\njest.config.js\n.eslintrc.js\n.gitignore\n.npmignore\nREADME.md\nexamples/\ngit_push.sh" > $(SDK_TS_DIR)/.openapi-generator-ignore; \
+		echo -e "# OpenAPI Generator Ignore File for TypeScript SDK\npackage.json\ntsconfig.json\njest.config.js\n.eslintrc.js\n.gitignore\n.npmignore\nREADME.md\nLICENSE\nexamples/\ngit_push.sh" > $(SDK_TS_DIR)/.openapi-generator-ignore; \
 	fi
 	@if [ ! -f $(SDK_DART_DIR)/.openapi-generator-ignore ]; then \
 		echo "Creating .openapi-generator-ignore for Dart SDK..."; \
 		cp sdks/dart/.openapi-generator-ignore $(SDK_DART_DIR)/.openapi-generator-ignore 2>/dev/null || \
-		echo -e "# OpenAPI Generator Ignore File for Dart SDK\npubspec.yaml\nanalysis_options.yaml\nREADME.md\n.gitignore\nexample/\ngit_push.sh" > $(SDK_DART_DIR)/.openapi-generator-ignore; \
+		echo -e "# OpenAPI Generator Ignore File for Dart SDK\npubspec.yaml\nanalysis_options.yaml\nREADME.md\n.gitignore\nLICENSE\nexample/\ngit_push.sh" > $(SDK_DART_DIR)/.openapi-generator-ignore; \
+	fi
+	@if [ -f sdks/LICENSE ]; then \
+		cp sdks/LICENSE $(SDK_TS_DIR)/LICENSE; \
+		cp sdks/LICENSE $(SDK_DART_DIR)/LICENSE; \
+		echo "✓ LICENSE file copied to SDK directories"; \
 	fi
 	@echo "✅ SDK directories ready"
 

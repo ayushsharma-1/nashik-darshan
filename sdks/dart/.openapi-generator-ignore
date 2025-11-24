@@ -6,6 +6,7 @@ pubspec.yaml
 analysis_options.yaml
 README.md
 .gitignore
+LICENSE
 
 # Preserve custom source files (if any)
 # lib/custom/

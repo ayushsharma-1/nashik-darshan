@@ -9,6 +9,7 @@ jest.config.js
 .gitignore
 .npmignore
 README.md
+LICENSE
 
 # Preserve custom source files (if any)
 # src/custom/
