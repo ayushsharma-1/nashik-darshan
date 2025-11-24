@@ -439,76 +439,7 @@ version-sdks:
 # Note: SDKs are published as public packages
 .PHONY: publish-ts-sdk
 publish-ts-sdk: verify-sdks
-	@echo "📤 Publishing TypeScript SDK to npm (public)..."
-	@bash -c 'set -e; \
-	cd $(SDK_TS_DIR); \
-	# Load NPM_TOKEN from .env if it exists (should be caygnus org token) \
-	if [ -f ../../.env ]; then \
-		export $$(grep -v "^#" ../../.env | grep "^NPM_TOKEN=" | head -1); \
-		if [ -n "$$NPM_TOKEN" ]; then \
-			echo "✓ Using NPM_TOKEN from .env file"; \
-			# Configure npmrc for @caygnus scope \
-			echo "@caygnus:registry=https://registry.npmjs.org/" > .npmrc; \
-			echo "//registry.npmjs.org/:_authToken=$$NPM_TOKEN" >> .npmrc; \
-			if npm publish --access public; then \
-				rm -f .npmrc; \
-				echo "✅ TypeScript SDK published to npm (public)"; \
-				exit 0; \
-			else \
-				rm -f .npmrc; \
-				echo "❌ npm publish failed. Check your token and package permissions."; \
-				echo "   Make sure NPM_TOKEN is from the @caygnus organization account."; \
-				exit 1; \
-			fi; \
-		fi; \
-	fi; \
-	# Check environment variable \
-	if [ -n "$$NPM_TOKEN" ]; then \
-		echo "✓ Using NPM_TOKEN from environment"; \
-		echo "@caygnus:registry=https://registry.npmjs.org/" > .npmrc; \
-		echo "//registry.npmjs.org/:_authToken=$$NPM_TOKEN" >> .npmrc; \
-		if npm publish --access public; then \
-			rm -f .npmrc; \
-			echo "✅ TypeScript SDK published to npm (public)"; \
-			exit 0; \
-		else \
-			rm -f .npmrc; \
-			echo "❌ npm publish failed. Check your token and package permissions."; \
-			echo "   Make sure NPM_TOKEN is from the @caygnus organization account."; \
-			exit 1; \
-		fi; \
-	fi; \
-	# Fallback to npm login if token not found \
-	echo "⚠️  NPM_TOKEN not found in .env or environment, checking npm login..."; \
-	CURRENT_USER=$$(npm whoami 2>/dev/null || echo ""); \
-	if [ -n "$$CURRENT_USER" ]; then \
-		echo "✓ Currently logged in as: $$CURRENT_USER"; \
-		echo "📦 Attempting to publish to @caygnus organization..."; \
-		if npm publish --access public; then \
-			echo "✅ TypeScript SDK published to npm (public)"; \
-			exit 0; \
-		else \
-			EXIT_CODE=$$?; \
-			echo ""; \
-			echo "❌ npm publish failed. You are logged in as '$$CURRENT_USER' but need @caygnus access."; \
-			echo ""; \
-			echo "Solution: Get an access token from the @caygnus organization account:"; \
-			echo "  1. Log in to npmjs.com with your @caygnus organization account"; \
-			echo "  2. Go to: https://www.npmjs.com/settings/caygnus/access-tokens"; \
-			echo "  3. Create a new 'Automation' token with 'Publish' permissions"; \
-			echo "  4. Add it to your .env file: NPM_TOKEN=your_token_here"; \
-			echo ""; \
-			echo "Or switch npm accounts:"; \
-			echo "  npm logout && npm login (use caygnus account credentials)"; \
-			exit $$EXIT_CODE; \
-		fi; \
-	else \
-		echo "❌ Not authenticated. Options:"; \
-		echo "   1. Add NPM_TOKEN=your_caygnus_token to .env file (recommended), or"; \
-		echo "   2. Set NPM_TOKEN environment variable, or"; \
-		echo "   3. Run: npm login (use your @caygnus organization account)"; \
-		exit 1; \
-	fi'
+	@bash scripts/publish-ts-sdk.sh
 
 # publish-dart-sdk: Publish Dart SDK to pub.dev
 # Usage: make publish-dart-sdk
@@ -540,9 +471,7 @@ publish-sdks: verify-sdks
 # When to use: Before actual publish to verify package contents
 .PHONY: publish-ts-sdk-dry-run
 publish-ts-sdk-dry-run: verify-sdks
-	@echo "🔍 Dry-run: TypeScript SDK publish..."
-	@bash -c 'set -e; cd $(SDK_TS_DIR); npm publish --dry-run'
-	@echo "✅ Dry-run complete"
+	@bash -c 'set -e; cd $(SDK_TS_DIR); npm publish --dry-run --access public'
 
 # publish-dart-sdk-dry-run: Test Dart SDK publish without actually publishing
 # Usage: make publish-dart-sdk-dry-run
@@ -551,6 +480,4 @@ publish-ts-sdk-dry-run: verify-sdks
 # When to use: Before actual publish to verify package contents
 .PHONY: publish-dart-sdk-dry-run
 publish-dart-sdk-dry-run: verify-sdks
-	@echo "🔍 Dry-run: Dart SDK publish..."
-	@bash -c 'set -e; cd $(SDK_DART_DIR); pub publish --dry-run'
-	@echo "✅ Dry-run complete"
+	@bash -c 'set -e; cd $(SDK_DART_DIR); dart pub publish --dry-run'
