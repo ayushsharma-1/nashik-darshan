@@ -462,24 +462,42 @@ publish-ts-sdk: verify-sdks
 		if [ -n "$$NPM_TOKEN" ]; then \
 			echo "✓ Using NPM_TOKEN from .env file"; \
 			echo "//registry.npmjs.org/:_authToken=$$NPM_TOKEN" > .npmrc; \
-			npm publish; \
-			rm -f .npmrc; \
-			exit 0; \
+			if npm publish --access public; then \
+				rm -f .npmrc; \
+				echo "✅ TypeScript SDK published to npm (public)"; \
+				exit 0; \
+			else \
+				rm -f .npmrc; \
+				echo "❌ npm publish failed. Check your token and package permissions."; \
+				exit 1; \
+			fi; \
 		fi; \
 	fi; \
 	# Check environment variable \
 	if [ -n "$$NPM_TOKEN" ]; then \
 		echo "✓ Using NPM_TOKEN from environment"; \
 		echo "//registry.npmjs.org/:_authToken=$$NPM_TOKEN" > .npmrc; \
-		npm publish; \
-		rm -f .npmrc; \
-		exit 0; \
+		if npm publish --access public; then \
+			rm -f .npmrc; \
+			echo "✅ TypeScript SDK published to npm (public)"; \
+			exit 0; \
+		else \
+			rm -f .npmrc; \
+			echo "❌ npm publish failed. Check your token and package permissions."; \
+			exit 1; \
+		fi; \
 	fi; \
 	# Fallback to npm login if token not found \
 	echo "⚠️  NPM_TOKEN not found in .env or environment, checking npm login..."; \
 	if npm whoami &>/dev/null; then \
-		echo "✓ Using npm login credentials"; \
-		npm publish; \
+		echo "✓ Using npm login credentials (user: $$(npm whoami))"; \
+		if npm publish --access public; then \
+			echo "✅ TypeScript SDK published to npm (public)"; \
+			exit 0; \
+		else \
+			echo "❌ npm publish failed. Check your authentication and package permissions."; \
+			exit 1; \
+		fi; \
 	else \
 		echo "❌ Not authenticated. Options:"; \
 		echo "   1. Add NPM_TOKEN=your_token to .env file (recommended), or"; \
@@ -487,7 +505,6 @@ publish-ts-sdk: verify-sdks
 		echo "   3. Run: npm login"; \
 		exit 1; \
 	fi'
-	@echo "✅ TypeScript SDK published to npm (public)"
 
 # publish-dart-sdk: Publish Dart SDK to pub.dev
 # Usage: make publish-dart-sdk
@@ -508,8 +525,13 @@ publish-dart-sdk: verify-sdks
 			echo "✓ Using PUB_CREDENTIALS from .env file"; \
 			mkdir -p ~/.pub-cache; \
 			echo "$$PUB_CREDENTIALS" > ~/.pub-cache/credentials.json; \
-			dart pub publish --force; \
-			exit 0; \
+			if dart pub publish --force; then \
+				echo "✅ Dart SDK published to pub.dev (public)"; \
+				exit 0; \
+			else \
+				echo "❌ dart pub publish failed. Check your credentials."; \
+				exit 1; \
+			fi; \
 		fi; \
 	fi; \
 	# Check environment variable \
@@ -517,14 +539,25 @@ publish-dart-sdk: verify-sdks
 		echo "✓ Using PUB_CREDENTIALS from environment"; \
 		mkdir -p ~/.pub-cache; \
 		echo "$$PUB_CREDENTIALS" > ~/.pub-cache/credentials.json; \
-		dart pub publish --force; \
-		exit 0; \
+		if dart pub publish --force; then \
+			echo "✅ Dart SDK published to pub.dev (public)"; \
+			exit 0; \
+		else \
+			echo "❌ dart pub publish failed. Check your credentials."; \
+			exit 1; \
+		fi; \
 	fi; \
 	# Fallback to pub token if credentials not found \
 	echo "⚠️  PUB_CREDENTIALS not found in .env or environment, checking pub token..."; \
 	if dart pub token list 2>/dev/null | grep -q "pub.dev"; then \
 		echo "✓ Using existing pub.dev token"; \
-		dart pub publish --force; \
+		if dart pub publish --force; then \
+			echo "✅ Dart SDK published to pub.dev (public)"; \
+			exit 0; \
+		else \
+			echo "❌ dart pub publish failed. Check your token and package permissions."; \
+			exit 1; \
+		fi; \
 	else \
 		echo "❌ Not authenticated. Options:"; \
 		echo "   1. Add PUB_CREDENTIALS=your_credentials to .env file (recommended), or"; \
@@ -532,7 +565,6 @@ publish-dart-sdk: verify-sdks
 		echo "   3. Run: dart pub token add https://pub.dev"; \
 		exit 1; \
 	fi'
-	@echo "✅ Dart SDK published to pub.dev (public)"
 
 # publish-sdks: Publish both SDKs to their respective registries
 # Usage: make publish-sdks
