@@ -2,6 +2,8 @@
 
 This directory contains generated SDKs for the Nashik Darshan API.
 
+> 📖 **For project overview, see [README.md](../README.md)** | **For developer reference, see [DEVELOPER_GUIDE.md](../DEVELOPER_GUIDE.md)**
+
 ## Generated SDKs
 
 - **TypeScript SDK** (`ts/`) - Generated using `typescript-axios` generator

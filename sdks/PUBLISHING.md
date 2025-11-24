@@ -2,6 +2,8 @@
 
 This guide explains how to publish the Nashik Darshan SDKs to their respective package registries.
 
+> 📖 **Navigation:** [README.md](../README.md) → [SDK Generation](../README.md#sdk-generation--publishing) → This Guide
+
 ## Overview
 
 We use a **monorepo approach** - both SDKs are maintained in the same repository but published independently to:

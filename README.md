@@ -11,7 +11,9 @@ A modern, scalable tourism and travel discovery platform backend for Nashik city
 - [Getting Started](#getting-started)
 - [Configuration](#configuration)
 - [API Documentation](#api-documentation)
+- [SDK Generation & Publishing](#sdk-generation--publishing)
 - [Development Workflow](#development-workflow)
+- [Documentation Guide](#documentation-guide)
 - [Deployment](#deployment)
 - [Future Scope](#future-scope)
 - [Project Structure](#project-structure)
@@ -321,6 +323,8 @@ Expected response:
 
 ## Configuration
 
+> 📖 **For complete configuration documentation with all options and examples, see [CONFIG.md](./CONFIG.md)**
+
 This application supports multiple configuration methods with the following priority:
 
 1. **Environment Variables** (highest priority)
@@ -349,7 +353,7 @@ See the [Getting Started](#getting-started) section for a minimal example.
 All configuration values can be set via environment variables with the `CAYGNUS_` prefix:
 
 ```bash
-export CAYGNUS_SERVER_ADDRESS=":8080"
+export CAYGNUS_SERVER_ADDRESS=":8080"   
 export CAYGNUS_POSTGRES_HOST="localhost"
 export CAYGNUS_POSTGRES_PORT=5432
 # ... etc
@@ -369,6 +373,8 @@ Place RSA key files in the `./keys/` directory:
 ### Detailed Configuration Guide
 
 For comprehensive configuration documentation, including all available options, validation rules, and security best practices, see **[CONFIG.md](./CONFIG.md)**.
+
+> 📖 **See [Documentation Guide](#documentation-guide) for complete documentation navigation**
 
 ## API Documentation
 
@@ -412,11 +418,20 @@ This command:
 2. Converts to OpenAPI 3.0
 3. Fixes any reference issues
 
-### SDK Generation
+## SDK Generation & Publishing
 
 The project includes automated SDK generation for TypeScript and Dart. SDKs are generated from the OpenAPI specification and can be published to npm and pub.dev.
 
+> 📖 **For complete SDK documentation, see:**
+>
+> - [sdks/README.md](./sdks/README.md) - SDK generation guide
+> - [sdks/PUBLISHING.md](./sdks/PUBLISHING.md) - Publishing instructions
+> - [sdks/ARCHITECTURE.md](./sdks/ARCHITECTURE.md) - Architecture decisions
+
+### SDK Generation
+
 **Quick Start:**
+
 ```bash
 # Generate both SDKs
 make generate-sdks
@@ -427,21 +442,32 @@ make publish-sdks
 ```
 
 **For detailed SDK documentation, see:**
+
 - [`sdks/README.md`](./sdks/README.md) - SDK generation guide
 - [`sdks/PUBLISHING.md`](./sdks/PUBLISHING.md) - Publishing instructions
 - [`sdks/ARCHITECTURE.md`](./sdks/ARCHITECTURE.md) - Architecture decisions
 
 **Generated SDKs:**
+
 - **TypeScript SDK**: `@caygnus/nashik-darshan-sdk` (npm)
 - **Dart SDK**: `nashik_darshan_sdk` (pub.dev)
 
+> 📚 **For complete SDK documentation, see:**
+>
+> - [`sdks/README.md`](./sdks/README.md) - SDK generation guide
+> - [`sdks/PUBLISHING.md`](./sdks/PUBLISHING.md) - Publishing instructions
+> - [`sdks/ARCHITECTURE.md`](./sdks/ARCHITECTURE.md) - Monorepo architecture decisions
+
 ## Development Workflow
 
-> 📖 **For a comprehensive developer guide, see [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)**
+> 📖 **For a comprehensive developer guide with complete command reference, workflows, and troubleshooting, see [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)**
+
+This section provides a quick overview. For detailed information, refer to the [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md).
 
 ### Available Make Commands
 
 #### 🏗️ Code Generation
+
 ```bash
 make generate-ent          # Generate Ent ORM code from schema
 make swagger              # Generate API documentation (Swagger 2.0 + OpenAPI 3.0)
@@ -451,17 +477,20 @@ make swagger-clean        # Clean generated swagger files
 ```
 
 #### 🗄️ Database
+
 ```bash
 make migrate-ent          # Run database migrations
 ```
 
 #### 🚀 Development
+
 ```bash
 make run                  # Start development server
 make build                # Build production binary
 ```
 
 #### 📦 SDK Generation & Publishing
+
 ```bash
 # SDK Generation
 make generate-sdks       # Generate both TypeScript and Dart SDKs
@@ -488,6 +517,7 @@ make check-env             # Verify all required tools are installed
 ```
 
 #### 🧹 Code Quality
+
 ```bash
 make lint-fix             # Auto-fix linting issues
 make install-hooks        # Install git pre-commit hooks
@@ -495,10 +525,13 @@ make run-hooks            # Manually run git hooks
 ```
 
 #### 🔐 Security
+
 ```bash
 make generate-dev-keys    # Generate unencrypted RSA keys (dev only)
 make generate-keys        # Generate encrypted RSA keys (production)
 ```
+
+> 📖 **For detailed command reference and workflows, see [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)**
 
 ### Development Process
 

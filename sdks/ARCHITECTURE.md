@@ -1,5 +1,7 @@
 # SDK Architecture: Monorepo Approach
 
+> 📖 **Navigation:** [README.md](../README.md) → [SDK Generation](../README.md#sdk-generation--publishing) → This Guide
+
 ## Why Monorepo Instead of Separate Repositories?
 
 We've chosen a **monorepo approach** for managing our SDKs. Here's why this is the ideal solution for publishing to package registries:

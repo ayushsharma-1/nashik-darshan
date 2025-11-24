@@ -2,6 +2,8 @@
 
 A comprehensive guide for developers working on the Nashik Darshan v2 backend.
 
+> 📖 **This is a detailed reference guide. For project overview and quick start, see [README.md](./README.md)**
+
 ## Table of Contents
 
 - [Quick Start](#quick-start)
@@ -47,17 +49,20 @@ make run
 ### Daily Development Cycle
 
 1. **Start your day:**
+
    ```bash
    git pull origin main
    make run
    ```
 
 2. **Make changes:**
+
    - Edit code
    - Test locally
    - Run linter: `make lint-fix`
 
 3. **Before committing:**
+
    ```bash
    make lint-fix          # Auto-fix issues
    make run-hooks         # Run pre-commit checks
@@ -113,76 +118,76 @@ make run
 
 ### Code Generation
 
-| Command | Description | When to Use |
-|---------|-------------|-------------|
-| `make generate-ent` | Generate Ent ORM code from schema | After modifying `ent/schema/` files |
-| `make swagger` | Generate API documentation | After modifying API handlers or DTOs |
-| `make swagger-2-0` | Generate Swagger 2.0 only | When you only need Swagger 2.0 |
-| `make swagger-3-0` | Convert to OpenAPI 3.0 | When you only need OpenAPI 3.0 |
-| `make swagger-clean` | Clean generated swagger files | To start fresh |
+| Command              | Description                       | When to Use                          |
+| -------------------- | --------------------------------- | ------------------------------------ |
+| `make generate-ent`  | Generate Ent ORM code from schema | After modifying `ent/schema/` files  |
+| `make swagger`       | Generate API documentation        | After modifying API handlers or DTOs |
+| `make swagger-2-0`   | Generate Swagger 2.0 only         | When you only need Swagger 2.0       |
+| `make swagger-3-0`   | Convert to OpenAPI 3.0            | When you only need OpenAPI 3.0       |
+| `make swagger-clean` | Clean generated swagger files     | To start fresh                       |
 
 ### Database
 
-| Command | Description | When to Use |
-|---------|-------------|-------------|
+| Command            | Description             | When to Use                            |
+| ------------------ | ----------------------- | -------------------------------------- |
 | `make migrate-ent` | Run database migrations | After schema changes or on fresh setup |
 
 ### Development
 
-| Command | Description | When to Use |
-|---------|-------------|-------------|
-| `make run` | Start development server | Daily development |
-| `make build` | Build production binary | Before deployment |
+| Command      | Description              | When to Use       |
+| ------------ | ------------------------ | ----------------- |
+| `make run`   | Start development server | Daily development |
+| `make build` | Build production binary  | Before deployment |
 
 ### SDK Generation
 
-| Command | Description | When to Use |
-|---------|-------------|-------------|
-| `make generate-sdks` | Generate both TypeScript and Dart SDKs | After API changes |
-| `make generate-ts-sdk` | Generate TypeScript SDK only | When you only need TS SDK |
-| `make generate-dart-sdk` | Generate Dart SDK only | When you only need Dart SDK |
-| `make clean-sdks` | Clean generated SDK directories | To start fresh |
-| `make verify-sdks` | Verify generated SDKs are complete | Before publishing |
+| Command                  | Description                            | When to Use                 |
+| ------------------------ | -------------------------------------- | --------------------------- |
+| `make generate-sdks`     | Generate both TypeScript and Dart SDKs | After API changes           |
+| `make generate-ts-sdk`   | Generate TypeScript SDK only           | When you only need TS SDK   |
+| `make generate-dart-sdk` | Generate Dart SDK only                 | When you only need Dart SDK |
+| `make clean-sdks`        | Clean generated SDK directories        | To start fresh              |
+| `make verify-sdks`       | Verify generated SDKs are complete     | Before publishing           |
 
 ### SDK Version Management
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `make version-sdks VERSION=x.y.z` | Update both SDK versions | `make version-sdks VERSION=1.0.1` |
-| `make version-ts-sdk VERSION=x.y.z` | Update TypeScript SDK version | `make version-ts-sdk VERSION=1.0.1` |
-| `make version-dart-sdk VERSION=x.y.z` | Update Dart SDK version | `make version-dart-sdk VERSION=1.0.1` |
+| Command                               | Description                   | Example                               |
+| ------------------------------------- | ----------------------------- | ------------------------------------- |
+| `make version-sdks VERSION=x.y.z`     | Update both SDK versions      | `make version-sdks VERSION=1.0.1`     |
+| `make version-ts-sdk VERSION=x.y.z`   | Update TypeScript SDK version | `make version-ts-sdk VERSION=1.0.1`   |
+| `make version-dart-sdk VERSION=x.y.z` | Update Dart SDK version       | `make version-dart-sdk VERSION=1.0.1` |
 
 ### SDK Publishing
 
-| Command | Description | When to Use |
-|---------|-------------|-------------|
-| `make publish-sdks` | Publish both SDKs to registries | After version update and testing |
-| `make publish-ts-sdk` | Publish TypeScript SDK to npm | When ready to publish TS SDK |
-| `make publish-dart-sdk` | Publish Dart SDK to pub.dev | When ready to publish Dart SDK |
-| `make publish-ts-sdk-dry-run` | Test TypeScript SDK publish | Before actual publish |
-| `make publish-dart-sdk-dry-run` | Test Dart SDK publish | Before actual publish |
+| Command                         | Description                     | When to Use                      |
+| ------------------------------- | ------------------------------- | -------------------------------- |
+| `make publish-sdks`             | Publish both SDKs to registries | After version update and testing |
+| `make publish-ts-sdk`           | Publish TypeScript SDK to npm   | When ready to publish TS SDK     |
+| `make publish-dart-sdk`         | Publish Dart SDK to pub.dev     | When ready to publish Dart SDK   |
+| `make publish-ts-sdk-dry-run`   | Test TypeScript SDK publish     | Before actual publish            |
+| `make publish-dart-sdk-dry-run` | Test Dart SDK publish           | Before actual publish            |
 
 ### SDK Setup
 
-| Command | Description | When to Use |
-|---------|-------------|-------------|
-| `make install-deps` | Install openapi-generator-cli | First time SDK generation |
-| `make check-env` | Verify all required tools | Troubleshooting or first setup |
+| Command             | Description                   | When to Use                    |
+| ------------------- | ----------------------------- | ------------------------------ |
+| `make install-deps` | Install openapi-generator-cli | First time SDK generation      |
+| `make check-env`    | Verify all required tools     | Troubleshooting or first setup |
 
 ### Code Quality
 
-| Command | Description | When to Use |
-|---------|-------------|-------------|
-| `make lint-fix` | Auto-fix linting issues | Before committing |
-| `make install-hooks` | Install git pre-commit hooks | First time setup |
-| `make run-hooks` | Manually run git hooks | To test pre-commit checks |
+| Command              | Description                  | When to Use               |
+| -------------------- | ---------------------------- | ------------------------- |
+| `make lint-fix`      | Auto-fix linting issues      | Before committing         |
+| `make install-hooks` | Install git pre-commit hooks | First time setup          |
+| `make run-hooks`     | Manually run git hooks       | To test pre-commit checks |
 
 ### Security
 
-| Command | Description | When to Use |
-|---------|-------------|-------------|
+| Command                  | Description                   | When to Use             |
+| ------------------------ | ----------------------------- | ----------------------- |
 | `make generate-dev-keys` | Generate unencrypted RSA keys | Development environment |
-| `make generate-keys` | Generate encrypted RSA keys | Production environment |
+| `make generate-keys`     | Generate encrypted RSA keys   | Production environment  |
 
 ## SDK Development
 
@@ -200,12 +205,14 @@ make generate-dart-sdk
 ```
 
 **Prerequisites:**
+
 - Node.js >= 18
 - npm
 - Java (for openapi-generator-cli)
 - Dart SDK
 
 The `make generate-sdks` command will:
+
 1. Install `openapi-generator-cli` if missing
 2. Verify all required tools
 3. Generate TypeScript SDK to `sdks/ts/`
@@ -243,6 +250,7 @@ For detailed publishing instructions, see [`sdks/PUBLISHING.md`](./sdks/PUBLISHI
 ### Adding a New Feature
 
 1. **Create schema** (if database changes needed):
+
    ```bash
    # Edit ent/schema/your_feature.go
    make generate-ent
@@ -250,15 +258,19 @@ For detailed publishing instructions, see [`sdks/PUBLISHING.md`](./sdks/PUBLISHI
    ```
 
 2. **Create domain model**:
+
    - Add to `internal/domain/your_feature/`
 
 3. **Create repository**:
+
    - Add to `internal/repository/ent/your_feature.go`
 
 4. **Create service**:
+
    - Add to `internal/service/your_feature.go`
 
 5. **Create API handler**:
+
    - Add DTOs to `internal/api/dto/your_feature.go`
    - Add handlers to `internal/api/v1/your_feature.go`
 
@@ -331,6 +343,7 @@ make generate-sdks
 **Problem**: `openapi-generator-cli` not found
 
 **Solution**:
+
 ```bash
 make install-deps
 ```
@@ -338,6 +351,7 @@ make install-deps
 **Problem**: Missing dependencies
 
 **Solution**:
+
 ```bash
 make check-env  # Shows what's missing
 # Install missing tools, then:
@@ -349,6 +363,7 @@ make generate-sdks
 **Problem**: `swag` command not found
 
 **Solution**:
+
 ```bash
 make install-swag  # Automatically installs swag
 make swagger
@@ -359,6 +374,7 @@ make swagger
 **Problem**: Migration conflicts
 
 **Solution**:
+
 ```bash
 # Check migration status
 # Manually resolve conflicts in database
@@ -371,6 +387,7 @@ make migrate-ent
 **Problem**: npm authentication error
 
 **Solution**:
+
 ```bash
 npm login
 # Or set NPM_TOKEN environment variable
@@ -380,6 +397,7 @@ make publish-ts-sdk
 **Problem**: pub.dev authentication error
 
 **Solution**:
+
 ```bash
 dart pub token add https://pub.dev
 make publish-dart-sdk
@@ -390,6 +408,7 @@ make publish-dart-sdk
 **Problem**: Version format error
 
 **Solution**:
+
 - Use semantic versioning: `MAJOR.MINOR.PATCH`
 - Example: `1.0.1`, `1.1.0`, `2.0.0`
 - Don't include 'v' prefix in VERSION parameter
@@ -397,19 +416,23 @@ make publish-dart-sdk
 ## Best Practices
 
 1. **Always run linter before committing:**
+
    ```bash
    make lint-fix
    ```
 
 2. **Keep SDKs in sync:**
+
    - Use same version for both SDKs
    - Regenerate both after API changes
 
 3. **Test before publishing:**
+
    - Always run dry-run before actual publish
    - Verify SDKs are complete
 
 4. **Use semantic versioning:**
+
    - `MAJOR`: Breaking changes
    - `MINOR`: New features (backward compatible)
    - `PATCH`: Bug fixes
@@ -425,4 +448,3 @@ make publish-dart-sdk
 - **Publishing**: See [`sdks/PUBLISHING.md`](./sdks/PUBLISHING.md)
 - **Architecture**: See [`sdks/ARCHITECTURE.md`](./sdks/ARCHITECTURE.md)
 - **Configuration**: See [`CONFIG.md`](./CONFIG.md)
-
