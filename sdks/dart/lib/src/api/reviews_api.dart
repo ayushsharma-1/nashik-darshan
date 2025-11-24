@@ -8,13 +8,13 @@ import 'package:built_value/json_object.dart';
 import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
-import 'package:openapi/src/api_util.dart';
-import 'package:openapi/src/model/dto_create_review_request.dart';
-import 'package:openapi/src/model/dto_rating_stats_response.dart';
-import 'package:openapi/src/model/dto_review_response.dart';
-import 'package:openapi/src/model/dto_update_review_request.dart';
-import 'package:openapi/src/model/ierr_error_response.dart';
-import 'package:openapi/src/model/types_list_response_dto_review_response.dart';
+import 'package:nashik_darshan_sdk/src/api_util.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_create_review_request.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_rating_stats_response.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_review_response.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_update_review_request.dart';
+import 'package:nashik_darshan_sdk/src/model/ierr_error_response.dart';
+import 'package:nashik_darshan_sdk/src/model/types_list_response_dto_review_response.dart';
 
 class ReviewsApi {
 

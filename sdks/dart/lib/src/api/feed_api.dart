@@ -8,10 +8,10 @@ import 'package:built_value/json_object.dart';
 import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
-import 'package:openapi/src/api_util.dart';
-import 'package:openapi/src/model/dto_feed_request.dart';
-import 'package:openapi/src/model/dto_feed_response.dart';
-import 'package:openapi/src/model/ierr_error_response.dart';
+import 'package:nashik_darshan_sdk/src/api_util.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_feed_request.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_feed_response.dart';
+import 'package:nashik_darshan_sdk/src/model/ierr_error_response.dart';
 
 class FeedApi {
 

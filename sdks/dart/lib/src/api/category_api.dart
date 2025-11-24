@@ -9,12 +9,12 @@ import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:built_collection/built_collection.dart';
-import 'package:openapi/src/api_util.dart';
-import 'package:openapi/src/model/dto_category_response.dart';
-import 'package:openapi/src/model/dto_create_category_request.dart';
-import 'package:openapi/src/model/dto_list_categories_response.dart';
-import 'package:openapi/src/model/dto_update_category_request.dart';
-import 'package:openapi/src/model/ierr_error_response.dart';
+import 'package:nashik_darshan_sdk/src/api_util.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_category_response.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_create_category_request.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_list_categories_response.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_update_category_request.dart';
+import 'package:nashik_darshan_sdk/src/model/ierr_error_response.dart';
 
 class CategoryApi {
 

@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:openapi/src/model/ierr_error_detail.dart';
+import 'package:nashik_darshan_sdk/src/model/ierr_error_detail.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 

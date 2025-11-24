@@ -9,15 +9,15 @@ import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:built_collection/built_collection.dart';
-import 'package:openapi/src/api_util.dart';
-import 'package:openapi/src/model/dto_create_place_image_request.dart';
-import 'package:openapi/src/model/dto_create_place_request.dart';
-import 'package:openapi/src/model/dto_list_places_response.dart';
-import 'package:openapi/src/model/dto_place_image_response.dart';
-import 'package:openapi/src/model/dto_place_response.dart';
-import 'package:openapi/src/model/dto_update_place_image_request.dart';
-import 'package:openapi/src/model/dto_update_place_request.dart';
-import 'package:openapi/src/model/ierr_error_response.dart';
+import 'package:nashik_darshan_sdk/src/api_util.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_create_place_image_request.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_create_place_request.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_list_places_response.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_place_image_response.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_place_response.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_update_place_image_request.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_update_place_request.dart';
+import 'package:nashik_darshan_sdk/src/model/ierr_error_response.dart';
 
 class PlaceApi {
 

@@ -111,7 +111,8 @@ main() {
     if openapi-generator-cli generate \
         -i "$OPENAPI_SPEC" \
         -g "$GENERATOR" \
-        -o "$SDK_DIR" 2>&1 | tee /tmp/openapi-gen-dart.log; then
+        -o "$SDK_DIR" \
+        --package-name nashik_darshan_sdk 2>&1 | tee /tmp/openapi-gen-dart.log; then
         echo ""
         log_success "Dart SDK generation completed successfully"
     else
@@ -123,6 +124,16 @@ main() {
             log_error "Full log saved to: /tmp/openapi-gen-dart.log"
         fi
         exit $EXIT_CODE
+    fi
+
+    # Fix package imports if generator didn't use the package name correctly
+    log_step "Fixing package imports..."
+    if find "$SDK_DIR/lib" -type f -name "*.dart" -exec grep -l "package:openapi" {} \; | grep -q .; then
+        log_info "Replacing 'package:openapi' with 'package:nashik_darshan_sdk' in generated files..."
+        find "$SDK_DIR/lib" -type f -name "*.dart" -exec sed -i '' 's/package:openapi/package:nashik_darshan_sdk/g' {} \;
+        log_success "Package imports fixed"
+    else
+        log_info "No package import fixes needed"
     fi
 
     # Verify generated files

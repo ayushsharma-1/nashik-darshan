@@ -8,8 +8,8 @@ import 'package:built_value/json_object.dart';
 import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
-import 'package:openapi/src/model/dto_signup_request.dart';
-import 'package:openapi/src/model/dto_signup_response.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_signup_request.dart';
+import 'package:nashik_darshan_sdk/src/model/dto_signup_response.dart';
 
 class AuthApi {
 
