@@ -92,6 +92,12 @@ main() {
         cp "$PROJECT_ROOT/sdks/LICENSE" "$SDK_DIR/LICENSE"
         log_success "LICENSE file copied to SDK directory"
     fi
+    
+    # Copy README.md if it exists (preserved by .openapi-generator-ignore)
+    if [ -f "$PROJECT_ROOT/sdks/dart/README.md" ] && [ ! -f "$SDK_DIR/README.md" ]; then
+        cp "$PROJECT_ROOT/sdks/dart/README.md" "$SDK_DIR/README.md"
+        log_success "README.md copied to SDK directory"
+    fi
     echo ""
 
     # Step 4: Generate SDK

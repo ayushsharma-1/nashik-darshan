@@ -274,6 +274,12 @@ setup-sdk-dirs:
 		cp sdks/ts/README.md $(SDK_TS_DIR)/README.md; \
 		echo "✓ README.md copied to TypeScript SDK directory"; \
 	fi
+	@if [ -f $(SDK_DART_DIR)/README.md ]; then \
+		echo "✓ README.md already exists in Dart SDK"; \
+	elif [ -f sdks/dart/README.md ]; then \
+		cp sdks/dart/README.md $(SDK_DART_DIR)/README.md; \
+		echo "✓ README.md copied to Dart SDK directory"; \
+	fi
 	@echo "✅ SDK directories ready"
 
 # generate-ts-sdk: Generate TypeScript SDK only
