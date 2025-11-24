@@ -29,14 +29,22 @@ dart pub get
 import 'package:nashik_darshan_sdk/openapi.dart';
 
 // Initialize the SDK
+// basePathOverride should be the FULL URL including protocol (http:// or https://)
 final openapi = Openapi(
-  basePathOverride: 'https://api.example.com/api/v1', // Your API base URL
+  basePathOverride: 'https://api.example.com/api/v1', // Full URL required
 );
 
 // Access API clients
+// All API clients share the same Openapi instance and basePath
 final authApi = openapi.getAuthApi();
 final placeApi = openapi.getPlaceApi();
 ```
+
+**Note about basePathOverride:**
+- `basePathOverride` must be the **complete URL** including protocol (e.g., `https://api.example.com/api/v1`)
+- You only need to set it **once** when creating the Openapi instance
+- All API clients created from the same Openapi instance will use the same basePath
+- If using a custom Dio instance with `baseUrl` set, you can omit `basePathOverride` (see Custom Dio section)
 
 ### Authentication
 
@@ -46,14 +54,181 @@ The SDK supports Bearer token authentication. Configure authentication when init
 import 'package:nashik_darshan_sdk/openapi.dart';
 import 'package:dio/dio.dart';
 
+final openapi = Openapi(
+  basePathOverride: 'https://api.example.com/api/v1',
+);
+
+// Set Bearer token
+openapi.setBearerAuth('default', 'your-access-token-here');
+
+// Or use custom Dio with headers
 final dio = Dio();
 dio.options.headers['Authorization'] = 'Bearer your-access-token-here';
 
-final openapi = Openapi(
+final openapiWithDio = Openapi(
   basePathOverride: 'https://api.example.com/api/v1',
   dio: dio,
 );
 ```
+
+### Using Custom Dio Instance
+
+You can configure the SDK to use your own Dio instance with custom interceptors, default headers, or other configurations. This is useful when you want to share Dio configuration across your application.
+
+#### Basic Custom Dio Setup
+
+```dart
+import 'package:nashik_darshan_sdk/openapi.dart';
+import 'package:dio/dio.dart';
+
+// Create your custom Dio instance
+// If you set baseUrl in Dio, you don't need to set basePathOverride
+final customDio = Dio(BaseOptions(
+  baseUrl: 'https://api.example.com/api/v1', // Full URL with protocol
+  connectTimeout: const Duration(seconds: 10),
+  receiveTimeout: const Duration(seconds: 10),
+  headers: {
+    'Content-Type': 'application/json',
+  },
+));
+
+// Add request interceptor (e.g., for authentication)
+customDio.interceptors.add(InterceptorsWrapper(
+  onRequest: (options, handler) {
+    // Add auth token from your auth system
+    final token = getAuthToken(); // Your token retrieval logic
+    if (token != null) {
+      options.headers['Authorization'] = 'Bearer $token';
+    }
+    return handler.next(options);
+  },
+  onError: (error, handler) {
+    if (error.response?.statusCode == 401) {
+      // Handle unauthorized - redirect to login, refresh token, etc.
+      print('Unauthorized - please login');
+    }
+    return handler.next(error);
+  },
+));
+
+// Use custom Dio instance with SDK
+// Since Dio has baseUrl set, basePathOverride is optional
+final openapi = Openapi(
+  dio: customDio,
+  // basePathOverride not needed if dio.baseUrl is set
+);
+
+// All API clients will use the custom Dio instance
+final authApi = openapi.getAuthApi();
+final placeApi = openapi.getPlaceApi();
+```
+
+#### Using Global Dio Configuration
+
+If you have a global Dio instance configured elsewhere in your application, you can reuse it:
+
+```dart
+import 'package:nashik_darshan_sdk/openapi.dart';
+import 'package:dio/dio.dart';
+
+// Your global Dio instance (configured elsewhere in your app)
+// This might be in a separate file like: lib/api/dio_client.dart
+final globalDio = Dio(BaseOptions(
+  baseUrl: const String.fromEnvironment('API_URL', 
+    defaultValue: 'https://api.example.com/api/v1'), // Full URL
+  connectTimeout: const Duration(seconds: 30),
+  receiveTimeout: const Duration(seconds: 30),
+));
+
+// Add global interceptors (if not already added)
+globalDio.interceptors.add(/* your request interceptor */);
+globalDio.interceptors.add(/* your response interceptor */);
+
+// Use with SDK
+// Since Dio has baseUrl set, basePathOverride is optional
+final openapi = Openapi(
+  dio: globalDio,
+  // basePathOverride not needed if dio.baseUrl is set
+);
+
+// All API clients will use your global Dio instance
+final authApi = openapi.getAuthApi();
+final placeApi = openapi.getPlaceApi();
+```
+
+#### Advanced: Shared Dio Instance Across All APIs
+
+For better code organization, create a helper function to initialize the SDK with a shared Dio instance:
+
+```dart
+import 'package:nashik_darshan_sdk/openapi.dart';
+import 'package:dio/dio.dart';
+
+// Create shared Dio instance with interceptors
+Dio createDioInstance() {
+  final dio = Dio(BaseOptions(
+    baseUrl: const String.fromEnvironment('API_URL',
+      defaultValue: 'https://api.example.com/api/v1'),
+    connectTimeout: const Duration(seconds: 30),
+    receiveTimeout: const Duration(seconds: 30),
+  ));
+
+  // Request interceptor
+  dio.interceptors.add(InterceptorsWrapper(
+    onRequest: (options, handler) {
+      final token = getAuthToken(); // Your token retrieval logic
+      if (token != null) {
+        options.headers['Authorization'] = 'Bearer $token';
+      }
+      return handler.next(options);
+    },
+  ));
+
+  // Response interceptor
+  dio.interceptors.add(InterceptorsWrapper(
+    onError: (error, handler) async {
+      if (error.response?.statusCode == 401) {
+        // Handle token refresh or redirect
+        await handleUnauthorized();
+      }
+      return handler.next(error);
+    },
+  ));
+
+  return dio;
+}
+
+// Initialize SDK with shared Dio instance
+final dioInstance = createDioInstance();
+final openapi = Openapi(dio: dioInstance);
+
+// Export API clients
+final apis = {
+  'auth': openapi.getAuthApi(),
+  'places': openapi.getPlaceApi(),
+  'categories': openapi.getCategoryApi(),
+  'feed': openapi.getFeedApi(),
+  'reviews': openapi.getReviewsApi(),
+  'user': openapi.getUserApi(),
+};
+
+// Use in your application
+final places = await apis['places']!.placesGet(limit: 10);
+```
+
+### Understanding basePathOverride vs Dio baseUrl
+
+**Important:** You don't need to set the URL multiple times. The SDK uses this priority:
+
+1. **If Dio instance has `baseUrl` set** → Uses that (no need for `basePathOverride`)
+2. **Otherwise** → Uses `basePathOverride` (must be full URL with protocol)
+3. **Otherwise** → Uses default `http://localhost:8080/api/v1`
+
+**Key points:**
+- Set the URL **once** in either `basePathOverride` OR `Dio.baseUrl`
+- `basePathOverride` must be the **complete URL** including protocol (e.g., `https://api.example.com/api/v1`)
+- If using custom Dio with `baseUrl`, you can omit `basePathOverride`
+- All API clients created from the same Openapi instance share the same basePath/Dio
 
 ### Example: User Signup
 
@@ -61,6 +236,7 @@ final openapi = Openapi(
 import 'package:nashik_darshan_sdk/openapi.dart';
 import 'package:nashik_darshan_sdk/api/auth_api.dart';
 
+// Create Openapi instance once (reuse for all API clients)
 final openapi = Openapi(
   basePathOverride: 'https://api.example.com/api/v1',
 );
@@ -89,6 +265,7 @@ try {
 import 'package:nashik_darshan_sdk/openapi.dart';
 import 'package:nashik_darshan_sdk/api/place_api.dart';
 
+// Reuse the same Openapi instance (don't create a new one)
 final openapi = Openapi(
   basePathOverride: 'https://api.example.com/api/v1',
 );
@@ -118,6 +295,7 @@ try {
 import 'package:nashik_darshan_sdk/openapi.dart';
 import 'package:nashik_darshan_sdk/api/place_api.dart';
 
+// Reuse the same Openapi instance
 final openapi = Openapi(
   basePathOverride: 'https://api.example.com/api/v1',
 );
@@ -147,6 +325,7 @@ try {
 import 'package:nashik_darshan_sdk/openapi.dart';
 import 'package:nashik_darshan_sdk/api/feed_api.dart';
 
+// Reuse the same Openapi instance
 final openapi = Openapi(
   basePathOverride: 'https://api.example.com/api/v1',
 );
