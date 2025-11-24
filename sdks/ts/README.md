@@ -51,7 +51,7 @@ const configuration = new Configuration({
 
 ### Using Custom Axios Instance
 
-You can configure the SDK to use your own axios instance with custom interceptors, default headers, or other configurations. This is useful when you want to share axios configuration across your application.
+You can configure the SDK to use your own axios instance with custom interceptors, default headers, or other configurations. The API classes extend `BaseAPI` which accepts an axios instance as the third constructor parameter.
 
 #### Basic Custom Axios Setup
 
@@ -96,6 +96,7 @@ customAxios.interceptors.response.use(
 );
 
 // Use custom axios instance with SDK
+// API constructors: new ApiClass(configuration?, basePath?, axios?)
 const configuration = new Configuration({
   basePath: "https://api.nashikdarshan.com/api/v1",
 });
