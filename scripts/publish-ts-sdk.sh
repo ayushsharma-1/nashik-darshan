@@ -122,21 +122,23 @@ main() {
     log_step "Step 4/5: Configuring npm authentication"
     cd "$SDK_DIR"
     
-    # Use npm's standard authentication methods (no .npmrc file creation)
+    # Use npm's standard authentication methods (user-level config, not project files)
     if [ -n "$NPM_TOKEN" ]; then
-        # Export token as environment variable (npm reads NPM_TOKEN automatically)
-        export NPM_TOKEN
-        log_success "Using NPM_TOKEN from $AUTH_METHOD (via environment variable)"
-        log_info "npm will automatically use NPM_TOKEN environment variable for authentication"
+        log_success "Using NPM_TOKEN from $AUTH_METHOD"
         
-        # Configure scope registry if needed (user-level, not project-level)
+        # Configure authentication at user-level (~/.npmrc) - industry standard
+        # This is secure as it's in the user's home directory, not the project
         if [[ "$PACKAGE_NAME" == @caygnus/* ]]; then
-            # Only set if not already configured (user-level config)
-            if ! npm config get @caygnus:registry &>/dev/null || [ "$(npm config get @caygnus:registry)" = "undefined" ]; then
-                npm config set @caygnus:registry https://registry.npmjs.org/ --location=user
-                log_info "Configured @caygnus scope registry (user-level)"
-            fi
+            # Set scope-specific registry and auth token (user-level)
+            npm config set @caygnus:registry https://registry.npmjs.org/ --location=user
+            npm config set "//registry.npmjs.org/:_authToken" "$NPM_TOKEN" --location=user
+            log_info "Configured @caygnus scope authentication (user-level ~/.npmrc)"
+        else
+            # Set global registry auth token (user-level)
+            npm config set "//registry.npmjs.org/:_authToken" "$NPM_TOKEN" --location=user
+            log_info "Configured npm authentication (user-level ~/.npmrc)"
         fi
+        log_info "Token stored in user's ~/.npmrc (not in project directory)"
     else
         log_info "Using existing npm login credentials from ~/.npmrc"
     fi
