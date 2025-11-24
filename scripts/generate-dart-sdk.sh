@@ -127,13 +127,34 @@ main() {
     fi
 
     # Fix package imports if generator didn't use the package name correctly
-    log_step "Fixing package imports..."
-    if find "$SDK_DIR/lib" -type f -name "*.dart" -exec grep -l "package:openapi" {} \; | grep -q .; then
-        log_info "Replacing 'package:openapi' with 'package:nashik_darshan_sdk' in generated files..."
-        find "$SDK_DIR/lib" -type f -name "*.dart" -exec sed -i '' 's/package:openapi/package:nashik_darshan_sdk/g' {} \;
-        log_success "Package imports fixed"
+    # This is necessary because OpenAPI Generator uses 'openapi' as default package name
+    log_step "Fixing package imports in generated files..."
+    DART_FILES_WITH_OPENAPI=$(find "$SDK_DIR" -type f -name "*.dart" -exec grep -l "package:openapi" {} \; 2>/dev/null | wc -l | tr -d ' ' || echo "0")
+    
+    if [ "$DART_FILES_WITH_OPENAPI" -gt 0 ]; then
+        log_info "Found $DART_FILES_WITH_OPENAPI Dart file(s) with 'package:openapi' imports"
+        log_info "Replacing 'package:openapi' with 'package:nashik_darshan_sdk'..."
+        
+        # Fix imports in all directories (lib, test, example, etc.)
+        # Use find with -exec to handle files with spaces in names
+        find "$SDK_DIR" -type f -name "*.dart" -print0 | while IFS= read -r -d '' file; do
+            # Use sed to replace, handling both macOS and Linux
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i '' 's/package:openapi/package:nashik_darshan_sdk/g' "$file"
+            else
+                sed -i 's/package:openapi/package:nashik_darshan_sdk/g' "$file"
+            fi
+        done
+        
+        # Verify the fix
+        REMAINING=$(find "$SDK_DIR" -type f -name "*.dart" -exec grep -l "package:openapi" {} \; 2>/dev/null | wc -l | tr -d ' ' || echo "0")
+        if [ "$REMAINING" -eq 0 ]; then
+            log_success "Package imports fixed in all $DART_FILES_WITH_OPENAPI Dart file(s)"
+        else
+            log_warn "Some imports may not have been fixed. $REMAINING file(s) still contain 'package:openapi'"
+        fi
     else
-        log_info "No package import fixes needed"
+        log_info "No package import fixes needed - all files already use correct package name"
     fi
 
     # Verify generated files

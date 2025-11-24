@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:openapi/openapi.dart';
+import 'package:nashik_darshan_sdk/openapi.dart';
 
 // tests for PlacePlaceImage
 void main() {
