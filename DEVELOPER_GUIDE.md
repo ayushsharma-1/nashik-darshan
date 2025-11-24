@@ -153,11 +153,17 @@ make run
 
 | Command                                 | Description                   | Example                                                          |
 | --------------------------------------- | ----------------------------- | ---------------------------------------------------------------- |
+| `make show-sdk-version`                 | Show current SDK versions     | `make show-sdk-version`                                          |
 | `make version-sdks [VERSION=x.y.z]`     | Update both SDK versions      | `make version-sdks` or `make version-sdks VERSION=1.0.1`         |
 | `make version-ts-sdk [VERSION=x.y.z]`   | Update TypeScript SDK version | `make version-ts-sdk` or `make version-ts-sdk VERSION=1.0.1`     |
 | `make version-dart-sdk [VERSION=x.y.z]` | Update Dart SDK version       | `make version-dart-sdk` or `make version-dart-sdk VERSION=1.0.1` |
 
-**Note:** Versions are tracked in `sdks/version.json`. If VERSION is not provided, the command reads from this file. This makes version management simpler - just edit `sdks/version.json` or pass VERSION via CLI.
+**Version Tracking:**
+
+- Versions are tracked in `sdks/version.json` (committed to git)
+- If VERSION is not provided, the command reads from `sdks/version.json`
+- This makes version management simple - just edit `sdks/version.json` or pass VERSION via CLI
+- Use `make show-sdk-version` to check current versions
 
 ### SDK Publishing
 

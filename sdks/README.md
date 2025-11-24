@@ -34,8 +34,9 @@ make publish-sdks
 
 **Version Management:**
 
-- Versions are tracked in `sdks/version.json`
+- Versions are tracked in `sdks/version.json` (committed to git)
 - Edit `sdks/version.json` to update version, or pass `VERSION=1.0.1` via CLI
+- Use `make show-sdk-version` to check current versions
 - This makes version management simple and centralized
 
 ## Generation Workflow
