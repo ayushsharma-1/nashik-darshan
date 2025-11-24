@@ -58,15 +58,16 @@ void main() async {
   // Example: Get feed data
   try {
     print('\nFetching feed data...');
-    final feedRequest = DtoFeedRequest((b) => b
-      ..sections = [
-        DtoFeedSectionRequest((b) => b
-          ..type = TypesFeedSectionType.sectionTypeTrending
-          ..limit = 5),
-        DtoFeedSectionRequest((b) => b
-          ..type = TypesFeedSectionType.sectionTypePopular
-          ..limit = 5),
-      ],
+    final feedRequest = DtoFeedRequest(
+      (b) => b
+        ..sections = [
+          DtoFeedSectionRequest((b) => b
+            ..type = TypesFeedSectionType.sectionTypeTrending
+            ..limit = 5),
+          DtoFeedSectionRequest((b) => b
+            ..type = TypesFeedSectionType.sectionTypePopular
+            ..limit = 5),
+        ],
     );
 
     final feedResponse = await feedApi.feedPost(feedRequest);
@@ -83,4 +84,3 @@ void main() async {
 
   print('\nExample completed!');
 }
-
