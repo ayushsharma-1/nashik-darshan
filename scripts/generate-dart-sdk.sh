@@ -226,26 +226,47 @@ main() {
     
     # Preserve custom README.md, CHANGELOG.md, and LICENSE (with correct content)
     # These must be copied AFTER generation to overwrite any generated versions
+    # Note: We check if source and destination are different to avoid copying file to itself
     log_step "Preserving custom documentation and license files..."
-    if [ -f "$PROJECT_ROOT/sdks/dart/README.md" ]; then
-        cp "$PROJECT_ROOT/sdks/dart/README.md" "$SDK_DIR/README.md"
-        log_success "README.md preserved (custom version with correct imports)"
+    
+    README_SOURCE="$PROJECT_ROOT/sdks/dart/README.md"
+    README_DEST="$SDK_DIR/README.md"
+    if [ -f "$README_SOURCE" ]; then
+        # Only copy if source and destination are different files
+        if [ "$(readlink -f "$README_SOURCE" 2>/dev/null || echo "$README_SOURCE")" != "$(readlink -f "$README_DEST" 2>/dev/null || echo "$README_DEST")" ]; then
+            cp -f "$README_SOURCE" "$README_DEST"
+            log_success "README.md preserved (custom version with correct imports)"
+        else
+            log_info "README.md already in place (source and destination are the same)"
+        fi
     fi
     
-    if [ -f "$PROJECT_ROOT/sdks/dart/CHANGELOG.md" ]; then
-        cp "$PROJECT_ROOT/sdks/dart/CHANGELOG.md" "$SDK_DIR/CHANGELOG.md"
-        log_success "CHANGELOG.md preserved"
+    CHANGELOG_SOURCE="$PROJECT_ROOT/sdks/dart/CHANGELOG.md"
+    CHANGELOG_DEST="$SDK_DIR/CHANGELOG.md"
+    if [ -f "$CHANGELOG_SOURCE" ]; then
+        if [ "$(readlink -f "$CHANGELOG_SOURCE" 2>/dev/null || echo "$CHANGELOG_SOURCE")" != "$(readlink -f "$CHANGELOG_DEST" 2>/dev/null || echo "$CHANGELOG_DEST")" ]; then
+            cp -f "$CHANGELOG_SOURCE" "$CHANGELOG_DEST"
+            log_success "CHANGELOG.md preserved"
+        else
+            log_info "CHANGELOG.md already in place"
+        fi
     fi
     
-    # Always copy the Dart-specific MIT LICENSE file (not the generic proprietary one)
+    # Always copy the Dart-specific LICENSE file (not the generic proprietary one)
     # This overwrites any LICENSE file the generator might have created
-    if [ -f "$PROJECT_ROOT/sdks/dart/LICENSE" ]; then
-        cp "$PROJECT_ROOT/sdks/dart/LICENSE" "$SDK_DIR/LICENSE"
-        log_success "LICENSE preserved (MIT license for Dart SDK)"
+    LICENSE_SOURCE="$PROJECT_ROOT/sdks/dart/LICENSE"
+    LICENSE_DEST="$SDK_DIR/LICENSE"
+    if [ -f "$LICENSE_SOURCE" ]; then
+        if [ "$(readlink -f "$LICENSE_SOURCE" 2>/dev/null || echo "$LICENSE_SOURCE")" != "$(readlink -f "$LICENSE_DEST" 2>/dev/null || echo "$LICENSE_DEST")" ]; then
+            cp -f "$LICENSE_SOURCE" "$LICENSE_DEST"
+            log_success "LICENSE preserved"
+        else
+            log_info "LICENSE already in place"
+        fi
     else
-        log_warn "Dart SDK LICENSE file not found at $PROJECT_ROOT/sdks/dart/LICENSE"
+        log_warn "Dart SDK LICENSE file not found at $LICENSE_SOURCE"
         log_warn "Creating MIT LICENSE file..."
-        cat > "$SDK_DIR/LICENSE" << 'EOF'
+        cat > "$LICENSE_DEST" << 'EOF'
 MIT License
 
 Copyright (c) 2024 Caygnus
