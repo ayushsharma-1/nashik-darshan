@@ -25,16 +25,27 @@ pnpm add @caygnus/nashik-darshan-sdk
 import { Configuration, AuthApi, PlaceApi } from "@caygnus/nashik-darshan-sdk";
 
 // Configure the SDK
+// basePath should be the FULL URL including protocol (http:// or https://)
 const configuration = new Configuration({
-  basePath: "https://api.nashikdarshan.com/api/v1", // Your API base URL
+  basePath: "https://api.nashikdarshan.com/api/v1", // Full URL required
   // Optional: Add authentication token
   accessToken: "your-access-token-here",
 });
 
 // Initialize API clients
+// API constructors: new ApiClass(configuration?, basePath?, axios?)
+// All parameters are optional - you can just pass the Configuration object
+// The basePath from Configuration will be used automatically
 const authApi = new AuthApi(configuration);
 const placeApi = new PlaceApi(configuration);
 ```
+
+**Note about basePath:**
+
+- `basePath` must be the **complete URL** including protocol (e.g., `https://api.example.com/api/v1`)
+- You only need to set it **once** in the Configuration object
+- All API clients created with the same Configuration will use the same basePath
+- If using a custom axios instance with `baseURL` set, the SDK will use that instead (see Custom Axios section)
 
 ### Authentication
 
@@ -60,8 +71,9 @@ import { Configuration, PlaceApi } from "@caygnus/nashik-darshan-sdk";
 import axios, { AxiosInstance } from "axios";
 
 // Create your custom axios instance
+// If you set baseURL in axios, you don't need to set basePath in Configuration
 const customAxios: AxiosInstance = axios.create({
-  baseURL: "https://api.nashikdarshan.com/api/v1",
+  baseURL: "https://api.nashikdarshan.com/api/v1", // Full URL with protocol
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -97,16 +109,15 @@ customAxios.interceptors.response.use(
 
 // Use custom axios instance with SDK
 // API constructors: new ApiClass(configuration?, basePath?, axios?)
+// Since axios has baseURL set, basePath in Configuration is optional
 const configuration = new Configuration({
-  basePath: "https://api.nashikdarshan.com/api/v1",
+  // basePath is optional if axios.defaults.baseURL is set
+  // If not using axios baseURL, set full URL: basePath: "https://api.nashikdarshan.com/api/v1"
 });
 
 // Pass axios instance as third parameter to API constructor
-const placeApi = new PlaceApi(
-  configuration,
-  "https://api.nashikdarshan.com/api/v1",
-  customAxios
-);
+// The SDK will use axios.defaults.baseURL if set, otherwise configuration.basePath
+const placeApi = new PlaceApi(configuration, undefined, customAxios);
 ```
 
 #### Using Global Axios Configuration
@@ -119,9 +130,10 @@ import axios from "axios";
 
 // Your global axios instance (configured elsewhere in your app)
 // This might be in a separate axios config file like: src/lib/axios.ts
+// If baseURL is set in axios, you don't need basePath in Configuration
 const globalAxios = axios.create({
   baseURL:
-    process.env.REACT_APP_API_URL || "https://api.nashikdarshan.com/api/v1",
+    process.env.REACT_APP_API_URL || "https://api.nashikdarshan.com/api/v1", // Full URL
   timeout: 30000,
 });
 
@@ -130,12 +142,15 @@ globalAxios.interceptors.request.use(/* your request interceptor */);
 globalAxios.interceptors.response.use(/* your response interceptor */);
 
 // Use with SDK
-const basePath = "https://api.nashikdarshan.com/api/v1";
-const configuration = new Configuration({ basePath });
+// Since axios has baseURL set, basePath in Configuration is optional
+const configuration = new Configuration({
+  // basePath not needed if axios.defaults.baseURL is set
+});
 
 // All API clients will use your global axios instance
-const placeApi = new PlaceApi(configuration, basePath, globalAxios);
-const authApi = new AuthApi(configuration, basePath, globalAxios);
+// The SDK automatically uses axios.defaults.baseURL when available
+const placeApi = new PlaceApi(configuration, undefined, globalAxios);
+const authApi = new AuthApi(configuration, undefined, globalAxios);
 ```
 
 #### Advanced: Shared Axios Instance Across All APIs
@@ -238,13 +253,14 @@ export function ApiClientProvider({ children }: { children: ReactNode }) {
     return config;
   });
 
-  const basePath =
-    process.env.NEXT_PUBLIC_API_URL || "https://api.nashikdarshan.com/api/v1";
-  const config = new Configuration({ basePath });
+  // Since axiosInstance has baseURL set, basePath in Configuration is optional
+  const config = new Configuration({
+    // basePath not needed - axios.defaults.baseURL will be used
+  });
 
   const apis = {
-    authApi: new AuthApi(config, basePath, axiosInstance),
-    placeApi: new PlaceApi(config, basePath, axiosInstance),
+    authApi: new AuthApi(config, undefined, axiosInstance),
+    placeApi: new PlaceApi(config, undefined, axiosInstance),
   };
 
   return (
@@ -269,100 +285,19 @@ function MyComponent() {
 }
 ```
 
-### Using Custom Axios Instance
+### Understanding basePath vs axios baseURL
 
-You can configure the SDK to use your own axios instance with custom interceptors, default headers, or other configurations:
+**Important:** You don't need to set the URL multiple times. The SDK uses this priority:
 
-```typescript
-import { Configuration, PlaceApi } from "@caygnus/nashik-darshan-sdk";
-import axios, { AxiosInstance } from "axios";
+1. **If axios instance has `baseURL` set** → Uses that (no need for `basePath` in Configuration)
+2. **Otherwise** → Uses `basePath` from Configuration (must be full URL with protocol)
+3. **Otherwise** → Uses default `http://localhost:8080/api/v1`
 
-// Create your custom axios instance
-const customAxios: AxiosInstance = axios.create({
-  baseURL: "https://api.nashikdarshan.com/api/v1",
-  timeout: 10000,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-// Add request interceptor (e.g., for authentication)
-customAxios.interceptors.request.use(
-  (config) => {
-    // Add auth token from your auth system
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Add response interceptor (e.g., for error handling)
-customAxios.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized - redirect to login, refresh token, etc.
-      console.error("Unauthorized - please login");
-    }
-    return Promise.reject(error);
-  }
-);
-
-// Use custom axios instance with SDK
-const configuration = new Configuration({
-  basePath: "https://api.nashikdarshan.com/api/v1",
-});
-
-// Pass axios instance to API client constructor
-const placeApi = new PlaceApi(
-  configuration,
-  "https://api.nashikdarshan.com/api/v1",
-  customAxios
-);
-```
-
-### Using Global Axios Configuration
-
-If you have a global axios instance configured elsewhere in your application, you can reuse it:
-
-```typescript
-import { Configuration, PlaceApi, AuthApi } from "@caygnus/nashik-darshan-sdk";
-import axios from "axios";
-
-// Your global axios instance (configured elsewhere in your app)
-// This might be in a separate axios config file
-const globalAxios = axios.create({
-  baseURL:
-    process.env.REACT_APP_API_URL || "https://api.nashikdarshan.com/api/v1",
-  timeout: 30000,
-});
-
-// Add global interceptors
-globalAxios.interceptors.request.use(/* your request interceptor */);
-globalAxios.interceptors.response.use(/* your response interceptor */);
-
-// Use with SDK
-const configuration = new Configuration({
-  basePath: "https://api.nashikdarshan.com/api/v1",
-});
-
-// All API clients will use your global axios instance
-const placeApi = new PlaceApi(
-  configuration,
-  "https://api.nashikdarshan.com/api/v1",
-  globalAxios
-);
-const authApi = new AuthApi(
-  configuration,
-  "https://api.nashikdarshan.com/api/v1",
-  globalAxios
-);
-```
+**Key points:**
+- Set the URL **once** in either `Configuration.basePath` OR `axios.defaults.baseURL`
+- `basePath` must be the **complete URL** including protocol (e.g., `https://api.example.com/api/v1`)
+- If using custom axios with `baseURL`, you can omit `basePath` in Configuration
+- All API clients created with the same Configuration share the same basePath
 
 ### Advanced: Shared Axios Instance Across All APIs
 
