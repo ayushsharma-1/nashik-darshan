@@ -16,20 +16,52 @@ We use a **monorepo approach** - both SDKs are maintained in the same repository
 ### For TypeScript SDK (npm)
 
 1. **npm account** with access to `@caygnus` organization
-2. **Authentication**:
-   ```bash
-   npm login
-   # Or set NPM_TOKEN environment variable
-   ```
+2. **Authentication** (choose one method):
+   - **Method 1 (Recommended)**: Add token to `.env` file
+     ```bash
+     # Get token from: https://www.npmjs.com/settings/YOUR_USERNAME/tokens
+     # Add to .env file:
+     NPM_TOKEN=your_npm_token_here
+     ```
+   - **Method 2**: Use npm login
+     ```bash
+     npm login
+     ```
 
 ### For Dart SDK (pub.dev)
 
 1. **pub.dev account** (Google account)
-2. **Authentication**:
+2. **Authentication** (choose one method):
+   - **Method 1 (Recommended)**: Add credentials to `.env` file
+     ```bash
+     # First, get credentials by running:
+     dart pub token add https://pub.dev
+     # Then copy credentials from ~/.pub-cache/credentials.json
+     # Add to .env file:
+     PUB_CREDENTIALS='{"accessToken":"...","refreshToken":"..."}'
+     ```
+   - **Method 2**: Use existing pub token
+     ```bash
+     dart pub token add https://pub.dev
+     # Follow the prompts to authenticate
+     ```
+
+### Setting Up .env File
+
+1. Copy the example file:
+
    ```bash
-   dart pub token add https://pub.dev
-   # Follow the prompts to authenticate
+   cp .env.example .env
    ```
+
+2. Edit `.env` and add your tokens:
+
+   ```bash
+   NPM_TOKEN=your_actual_npm_token
+   PUB_CREDENTIALS='{"accessToken":"...","refreshToken":"..."}'
+   ```
+
+3. The `.env` file is gitignored and will not be committed.
 
 ## Publishing Workflow
 
@@ -100,10 +132,14 @@ For production, set up automated publishing via GitHub Actions.
 
 ### Environment Variables
 
-Set these secrets in your GitHub repository:
+The publishing scripts automatically check for tokens in `.env` file first, then fallback to default authentication.
+
+For GitHub Actions, set these secrets:
 
 - `NPM_TOKEN`: npm authentication token
 - `PUB_CREDENTIALS`: pub.dev credentials (optional, can use `pub token`)
+
+**Local Publishing**: Use `.env` file (see [Setting Up .env File](#setting-up-env-file) above)
 
 ### Automated Workflow
 
@@ -160,37 +196,33 @@ Then publish by creating a GitHub Release with a tag like `v1.0.1`.
 ### TypeScript SDK (npm)
 
 ```bash
-cd sdks/ts
+# Option 1: Using .env file (recommended)
+# Add NPM_TOKEN=your_token to .env, then:
+make publish-ts-sdk
 
-# Verify package.json
-cat package.json
-
-# Login (if not already)
+# Option 2: Using npm login
 npm login
+make publish-ts-sdk
 
-# Publish
+# Or publish manually:
+cd sdks/ts
 npm publish
-
-# Or publish with specific tag
-npm publish --tag beta
 ```
 
 ### Dart SDK (pub.dev)
 
 ```bash
-cd sdks/dart
+# Option 1: Using .env file (recommended)
+# Add PUB_CREDENTIALS='{"accessToken":"..."}' to .env, then:
+make publish-dart-sdk
 
-# Verify pubspec.yaml
-cat pubspec.yaml
-
-# Authenticate (if not already)
+# Option 2: Using pub token
 dart pub token add https://pub.dev
+make publish-dart-sdk
 
-# Validate before publishing
-dart pub publish --dry-run
-
-# Publish
-dart pub publish
+# Or publish manually:
+cd sdks/dart
+dart pub publish --force
 ```
 
 ## Version Management Strategy

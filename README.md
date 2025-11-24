@@ -443,8 +443,32 @@ make publish-sdks
 
 **Generated SDKs:**
 
-- **TypeScript SDK**: `@caygnus/nashik-darshan-sdk` (npm)
-- **Dart SDK**: `nashik_darshan_sdk` (pub.dev)
+- **TypeScript SDK**: `@caygnus/nashik-darshan-sdk` (npm) - **Public package**
+- **Dart SDK**: `nashik_darshan_sdk` (pub.dev) - **Public package**
+
+**Publishing Setup:**
+
+SDKs are published as **public packages**. To publish, set up authentication:
+
+1. **Create `.env` file** (copy from `.env.example`):
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Add your tokens** to `.env`:
+
+   ```bash
+   NPM_TOKEN=your_npm_token_here
+   PUB_CREDENTIALS='{"accessToken":"...","refreshToken":"..."}'
+   ```
+
+3. **Publish**:
+   ```bash
+   make publish-sdks
+   ```
+
+The scripts will automatically use tokens from `.env` if available, otherwise fallback to `npm login` or `dart pub token`.
 
 ## Development Workflow
 

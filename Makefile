@@ -394,42 +394,93 @@ version-sdks:
 
 # publish-ts-sdk: Publish TypeScript SDK to npm
 # Usage: make publish-ts-sdk
-# What it does: Publishes @caygnus/nashik-darshan-sdk to npm registry
+# What it does: Publishes @caygnus/nashik-darshan-sdk to npm registry (public)
 # Command: npm publish (in sdks/ts directory)
 # When to use: After updating version and verifying SDK is complete
-# Note: Requires npm login or NPM_TOKEN environment variable
+# Authentication: Checks .env for NPM_TOKEN first, falls back to npm login
+# Note: SDKs are published as public packages
 .PHONY: publish-ts-sdk
 publish-ts-sdk: verify-sdks
-	@echo "📤 Publishing TypeScript SDK to npm..."
+	@echo "📤 Publishing TypeScript SDK to npm (public)..."
 	@bash -c 'set -e; \
 	cd $(SDK_TS_DIR); \
-	if [ -z "$$NPM_TOKEN" ]; then \
-		echo "⚠️  NPM_TOKEN not set. Run: npm login"; \
-		npm publish --dry-run || npm publish; \
-	else \
+	# Load NPM_TOKEN from .env if it exists \
+	if [ -f ../../.env ]; then \
+		export $$(grep -v "^#" ../../.env | grep "^NPM_TOKEN=" | head -1); \
+		if [ -n "$$NPM_TOKEN" ]; then \
+			echo "✓ Using NPM_TOKEN from .env file"; \
+			echo "//registry.npmjs.org/:_authToken=$$NPM_TOKEN" > .npmrc; \
+			npm publish; \
+			rm -f .npmrc; \
+			exit 0; \
+		fi; \
+	fi; \
+	# Check environment variable \
+	if [ -n "$$NPM_TOKEN" ]; then \
+		echo "✓ Using NPM_TOKEN from environment"; \
 		echo "//registry.npmjs.org/:_authToken=$$NPM_TOKEN" > .npmrc; \
 		npm publish; \
 		rm -f .npmrc; \
+		exit 0; \
+	fi; \
+	# Fallback to npm login if token not found \
+	echo "⚠️  NPM_TOKEN not found in .env or environment, checking npm login..."; \
+	if npm whoami &>/dev/null; then \
+		echo "✓ Using npm login credentials"; \
+		npm publish; \
+	else \
+		echo "❌ Not authenticated. Options:"; \
+		echo "   1. Add NPM_TOKEN=your_token to .env file (recommended), or"; \
+		echo "   2. Set NPM_TOKEN environment variable, or"; \
+		echo "   3. Run: npm login"; \
+		exit 1; \
 	fi'
-	@echo "✅ TypeScript SDK published"
+	@echo "✅ TypeScript SDK published to npm (public)"
 
 # publish-dart-sdk: Publish Dart SDK to pub.dev
 # Usage: make publish-dart-sdk
-# What it does: Publishes nashik_darshan_sdk to pub.dev
+# What it does: Publishes nashik_darshan_sdk to pub.dev (public)
 # Command: dart pub publish (in sdks/dart directory)
 # When to use: After updating version and verifying SDK is complete
-# Note: Requires dart pub token add https://pub.dev or PUB_CREDENTIALS env var
+# Authentication: Checks .env for PUB_CREDENTIALS first, falls back to pub token
+# Note: SDKs are published as public packages
 .PHONY: publish-dart-sdk
 publish-dart-sdk: verify-sdks
-	@echo "📤 Publishing Dart SDK to pub.dev..."
+	@echo "📤 Publishing Dart SDK to pub.dev (public)..."
 	@bash -c 'set -e; \
 	cd $(SDK_DART_DIR); \
-	if ! pub token list 2>/dev/null | grep -q "pub.dev"; then \
-		echo "⚠️  Not authenticated with pub.dev. Run: pub token add https://pub.dev"; \
-		echo "   Or set PUB_CREDENTIALS environment variable"; \
+	# Load PUB_CREDENTIALS from .env if it exists \
+	if [ -f ../../.env ]; then \
+		export $$(grep -v "^#" ../../.env | grep "^PUB_CREDENTIALS=" | head -1); \
+		if [ -n "$$PUB_CREDENTIALS" ]; then \
+			echo "✓ Using PUB_CREDENTIALS from .env file"; \
+			mkdir -p ~/.pub-cache; \
+			echo "$$PUB_CREDENTIALS" > ~/.pub-cache/credentials.json; \
+			dart pub publish --force; \
+			exit 0; \
+		fi; \
 	fi; \
-	pub publish --dry-run || pub publish'
-	@echo "✅ Dart SDK published"
+	# Check environment variable \
+	if [ -n "$$PUB_CREDENTIALS" ]; then \
+		echo "✓ Using PUB_CREDENTIALS from environment"; \
+		mkdir -p ~/.pub-cache; \
+		echo "$$PUB_CREDENTIALS" > ~/.pub-cache/credentials.json; \
+		dart pub publish --force; \
+		exit 0; \
+	fi; \
+	# Fallback to pub token if credentials not found \
+	echo "⚠️  PUB_CREDENTIALS not found in .env or environment, checking pub token..."; \
+	if dart pub token list 2>/dev/null | grep -q "pub.dev"; then \
+		echo "✓ Using existing pub.dev token"; \
+		dart pub publish --force; \
+	else \
+		echo "❌ Not authenticated. Options:"; \
+		echo "   1. Add PUB_CREDENTIALS=your_credentials to .env file (recommended), or"; \
+		echo "   2. Set PUB_CREDENTIALS environment variable, or"; \
+		echo "   3. Run: dart pub token add https://pub.dev"; \
+		exit 1; \
+	fi'
+	@echo "✅ Dart SDK published to pub.dev (public)"
 
 # publish-sdks: Publish both SDKs to their respective registries
 # Usage: make publish-sdks
