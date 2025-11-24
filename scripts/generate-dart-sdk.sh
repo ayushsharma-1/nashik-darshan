@@ -224,6 +224,54 @@ main() {
         log_warn "No .g.dart files found. Run 'dart pub run build_runner build' if needed."
     fi
     
+    # Preserve custom README.md, CHANGELOG.md, and LICENSE (with correct content)
+    # These must be copied AFTER generation to overwrite any generated versions
+    log_step "Preserving custom documentation and license files..."
+    if [ -f "$PROJECT_ROOT/sdks/dart/README.md" ]; then
+        cp "$PROJECT_ROOT/sdks/dart/README.md" "$SDK_DIR/README.md"
+        log_success "README.md preserved (custom version with correct imports)"
+    fi
+    
+    if [ -f "$PROJECT_ROOT/sdks/dart/CHANGELOG.md" ]; then
+        cp "$PROJECT_ROOT/sdks/dart/CHANGELOG.md" "$SDK_DIR/CHANGELOG.md"
+        log_success "CHANGELOG.md preserved"
+    fi
+    
+    # Always copy the Dart-specific MIT LICENSE file (not the generic proprietary one)
+    # This overwrites any LICENSE file the generator might have created
+    if [ -f "$PROJECT_ROOT/sdks/dart/LICENSE" ]; then
+        cp "$PROJECT_ROOT/sdks/dart/LICENSE" "$SDK_DIR/LICENSE"
+        log_success "LICENSE preserved (MIT license for Dart SDK)"
+    else
+        log_warn "Dart SDK LICENSE file not found at $PROJECT_ROOT/sdks/dart/LICENSE"
+        log_warn "Creating MIT LICENSE file..."
+        cat > "$SDK_DIR/LICENSE" << 'EOF'
+MIT License
+
+Copyright (c) 2024 Caygnus
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+EOF
+        log_success "MIT LICENSE file created"
+    fi
+    echo ""
+    
     # Show directory structure
     echo ""
     log_info "SDK directory structure:"
