@@ -1,27 +1,63 @@
+# ============================================================================
+# Database Management
+# ============================================================================
+
+# migrate-ent: Run database migrations
+# Usage: make migrate-ent
+# What it does: Executes Ent database migrations to update your database schema
+# Command: go run cmd/migrate/main.go
 .PHONY: migrate-ent
 migrate-ent:
 	@echo "Running Ent migrations..."
 	@go run cmd/migrate/main.go
 	@echo "✅ Ent migrations complete"
 
+# ============================================================================
+# Code Generation
+# ============================================================================
+
+# generate-ent: Generate Ent ORM code from schema definitions
+# Usage: make generate-ent
+# What it does: Generates Go code from Ent schema files in ent/schema/
+# Command: go run scripts/main.go -cmd generate-ent
+# When to use: After modifying schema files in ent/schema/
 .PHONY: generate-ent
 generate-ent:
 	@echo "Generating Ent schema..."
 	@go run scripts/main.go -cmd generate-ent
 	@echo "✅ Ent schema generated"
 
+# generate-keys: Generate encrypted RSA key pair for production
+# Usage: make generate-keys
+# What it does: Creates encrypted RSA keys for production use
+# Command: ./scripts/generate-keys.sh
+# When to use: Before deploying to production
 .PHONY: generate-keys
 generate-keys:
 	@echo "Generating encrypted RSA key pair for production..."
 	@./scripts/generate-keys.sh
 	@echo "✅ Encrypted key pair generated"
 
+# generate-dev-keys: Generate unencrypted RSA key pair for development
+# Usage: make generate-dev-keys
+# What it does: Creates unencrypted RSA keys for local development
+# Command: ./scripts/generate-dev-keys.sh
+# When to use: First time setup or local development
 .PHONY: generate-dev-keys
 generate-dev-keys:
 	@echo "Generating unencrypted RSA key pair for development..."
 	@./scripts/generate-dev-keys.sh
 	@echo "✅ Development key pair generated"
 
+# ============================================================================
+# Git & Code Quality
+# ============================================================================
+
+# install-hooks: Install Git pre-commit hooks
+# Usage: make install-hooks
+# What it does: Sets up Git hooks to run code quality checks before commits
+# Command: git config core.hooksPath .githooks
+# When to use: First time setup or when hooks need to be reinstalled
 .PHONY: install-hooks
 install-hooks:
 	@echo "Installing Git hooks..."
@@ -29,11 +65,21 @@ install-hooks:
 	@chmod +x .githooks/pre-commit
 	@echo "✅ Git hooks installed"
 
+# run-hooks: Manually run Git pre-commit hooks
+# Usage: make run-hooks
+# What it does: Executes pre-commit hooks manually without committing
+# Command: .githooks/pre-commit
+# When to use: To test if your code passes pre-commit checks
 .PHONY: run-hooks
 run-hooks:
 	@echo "Running Git hooks..."
 	@.githooks/pre-commit
 
+# lint-fix: Auto-fix linting issues in Go code
+# Usage: make lint-fix
+# What it does: Runs gofmt and golangci-lint to automatically fix code style issues
+# Commands: gofmt -s -w . && golangci-lint run --fix
+# When to use: Before committing code to fix formatting issues
 .PHONY: lint-fix
 lint-fix:
 	@echo "🧼 Running gofmt to auto-format..."
@@ -43,17 +89,23 @@ lint-fix:
 	@echo "✅ Lint fixes applied (where possible)."
 
 
-.PHONY: swagger-clean
-swagger-clean:
-	rm -rf docs/swagger
+# ============================================================================
+# API Documentation (Swagger/OpenAPI)
+# ============================================================================
 
-.PHONY: install-swag
-install-swag:
-	@which swag > /dev/null || (go install github.com/swaggo/swag/cmd/swag@latest)
-
+# swagger: Generate complete API documentation (Swagger 2.0 + OpenAPI 3.0)
+# Usage: make swagger
+# What it does: Generates Swagger 2.0 docs and converts to OpenAPI 3.0
+# Commands: Runs swagger-2-0 and swagger-3-0 targets
+# When to use: After modifying API handlers or DTOs
 .PHONY: swagger
 swagger: swagger-2-0 swagger-3-0
 
+# swagger-2-0: Generate Swagger 2.0 documentation
+# Usage: make swagger-2-0
+# What it does: Generates Swagger 2.0 JSON, YAML, and Go docs from code annotations
+# Command: swag init (from swaggo/swag)
+# When to use: When you only need Swagger 2.0 format
 .PHONY: swagger-2-0
 swagger-2-0: install-swag
 	$(shell go env GOPATH)/bin/swag init \
@@ -69,6 +121,11 @@ swagger-2-0: install-swag
 		--outputTypes go,json,yaml
 	@make swagger-fix-refs
 
+# swagger-3-0: Convert Swagger 2.0 to OpenAPI 3.0
+# Usage: make swagger-3-0
+# What it does: Converts existing Swagger 2.0 JSON to OpenAPI 3.0 format
+# Command: curl POST to swagger.io converter API
+# When to use: When you only need OpenAPI 3.0 format
 .PHONY: swagger-3-0
 swagger-3-0: install-swag
 	@echo "Converting Swagger 2.0 to OpenAPI 3.0..."
@@ -79,17 +136,54 @@ swagger-3-0: install-swag
 		-d @docs/swagger/swagger.json > docs/swagger/swagger-3-0.json
 	@echo "Conversion complete. Output saved to docs/swagger/swagger-3-0.json"
 
+# swagger-fix-refs: Fix Swagger reference issues
+# Usage: make swagger-fix-refs
+# What it does: Post-processes Swagger files to fix reference problems
+# Command: ./scripts/fix_swagger_refs.sh
+# When to use: Automatically called by swagger-2-0, or manually if needed
 .PHONY: swagger-fix-refs
 swagger-fix-refs:
 	@./scripts/fix_swagger_refs.sh
 
+# swagger-clean: Remove all generated Swagger files
+# Usage: make swagger-clean
+# What it does: Deletes docs/swagger directory
+# Command: rm -rf docs/swagger
+# When to use: To start fresh with documentation generation
+.PHONY: swagger-clean
+swagger-clean:
+	rm -rf docs/swagger
 
+# install-swag: Install swag tool for Swagger generation
+# Usage: make install-swag
+# What it does: Installs swag CLI tool if not already installed
+# Command: go install github.com/swaggo/swag/cmd/swag@latest
+# When to use: Automatically called by swagger targets, or manually if swag is missing
+.PHONY: install-swag
+install-swag:
+	@which swag > /dev/null || (go install github.com/swaggo/swag/cmd/swag@latest)
+
+
+# ============================================================================
+# Development & Build
+# ============================================================================
+
+# run: Start the development server
+# Usage: make run
+# What it does: Runs the Go server in development mode with hot reload
+# Command: go run cmd/server/main.go
+# When to use: Daily development work
 .PHONY: run
 run:
 	@echo "Running development server..."
 	@go run cmd/server/main.go
 	@echo "✅ Development server running"
 
+# build: Build production binary
+# Usage: make build
+# What it does: Compiles Go code into a production-ready binary
+# Command: go build cmd/server/main.go
+# When to use: Before deploying to production
 .PHONY: build
 build:
 	@echo "Running production server..."
@@ -111,6 +205,11 @@ OPENAPI_SPEC := docs/swagger/swagger.yaml
 SDK_TS_DIR := sdks/ts
 SDK_DART_DIR := sdks/dart
 
+# install-deps: Install SDK generation dependencies
+# Usage: make install-deps
+# What it does: Installs openapi-generator-cli globally via npm if missing
+# Command: npm install -g @openapitools/openapi-generator-cli
+# When to use: First time SDK generation or if openapi-generator-cli is missing
 .PHONY: install-deps
 install-deps:
 	@echo "📦 Installing dependencies..."
@@ -123,6 +222,11 @@ install-deps:
 	fi'
 	@echo "✅ Dependencies installed"
 
+# check-env: Verify all required tools and dependencies are installed
+# Usage: make check-env
+# What it does: Checks for Node.js (>=18), npm, Java, Dart, and openapi-generator-cli
+# Command: bash scripts/assert.sh (checks each tool)
+# When to use: Before generating SDKs or troubleshooting SDK generation issues
 .PHONY: check-env
 check-env:
 	@echo "🔍 Checking environment and dependencies..."
@@ -135,6 +239,11 @@ check-env:
 	bash scripts/assert.sh file $(OPENAPI_SPEC)'
 	@echo "✅ Environment check passed"
 
+# setup-sdk-dirs: Set up SDK directories with ignore files
+# Usage: make setup-sdk-dirs
+# What it does: Creates SDK directories and .openapi-generator-ignore files
+# Command: mkdir and file creation commands
+# When to use: Automatically called by SDK generation targets
 .PHONY: setup-sdk-dirs
 setup-sdk-dirs:
 	@echo "📁 Setting up SDK directories..."
@@ -151,6 +260,11 @@ setup-sdk-dirs:
 	fi
 	@echo "✅ SDK directories ready"
 
+# generate-ts-sdk: Generate TypeScript SDK only
+# Usage: make generate-ts-sdk
+# What it does: Generates TypeScript SDK from OpenAPI spec using typescript-axios generator
+# Command: openapi-generator-cli generate -i docs/swagger/swagger.yaml -g typescript-axios -o sdks/ts
+# When to use: When you only need the TypeScript SDK
 .PHONY: generate-ts-sdk
 generate-ts-sdk: check-env setup-sdk-dirs
 	@echo "🔧 Generating TypeScript SDK..."
@@ -162,6 +276,11 @@ generate-ts-sdk: check-env setup-sdk-dirs
 		-o $(SDK_TS_DIR) || (echo "❌ TypeScript SDK generation failed" && exit 1)'
 	@echo "✅ TypeScript SDK generated at $(SDK_TS_DIR)"
 
+# generate-dart-sdk: Generate Dart SDK only
+# Usage: make generate-dart-sdk
+# What it does: Generates Dart SDK from OpenAPI spec using dart-dio generator
+# Command: openapi-generator-cli generate -i docs/swagger/swagger.yaml -g dart-dio -o sdks/dart
+# When to use: When you only need the Dart SDK
 .PHONY: generate-dart-sdk
 generate-dart-sdk: check-env setup-sdk-dirs
 	@echo "🔧 Generating Dart SDK..."
@@ -173,18 +292,33 @@ generate-dart-sdk: check-env setup-sdk-dirs
 		-o $(SDK_DART_DIR) || (echo "❌ Dart SDK generation failed" && exit 1)'
 	@echo "✅ Dart SDK generated at $(SDK_DART_DIR)"
 
+# generate-sdks: Generate both TypeScript and Dart SDKs
+# Usage: make generate-sdks
+# What it does: Generates both SDKs from OpenAPI specification
+# Commands: Runs install-deps, check-env, generate-ts-sdk, and generate-dart-sdk
+# When to use: After API changes to regenerate both SDKs
 .PHONY: generate-sdks
 generate-sdks: install-deps check-env generate-ts-sdk generate-dart-sdk
 	@echo "✅ All SDKs generated successfully!"
 	@echo "📁 TypeScript SDK: $(SDK_TS_DIR)"
 	@echo "📁 Dart SDK: $(SDK_DART_DIR)"
 
+# clean-sdks: Remove all generated SDK directories
+# Usage: make clean-sdks
+# What it does: Deletes sdks/ts and sdks/dart directories
+# Command: rm -rf sdks/ts sdks/dart
+# When to use: To start fresh with SDK generation
 .PHONY: clean-sdks
 clean-sdks:
 	@echo "🧹 Cleaning generated SDKs..."
 	@rm -rf $(SDK_TS_DIR) $(SDK_DART_DIR)
 	@echo "✅ SDK directories cleaned"
 
+# verify-sdks: Verify generated SDKs are complete
+# Usage: make verify-sdks
+# What it does: Checks if SDK directories exist and contain required files
+# Command: Checks for package.json/index.ts (TS) and pubspec.yaml/lib/openapi.dart (Dart)
+# When to use: Before publishing SDKs to ensure they're complete
 .PHONY: verify-sdks
 verify-sdks:
 	@echo "🔍 Verifying generated SDKs..."
@@ -205,6 +339,11 @@ verify-sdks:
 	fi; \
 	echo "✅ SDK verification complete"'
 
+# version-ts-sdk: Update TypeScript SDK version
+# Usage: make version-ts-sdk VERSION=1.0.1
+# What it does: Updates version in sdks/ts/package.json
+# Command: npm version or node script to update package.json
+# When to use: Before publishing a new TypeScript SDK version
 .PHONY: version-ts-sdk
 version-ts-sdk:
 	@echo "📦 Updating TypeScript SDK version..."
@@ -218,6 +357,11 @@ version-ts-sdk:
 	(node -e "const fs=require(\"fs\"); const pkg=JSON.parse(fs.readFileSync(\"package.json\")); pkg.version=\"$(VERSION)\"; fs.writeFileSync(\"package.json\", JSON.stringify(pkg, null, 2));")'
 	@echo "✅ TypeScript SDK version updated to $(VERSION)"
 
+# version-dart-sdk: Update Dart SDK version
+# Usage: make version-dart-sdk VERSION=1.0.1
+# What it does: Updates version in sdks/dart/pubspec.yaml
+# Command: sed to replace version in pubspec.yaml
+# When to use: Before publishing a new Dart SDK version
 .PHONY: version-dart-sdk
 version-dart-sdk:
 	@echo "📦 Updating Dart SDK version..."
@@ -230,6 +374,11 @@ version-dart-sdk:
 	sed -i.bak "s/^version: .*/version: $(VERSION)/" pubspec.yaml && rm -f pubspec.yaml.bak'
 	@echo "✅ Dart SDK version updated to $(VERSION)"
 
+# version-sdks: Update both SDK versions to the same version
+# Usage: make version-sdks VERSION=1.0.1
+# What it does: Updates version in both TypeScript and Dart SDKs
+# Commands: Runs version-ts-sdk and version-dart-sdk
+# When to use: Before publishing both SDKs with the same version number
 .PHONY: version-sdks
 version-sdks:
 	@echo "📦 Updating SDK versions..."
@@ -241,6 +390,12 @@ version-sdks:
 	@$(MAKE) version-dart-sdk VERSION=$(VERSION)
 	@echo "✅ All SDK versions updated to $(VERSION)"
 
+# publish-ts-sdk: Publish TypeScript SDK to npm
+# Usage: make publish-ts-sdk
+# What it does: Publishes @caygnus/nashik-darshan-sdk to npm registry
+# Command: npm publish (in sdks/ts directory)
+# When to use: After updating version and verifying SDK is complete
+# Note: Requires npm login or NPM_TOKEN environment variable
 .PHONY: publish-ts-sdk
 publish-ts-sdk: verify-sdks
 	@echo "📤 Publishing TypeScript SDK to npm..."
@@ -256,6 +411,12 @@ publish-ts-sdk: verify-sdks
 	fi'
 	@echo "✅ TypeScript SDK published"
 
+# publish-dart-sdk: Publish Dart SDK to pub.dev
+# Usage: make publish-dart-sdk
+# What it does: Publishes nashik_darshan_sdk to pub.dev
+# Command: dart pub publish (in sdks/dart directory)
+# When to use: After updating version and verifying SDK is complete
+# Note: Requires dart pub token add https://pub.dev or PUB_CREDENTIALS env var
 .PHONY: publish-dart-sdk
 publish-dart-sdk: verify-sdks
 	@echo "📤 Publishing Dart SDK to pub.dev..."
@@ -268,6 +429,11 @@ publish-dart-sdk: verify-sdks
 	pub publish --dry-run || pub publish'
 	@echo "✅ Dart SDK published"
 
+# publish-sdks: Publish both SDKs to their respective registries
+# Usage: make publish-sdks
+# What it does: Publishes both TypeScript (npm) and Dart (pub.dev) SDKs
+# Commands: Runs publish-ts-sdk and publish-dart-sdk
+# When to use: After updating versions and verifying both SDKs are complete
 .PHONY: publish-sdks
 publish-sdks: verify-sdks
 	@echo "📤 Publishing all SDKs..."
@@ -275,12 +441,22 @@ publish-sdks: verify-sdks
 	@$(MAKE) publish-dart-sdk
 	@echo "✅ All SDKs published"
 
+# publish-ts-sdk-dry-run: Test TypeScript SDK publish without actually publishing
+# Usage: make publish-ts-sdk-dry-run
+# What it does: Runs npm publish --dry-run to validate package without publishing
+# Command: npm publish --dry-run (in sdks/ts directory)
+# When to use: Before actual publish to verify package contents
 .PHONY: publish-ts-sdk-dry-run
 publish-ts-sdk-dry-run: verify-sdks
 	@echo "🔍 Dry-run: TypeScript SDK publish..."
 	@bash -c 'set -e; cd $(SDK_TS_DIR); npm publish --dry-run'
 	@echo "✅ Dry-run complete"
 
+# publish-dart-sdk-dry-run: Test Dart SDK publish without actually publishing
+# Usage: make publish-dart-sdk-dry-run
+# What it does: Runs dart pub publish --dry-run to validate package without publishing
+# Command: dart pub publish --dry-run (in sdks/dart directory)
+# When to use: Before actual publish to verify package contents
 .PHONY: publish-dart-sdk-dry-run
 publish-dart-sdk-dry-run: verify-sdks
 	@echo "🔍 Dry-run: Dart SDK publish..."
