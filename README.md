@@ -1076,6 +1076,9 @@ nashik-darshan-v2-be/
 │   │   ├── category/
 │   │   │   ├── model.go
 │   │   │   └── repository.go
+│   │   ├── hotel/
+│   │   │   ├── model.go
+│   │   │   └── repository.go
 │   │   └── user/
 │   │       ├── model.go
 │   │       └── repository.go
@@ -1112,6 +1115,7 @@ nashik-darshan-v2-be/
 │   │   └── encryption.go         # Cryptographic operations
 │   │
 │   ├── service/                  # Service layer (business logic)
+│   │   ├── place.go              # Place service
 │   │   ├── place.go              # Place service
 │   │   ├── review.go             # Review service
 │   │   ├── category.go           # Category service
