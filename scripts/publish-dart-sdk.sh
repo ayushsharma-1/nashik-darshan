@@ -1,6 +1,6 @@
 #!/bin/bash
 # publish-dart-sdk.sh - Publish Dart SDK to pub.dev
-# This script handles authentication and publishing of the Dart SDK
+# This script verifies the package and uses standard 'dart pub publish' command
 
 set -e
 
@@ -16,8 +16,6 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 SDK_DIR="$PROJECT_ROOT/sdks/dart"
-ENV_FILE="$PROJECT_ROOT/.env"
-PUB_CACHE="$HOME/.pub-cache"
 
 # Logging functions
 log_info() {
@@ -40,23 +38,9 @@ log_step() {
     echo -e "${CYAN}[STEP]${NC} $(date '+%Y-%m-%d %H:%M:%S') - $1"
 }
 
-# Error handler
 error_exit() {
     log_error "$1"
     exit 1
-}
-
-# Load PUB_CREDENTIALS from .env file
-load_env_credentials() {
-    if [ -f "$ENV_FILE" ]; then
-        # Extract PUB_CREDENTIALS from .env, handling comments and empty lines
-        CREDS=$(grep -v "^#" "$ENV_FILE" | grep "^PUB_CREDENTIALS=" | head -1 | cut -d= -f2- | xargs)
-        if [ -n "$CREDS" ]; then
-            echo "$CREDS"
-            return 0
-        fi
-    fi
-    return 1
 }
 
 # Main execution
@@ -67,7 +51,7 @@ main() {
     echo ""
 
     # Step 1: Verify SDK directory exists
-    log_step "Step 1/5: Verifying SDK directory"
+    log_step "Step 1/4: Verifying SDK directory"
     if [ ! -d "$SDK_DIR" ]; then
         error_exit "SDK directory not found: $SDK_DIR. Run 'make generate-dart-sdk' first."
     fi
@@ -75,7 +59,7 @@ main() {
     echo ""
 
     # Step 2: Verify pubspec.yaml exists
-    log_step "Step 2/5: Verifying pubspec.yaml"
+    log_step "Step 2/4: Verifying pubspec.yaml"
     if [ ! -f "$SDK_DIR/pubspec.yaml" ]; then
         error_exit "pubspec.yaml not found in SDK directory"
     fi
@@ -85,66 +69,86 @@ main() {
     log_success "Package: $PACKAGE_NAME@$PACKAGE_VERSION"
     echo ""
 
-    # Step 3: Check Dart and pub authentication
-    log_step "Step 3/5: Checking Dart and pub.dev authentication"
+    # Step 3: Check Dart installation
+    log_step "Step 3/4: Checking Dart installation"
     
     if ! command -v dart &> /dev/null; then
-        error_exit "Dart not found. Install Dart SDK first."
+        error_exit "Dart is not installed. Please install Dart SDK before continuing."
     fi
-    DART_VERSION=$(dart --version 2>&1 | head -n 1)
+    DART_VERSION=$(dart --version 2>&1 | head -1)
     log_success "Dart found: $DART_VERSION"
     
-    PUB_CREDENTIALS=""
-    AUTH_METHOD=""
-    
-    # Try loading from .env file
-    if CREDS=$(load_env_credentials); then
-        PUB_CREDENTIALS="$CREDS"
-        AUTH_METHOD=".env file"
-        log_success "Found PUB_CREDENTIALS in .env file"
-    # Try environment variable
-    elif [ -n "$PUB_CREDENTIALS" ]; then
-        AUTH_METHOD="environment variable"
-        log_success "Found PUB_CREDENTIALS in environment"
-    # Check pub token
-    elif dart pub token list 2>/dev/null | grep -q "pub.dev"; then
-        AUTH_METHOD="pub token"
-        log_success "Found existing pub.dev token"
+    # Check if pub.dev token is configured (optional - will prompt during publish if not)
+    if dart pub token list 2>/dev/null | grep -q "https://pub.dev"; then
+        log_success "Found pub.dev token via 'dart pub token'"
     else
-        error_exit "No pub.dev authentication found. Options:\n  1. Add PUB_CREDENTIALS='{\"accessToken\":\"...\"}' to .env file\n  2. Set PUB_CREDENTIALS environment variable\n  3. Run: dart pub token add https://pub.dev"
+        log_warn "No pub.dev token found. You will be prompted to authenticate during publish."
+        log_info "To add token manually, run: dart pub token add https://pub.dev"
     fi
     echo ""
 
-    # Step 4: Configure pub.dev authentication
-    log_step "Step 4/5: Configuring pub.dev authentication"
+    # Step 4: Run dry-run to verify package
+    log_step "Step 4/4: Running dry-run to verify package"
+    log_info "This will check the package without publishing..."
+    echo ""
     
-    if [ -n "$PUB_CREDENTIALS" ]; then
-        mkdir -p "$PUB_CACHE"
-        echo "$PUB_CREDENTIALS" > "$PUB_CACHE/credentials.json"
-        log_success "Configured pub.dev authentication using $AUTH_METHOD"
-    else
-        log_info "Using existing pub.dev token"
-    fi
-    echo ""
-
-    # Step 5: Publish package
-    log_step "Step 5/5: Publishing package to pub.dev"
-    log_info "Package: $PACKAGE_NAME@$PACKAGE_VERSION"
-    log_info "Registry: https://pub.dev"
-    echo ""
-
     cd "$SDK_DIR"
     
-    # Verify package first
-    log_info "Verifying package..."
-    if ! dart pub publish --dry-run 2>&1 | tee /tmp/pub-publish-dart-dry.log; then
-        log_warn "Package verification had warnings, but continuing..."
+    if dart pub publish --dry-run 2>&1 | tee /tmp/dart-publish-dry-run.log; then
+        echo ""
+        log_success "Dry-run completed successfully!"
+    else
+        EXIT_CODE=$?
+        echo ""
+        log_error "Dry-run failed with exit code: $EXIT_CODE"
+        if [ -f /tmp/dart-publish-dry-run.log ]; then
+            log_error "Dry-run log saved to: /tmp/dart-publish-dry-run.log"
+            log_error "Last 20 lines of log:"
+            tail -20 /tmp/dart-publish-dry-run.log | sed 's/^/  /'
+        fi
+        exit $EXIT_CODE
     fi
     echo ""
+
+    # Ready to publish
+    log_success "Package verification complete!"
+    log_info ""
+    log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    log_info "Package: $PACKAGE_NAME@$PACKAGE_VERSION"
+    log_info "Registry: https://pub.dev"
+    log_info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    log_info ""
+    log_warn "⚠️  Ready to publish. This will publish to pub.dev!"
+    log_info ""
+    log_info "To publish, run manually:"
+    log_info "  cd $SDK_DIR"
+    log_info "  dart pub publish"
+    log_info ""
+    log_info "Or if you want to publish now, the script will proceed..."
+    log_info ""
+
+    # Ask for confirmation (non-interactive mode will skip)
+    if [ -t 0 ]; then
+        read -p "Do you want to publish now? (y/N): " -n 1 -r
+        echo ""
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            log_info "Publishing cancelled. Run 'dart pub publish' manually when ready."
+            log_info ""
+            log_info "Package is ready to publish from: $SDK_DIR"
+            exit 0
+        fi
+    else
+        log_info "Non-interactive mode: Skipping publish. Run 'dart pub publish' manually."
+        log_info "Package is ready to publish from: $SDK_DIR"
+        exit 0
+    fi
 
     # Actual publish
     log_info "Publishing package (this may take a moment)..."
-    if dart pub publish --force 2>&1 | tee /tmp/pub-publish-dart.log; then
+    log_info "You may be prompted to authenticate if not already configured."
+    echo ""
+
+    if dart pub publish 2>&1 | tee /tmp/dart-publish.log; then
         echo ""
         log_success "Package published successfully!"
         log_info "View package at: https://pub.dev/packages/$PACKAGE_NAME"
@@ -152,37 +156,28 @@ main() {
         EXIT_CODE=$?
         echo ""
         log_error "Publishing failed with exit code: $EXIT_CODE"
-        
-        # Check for common errors
-        if grep -qi "unauthorized\|401\|403" /tmp/pub-publish-dart.log 2>/dev/null; then
-            log_error "Authentication error detected"
-            log_error "Check your PUB_CREDENTIALS or pub.dev token"
-        elif grep -qi "already exists\|409" /tmp/pub-publish-dart.log 2>/dev/null; then
-            log_error "Package version already exists"
-            log_error "Update version in sdks/version.json and run 'make version-dart-sdk'"
-        fi
-        
-        if [ -f /tmp/pub-publish-dart.log ]; then
-            log_error "Full log saved to: /tmp/pub-publish-dart.log"
-        fi
-        
-        # Cleanup credentials if we created them
-        if [ -n "$PUB_CREDENTIALS" ] && [ -f "$PUB_CACHE/credentials.json" ]; then
-            # Only remove if it's the one we created (check if it matches)
-            if [ "$(cat "$PUB_CACHE/credentials.json")" = "$PUB_CREDENTIALS" ]; then
-                rm -f "$PUB_CACHE/credentials.json"
-            fi
-        fi
-        
-        exit $EXIT_CODE
-    fi
 
-    # Cleanup credentials if we created them
-    if [ -n "$PUB_CREDENTIALS" ] && [ -f "$PUB_CACHE/credentials.json" ]; then
-        if [ "$(cat "$PUB_CACHE/credentials.json")" = "$PUB_CREDENTIALS" ]; then
-            rm -f "$PUB_CACHE/credentials.json"
-            log_info "Cleaned up temporary credentials"
+        # Check for common errors
+        if grep -qi "authentication\|not authenticated\|login" /tmp/dart-publish.log 2>/dev/null; then
+            log_error ""
+            log_error "Authentication error detected. This usually means:"
+            log_error "  1. You need to authenticate with pub.dev"
+            log_error "  2. Your token may have expired"
+            log_error ""
+            log_error "Solution: Run 'dart pub token add https://pub.dev' to authenticate"
+            log_error "Then run 'dart pub publish' manually from: $SDK_DIR"
+        elif grep -qi "already exists\|already published" /tmp/dart-publish.log 2>/dev/null; then
+            log_error "Package version already exists on pub.dev"
+            log_error "Update version in pubspec.yaml and try again"
+        elif grep -qi "403\|Forbidden" /tmp/dart-publish.log 2>/dev/null; then
+            log_error "403 Forbidden - Check your permissions for this package"
         fi
+
+        if [ -f /tmp/dart-publish.log ]; then
+            log_error "Full log saved to: /tmp/dart-publish.log"
+        fi
+
+        exit $EXIT_CODE
     fi
     echo ""
 
@@ -194,4 +189,3 @@ main() {
 
 # Run main function
 main "$@"
-
