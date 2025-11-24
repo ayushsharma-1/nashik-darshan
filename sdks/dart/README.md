@@ -26,7 +26,7 @@ dart pub get
 ### Basic Setup
 
 ```dart
-import 'package:nashik_darshan_sdk/openapi.dart';
+import 'package:nashik_darshan_sdk/nashik_darshan_sdk.dart';
 
 // Initialize the SDK
 // basePathOverride should be the FULL URL including protocol (http:// or https://)
@@ -52,7 +52,7 @@ final placeApi = openapi.getPlaceApi();
 The SDK supports Bearer token authentication. Configure authentication when initializing:
 
 ```dart
-import 'package:nashik_darshan_sdk/openapi.dart';
+import 'package:nashik_darshan_sdk/nashik_darshan_sdk.dart';
 import 'package:dio/dio.dart';
 
 final openapi = Openapi(
@@ -79,7 +79,7 @@ You can configure the SDK to use your own Dio instance with custom interceptors,
 #### Basic Custom Dio Setup
 
 ```dart
-import 'package:nashik_darshan_sdk/openapi.dart';
+import 'package:nashik_darshan_sdk/nashik_darshan_sdk.dart';
 import 'package:dio/dio.dart';
 
 // Create your custom Dio instance
@@ -129,7 +129,7 @@ final placeApi = openapi.getPlaceApi();
 If you have a global Dio instance configured elsewhere in your application, you can reuse it:
 
 ```dart
-import 'package:nashik_darshan_sdk/openapi.dart';
+import 'package:nashik_darshan_sdk/nashik_darshan_sdk.dart';
 import 'package:dio/dio.dart';
 
 // Your global Dio instance (configured elsewhere in your app)
@@ -162,7 +162,7 @@ final placeApi = openapi.getPlaceApi();
 For better code organization, create a helper function to initialize the SDK with a shared Dio instance:
 
 ```dart
-import 'package:nashik_darshan_sdk/openapi.dart';
+import 'package:nashik_darshan_sdk/nashik_darshan_sdk.dart';
 import 'package:dio/dio.dart';
 
 // Create shared Dio instance with interceptors
@@ -235,7 +235,7 @@ final places = await apis['places']!.placesGet(limit: 10);
 ### Example: User Signup
 
 ```dart
-import 'package:nashik_darshan_sdk/openapi.dart';
+import 'package:nashik_darshan_sdk/nashik_darshan_sdk.dart';
 import 'package:nashik_darshan_sdk/api/auth_api.dart';
 
 // Create Openapi instance once (reuse for all API clients)
@@ -264,7 +264,7 @@ try {
 ### Example: Get Places
 
 ```dart
-import 'package:nashik_darshan_sdk/openapi.dart';
+import 'package:nashik_darshan_sdk/nashik_darshan_sdk.dart';
 import 'package:nashik_darshan_sdk/api/place_api.dart';
 
 // Reuse the same Openapi instance (don't create a new one)
@@ -294,7 +294,7 @@ try {
 ### Example: Search Places
 
 ```dart
-import 'package:nashik_darshan_sdk/openapi.dart';
+import 'package:nashik_darshan_sdk/nashik_darshan_sdk.dart';
 import 'package:nashik_darshan_sdk/api/place_api.dart';
 
 // Reuse the same Openapi instance
@@ -324,7 +324,7 @@ try {
 ### Example: Get Feed Data
 
 ```dart
-import 'package:nashik_darshan_sdk/openapi.dart';
+import 'package:nashik_darshan_sdk/nashik_darshan_sdk.dart';
 import 'package:nashik_darshan_sdk/api/feed_api.dart';
 
 // Reuse the same Openapi instance

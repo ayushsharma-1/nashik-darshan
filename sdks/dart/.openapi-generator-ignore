@@ -5,8 +5,15 @@
 pubspec.yaml
 analysis_options.yaml
 README.md
+CHANGELOG.md
 .gitignore
 LICENSE
+
+# Preserve the renamed library file (generator creates openapi.dart, we rename it)
+lib/nashik_darshan_sdk.dart
+
+# Preserve generated .g.dart files (created by build_runner)
+lib/**/*.g.dart
 
 # Preserve custom source files (if any)
 # lib/custom/

@@ -94,9 +94,16 @@ main() {
     fi
     
     # Copy README.md if it exists (preserved by .openapi-generator-ignore)
-    if [ -f "$PROJECT_ROOT/sdks/dart/README.md" ] && [ ! -f "$SDK_DIR/README.md" ]; then
+    # We preserve our custom README.md which has correct import paths
+    if [ -f "$PROJECT_ROOT/sdks/dart/README.md" ]; then
         cp "$PROJECT_ROOT/sdks/dart/README.md" "$SDK_DIR/README.md"
-        log_success "README.md copied to SDK directory"
+        log_success "README.md preserved (custom version with correct imports)"
+    fi
+    
+    # Copy CHANGELOG.md if it exists (preserved by .openapi-generator-ignore)
+    if [ -f "$PROJECT_ROOT/sdks/dart/CHANGELOG.md" ]; then
+        cp "$PROJECT_ROOT/sdks/dart/CHANGELOG.md" "$SDK_DIR/CHANGELOG.md"
+        log_success "CHANGELOG.md preserved"
     fi
     echo ""
 
