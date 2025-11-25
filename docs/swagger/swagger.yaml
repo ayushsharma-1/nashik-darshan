@@ -73,6 +73,7 @@ definitions:
         minLength: 3
         type: string
       start_date:
+        description: Required, defaults to now() if zero value
         type: string
       subtitle:
         maxLength: 500
@@ -160,7 +161,7 @@ definitions:
         description: 0-6 for WEEKLY
         type: integer
       end_time:
-        description: HH:MM format
+        description: ISO 8601 format, optional/nillable
         type: string
       event_id:
         type: string
@@ -178,13 +179,11 @@ definitions:
       recurrence_type:
         $ref: '#/definitions/types.RecurrenceType'
       start_time:
-        description: HH:MM format
+        description: ISO 8601 format, optional/nillable
         type: string
     required:
-    - end_time
     - event_id
     - recurrence_type
-    - start_time
     type: object
   dto.CreatePlaceImageRequest:
     properties:
@@ -815,7 +814,6 @@ definitions:
   dto.UpdateEventRequest:
     properties:
       cover_image_url:
-        maxLength: 500
         type: string
       description:
         maxLength: 10000
@@ -911,7 +909,7 @@ definitions:
       day_of_week:
         type: integer
       end_time:
-        description: HH:MM format
+        description: ISO 8601 format, optional/nillable
         type: string
       exception_dates:
         items:
@@ -925,7 +923,7 @@ definitions:
       recurrence_type:
         $ref: '#/definitions/types.RecurrenceType'
       start_time:
-        description: HH:MM format
+        description: ISO 8601 format, optional/nillable
         type: string
     type: object
   dto.UpdatePlaceImageRequest:

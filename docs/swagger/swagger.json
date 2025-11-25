@@ -2783,6 +2783,7 @@
                     "minLength": 3
                 },
                 "start_date": {
+                    "description": "Required, defaults to now() if zero value",
                     "type": "string"
                 },
                 "subtitle": {
@@ -2888,10 +2889,8 @@
         "dto.CreateOccurrenceRequest": {
             "type": "object",
             "required": [
-                "end_time",
                 "event_id",
-                "recurrence_type",
-                "start_time"
+                "recurrence_type"
             ],
             "properties": {
                 "day_of_month": {
@@ -2903,7 +2902,7 @@
                     "type": "integer"
                 },
                 "end_time": {
-                    "description": "HH:MM format",
+                    "description": "ISO 8601 format, optional/nillable",
                     "type": "string"
                 },
                 "event_id": {
@@ -2928,7 +2927,7 @@
                     "$ref": "#/definitions/types.RecurrenceType"
                 },
                 "start_time": {
-                    "description": "HH:MM format",
+                    "description": "ISO 8601 format, optional/nillable",
                     "type": "string"
                 }
             }
@@ -3846,8 +3845,7 @@
             "type": "object",
             "properties": {
                 "cover_image_url": {
-                    "type": "string",
-                    "maxLength": 500
+                    "type": "string"
                 },
                 "description": {
                     "type": "string",
@@ -3981,7 +3979,7 @@
                     "type": "integer"
                 },
                 "end_time": {
-                    "description": "HH:MM format",
+                    "description": "ISO 8601 format, optional/nillable",
                     "type": "string"
                 },
                 "exception_dates": {
@@ -4001,7 +3999,7 @@
                     "$ref": "#/definitions/types.RecurrenceType"
                 },
                 "start_time": {
-                    "description": "HH:MM format",
+                    "description": "ISO 8601 format, optional/nillable",
                     "type": "string"
                 }
             }

@@ -2789,6 +2789,7 @@ const docTemplate = `{
                     "minLength": 3
                 },
                 "start_date": {
+                    "description": "Required, defaults to now() if zero value",
                     "type": "string"
                 },
                 "subtitle": {
@@ -2894,10 +2895,8 @@ const docTemplate = `{
         "dto.CreateOccurrenceRequest": {
             "type": "object",
             "required": [
-                "end_time",
                 "event_id",
-                "recurrence_type",
-                "start_time"
+                "recurrence_type"
             ],
             "properties": {
                 "day_of_month": {
@@ -2909,7 +2908,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "end_time": {
-                    "description": "HH:MM format",
+                    "description": "ISO 8601 format, optional/nillable",
                     "type": "string"
                 },
                 "event_id": {
@@ -2934,7 +2933,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/types.RecurrenceType"
                 },
                 "start_time": {
-                    "description": "HH:MM format",
+                    "description": "ISO 8601 format, optional/nillable",
                     "type": "string"
                 }
             }
@@ -3868,8 +3867,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "cover_image_url": {
-                    "type": "string",
-                    "maxLength": 500
+                    "type": "string"
                 },
                 "description": {
                     "type": "string",
@@ -4003,7 +4001,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "end_time": {
-                    "description": "HH:MM format",
+                    "description": "ISO 8601 format, optional/nillable",
                     "type": "string"
                 },
                 "exception_dates": {
@@ -4023,7 +4021,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/types.RecurrenceType"
                 },
                 "start_time": {
-                    "description": "HH:MM format",
+                    "description": "ISO 8601 format, optional/nillable",
                     "type": "string"
                 }
             }
