@@ -45,7 +45,7 @@ type Event struct {
 	InterestedCount int `json:"interested_count"`
 
 	// Relations (populated when needed)
-	Occurrences []EventOccurrence `json:"occurrences,omitempty"`
+	Occurrences []*EventOccurrence `json:"occurrences,omitempty"`
 
 	// Audit (includes Status)
 	types.BaseModel
@@ -128,11 +128,7 @@ func FromEnt(e *ent.Event) *Event {
 
 	// Convert occurrences if loaded
 	if e.Edges.Occurrences != nil {
-		occurrences := OccurrenceFromEntList(e.Edges.Occurrences)
-		event.Occurrences = make([]EventOccurrence, len(occurrences))
-		for i, occ := range occurrences {
-			event.Occurrences[i] = *occ
-		}
+		event.Occurrences = OccurrenceFromEntList(e.Edges.Occurrences)
 	}
 
 	return event
