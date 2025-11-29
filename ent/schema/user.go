@@ -60,7 +60,6 @@ func (User) Edges() []ent.Edge {
 	return []ent.Edge{}
 }
 
-// Indexes of the User.
 func (User) Indexes() []ent.Index {
 	return []ent.Index{
 		// Partial unique index for email - only when email is not empty

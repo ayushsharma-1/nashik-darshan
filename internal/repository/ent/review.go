@@ -2,7 +2,6 @@ package ent
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -101,7 +100,7 @@ func (r *ReviewRepository) GetByID(ctx context.Context, id string) (*reviewDomai
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, ierr.NewError("review not found").
-				WithHint(fmt.Sprintf("review with id %s not found", id)).
+				WithHintf("review with id %s not found", id).
 				Mark(ierr.ErrNotFound)
 		}
 		return nil, ierr.WithError(err).
@@ -179,7 +178,7 @@ func (r *ReviewRepository) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return ierr.NewError("review not found").
-				WithHint(fmt.Sprintf("review with id %s not found", id)).
+				WithHintf("review with id %s not found", id).
 				Mark(ierr.ErrNotFound)
 		}
 		return ierr.WithError(err).
@@ -392,7 +391,7 @@ func (r *ReviewRepository) SetFeatured(ctx context.Context, reviewID string, fea
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return ierr.NewError("review not found").
-				WithHint(fmt.Sprintf("review with id %s not found", reviewID)).
+				WithHintf("review with id %s not found", reviewID).
 				Mark(ierr.ErrNotFound)
 		}
 		return ierr.WithError(err).
@@ -420,7 +419,7 @@ func (r *ReviewRepository) SetVerified(ctx context.Context, reviewID string, ver
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return ierr.NewError("review not found").
-				WithHint(fmt.Sprintf("review with id %s not found", reviewID)).
+				WithHintf("review with id %s not found", reviewID).
 				Mark(ierr.ErrNotFound)
 		}
 		return ierr.WithError(err).

@@ -389,6 +389,751 @@
                 }
             }
         },
+        "/events": {
+            "get": {
+                "description": "Get a paginated list of events with filtering and pagination. Use expand=true with from_date and to_date to get expanded occurrences.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "summary": "List events",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "If true, expand occurrences in date range",
+                        "name": "expand",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "ISO date YYYY-MM-DD",
+                        "name": "from_date",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 1000,
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 0,
+                        "type": "integer",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "place_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "published",
+                            "deleted",
+                            "archived",
+                            "inactive",
+                            "pending",
+                            "draft"
+                        ],
+                        "type": "string",
+                        "x-enum-varnames": [
+                            "StatusPublished",
+                            "StatusDeleted",
+                            "StatusArchived",
+                            "StatusInactive",
+                            "StatusPending",
+                            "StatusDraft"
+                        ],
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "tags",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "ISO date YYYY-MM-DD",
+                        "name": "to_date",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "AARTI",
+                            "FESTIVAL",
+                            "CULTURAL",
+                            "WORKSHOP",
+                            "SPECIAL_DARSHAN"
+                        ],
+                        "type": "string",
+                        "x-enum-varnames": [
+                            "EventTypeAarti",
+                            "EventTypeFestival",
+                            "EventTypeCultural",
+                            "EventTypeWorkshop",
+                            "EventTypeSpecialDarshan"
+                        ],
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Expand occurrences in date range",
+                        "name": "expand",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date for expansion (YYYY-MM-DD)",
+                        "name": "from_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date for expansion (YYYY-MM-DD)",
+                        "name": "to_date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ListEventsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Create a new event with the provided details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "summary": "Create a new event",
+                "parameters": [
+                    {
+                        "description": "Create event request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.EventResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/events/occurrences": {
+            "post": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Create a new occurrence for an event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "summary": "Create event occurrence",
+                "parameters": [
+                    {
+                        "description": "Create occurrence request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateOccurrenceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.OccurrenceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/events/occurrences/{id}": {
+            "get": {
+                "description": "Get an event occurrence by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "summary": "Get occurrence by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Occurrence ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.OccurrenceResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Update an existing event occurrence",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "summary": "Update occurrence",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Occurrence ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update occurrence request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateOccurrenceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.OccurrenceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Soft delete an event occurrence",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "summary": "Delete occurrence",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Occurrence ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/events/slug/{slug}": {
+            "get": {
+                "description": "Get an event by its slug",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "summary": "Get event by slug",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.EventResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/events/{eventId}/occurrences": {
+            "get": {
+                "description": "Get all occurrences for a specific event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "summary": "List occurrences for event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.OccurrenceResponse"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/events/{id}": {
+            "get": {
+                "description": "Get an event by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "summary": "Get event by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.EventResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Update an existing event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "summary": "Update an event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update event request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.EventResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Soft delete an event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "summary": "Delete an event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/events/{id}/interested": {
+            "post": {
+                "description": "Increment the interested count for an event (user marked as interested)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "summary": "Increment event interested count",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/events/{id}/view": {
+            "post": {
+                "description": "Increment the view count for an event (analytics)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "summary": "Increment event view count",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/feed": {
             "post": {
                 "description": "Get feed data with multiple sections (trending, popular, latest, nearby)",
@@ -399,7 +1144,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Feed"
+                    "Place"
                 ],
                 "summary": "Get feed data",
                 "parameters": [
@@ -422,6 +1167,420 @@
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/hotels": {
+            "get": {
+                "description": "Get a paginated list of hotels with filtering and pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Hotel"
+                ],
+                "summary": "List hotels",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "end_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "expand",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Trending filter",
+                        "name": "last_viewed_after",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Geospatial filters",
+                        "name": "latitude",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 1000,
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "name": "longitude",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "name": "max_price",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Price range filters",
+                        "name": "min_price",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 0,
+                        "type": "integer",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "radius in meters",
+                        "name": "radius_m",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search",
+                        "name": "search_query",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Custom filters",
+                        "name": "slug",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "collectionFormat": "csv",
+                        "name": "star_rating",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "start_time",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "published",
+                            "deleted",
+                            "archived",
+                            "inactive",
+                            "pending",
+                            "draft"
+                        ],
+                        "type": "string",
+                        "x-enum-varnames": [
+                            "StatusPublished",
+                            "StatusDeleted",
+                            "StatusArchived",
+                            "StatusInactive",
+                            "StatusPending",
+                            "StatusDraft"
+                        ],
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ListHotelsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Create a new hotel with the provided details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Hotel"
+                ],
+                "summary": "Create a new hotel",
+                "parameters": [
+                    {
+                        "description": "Create hotel request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateHotelRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HotelResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/hotels/slug/{slug}": {
+            "get": {
+                "description": "Get a hotel by its slug",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Hotel"
+                ],
+                "summary": "Get hotel by slug",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hotel slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HotelResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/hotels/{id}": {
+            "get": {
+                "description": "Get a hotel by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Hotel"
+                ],
+                "summary": "Get hotel by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hotel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HotelResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Update an existing hotel",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Hotel"
+                ],
+                "summary": "Update a hotel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hotel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update hotel request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateHotelRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HotelResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Soft delete a hotel",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Hotel"
+                ],
+                "summary": "Delete a hotel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hotel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/ierr.ErrorResponse"
                         }
@@ -1060,7 +2219,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Feed"
+                    "Place"
                 ],
                 "summary": "Increment view count for a place",
                 "parameters": [
@@ -1558,7 +2717,8 @@
             ],
             "properties": {
                 "description": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 2000
                 },
                 "metadata": {
                     "$ref": "#/definitions/types.Metadata"
@@ -1566,11 +2726,209 @@
                 "name": {
                     "type": "string",
                     "maxLength": 255,
-                    "minLength": 1
+                    "minLength": 2
                 },
                 "slug": {
                     "type": "string",
-                    "minLength": 1
+                    "maxLength": 100,
+                    "minLength": 3
+                }
+            }
+        },
+        "dto.CreateEventRequest": {
+            "type": "object",
+            "required": [
+                "slug",
+                "title",
+                "type"
+            ],
+            "properties": {
+                "cover_image_url": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 10000
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "location_name": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "place_id": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "start_date": {
+                    "description": "Required, defaults to now() if zero value",
+                    "type": "string"
+                },
+                "subtitle": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2
+                },
+                "type": {
+                    "$ref": "#/definitions/types.EventType"
+                }
+            }
+        },
+        "dto.CreateHotelRequest": {
+            "type": "object",
+            "required": [
+                "location",
+                "name",
+                "slug",
+                "star_rating"
+            ],
+            "properties": {
+                "address": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "check_in_time": {
+                    "type": "string"
+                },
+                "check_out_time": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 5000
+                },
+                "email": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "location": {
+                    "$ref": "#/definitions/types.Location"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2
+                },
+                "phone": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 10
+                },
+                "price_max": {
+                    "type": "number"
+                },
+                "price_min": {
+                    "type": "number"
+                },
+                "primary_image_url": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "room_count": {
+                    "type": "integer",
+                    "maximum": 10000,
+                    "minimum": 0
+                },
+                "slug": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "star_rating": {
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1
+                },
+                "thumbnail_url": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "website": {
+                    "type": "string",
+                    "maxLength": 500
+                }
+            }
+        },
+        "dto.CreateOccurrenceRequest": {
+            "type": "object",
+            "required": [
+                "event_id",
+                "recurrence_type"
+            ],
+            "properties": {
+                "day_of_month": {
+                    "description": "1-31 for MONTHLY/YEARLY",
+                    "type": "integer"
+                },
+                "day_of_week": {
+                    "description": "0-6 for WEEKLY",
+                    "type": "integer"
+                },
+                "end_time": {
+                    "description": "ISO 8601 format, optional/nillable",
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "exception_dates": {
+                    "description": "[\"2025-12-25\", ...]",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "month_of_year": {
+                    "description": "1-12 for YEARLY",
+                    "type": "integer"
+                },
+                "recurrence_type": {
+                    "$ref": "#/definitions/types.RecurrenceType"
+                },
+                "start_time": {
+                    "description": "ISO 8601 format, optional/nillable",
+                    "type": "string"
                 }
             }
         },
@@ -1581,17 +2939,20 @@
             ],
             "properties": {
                 "alt": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255
                 },
                 "metadata": {
                     "$ref": "#/definitions/types.Metadata"
                 },
                 "pos": {
                     "type": "integer",
+                    "maximum": 100,
                     "minimum": 0
                 },
                 "url": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 500
                 }
             }
         },
@@ -1626,30 +2987,39 @@
                     "$ref": "#/definitions/types.Location"
                 },
                 "long_description": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 10000
                 },
                 "place_type": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
                 },
                 "primary_image_url": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 500
                 },
                 "short_description": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 1000
                 },
                 "slug": {
                     "type": "string",
-                    "minLength": 1
+                    "maxLength": 100,
+                    "minLength": 3
                 },
                 "subtitle": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 500
                 },
                 "thumbnail_url": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 500
                 },
                 "title": {
                     "type": "string",
-                    "minLength": 1
+                    "maxLength": 255,
+                    "minLength": 2
                 }
             }
         },
@@ -1663,12 +3033,15 @@
             "properties": {
                 "content": {
                     "type": "string",
-                    "maxLength": 2000
+                    "maxLength": 3000
                 },
                 "entity_id": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
                 },
                 "entity_type": {
+                    "maxLength": 50,
                     "$ref": "#/definitions/types.ReviewEntityType"
                 },
                 "images": {
@@ -1691,6 +3064,101 @@
                 "title": {
                     "type": "string",
                     "maxLength": 255
+                }
+            }
+        },
+        "dto.EventResponse": {
+            "type": "object",
+            "properties": {
+                "cover_image_url": {
+                    "description": "Media",
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "Identity",
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "interested_count": {
+                    "type": "integer"
+                },
+                "latitude": {
+                    "description": "Location (for citywide)",
+                    "type": "number"
+                },
+                "location_name": {
+                    "type": "string"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/types.Metadata"
+                },
+                "occurrences": {
+                    "description": "Relations (populated when needed)",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/event.EventOccurrence"
+                    }
+                },
+                "place_id": {
+                    "description": "Association",
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "description": "Validity",
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/types.Status"
+                },
+                "subtitle": {
+                    "type": "string"
+                },
+                "tags": {
+                    "description": "Metadata",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "Core",
+                    "$ref": "#/definitions/types.EventType"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "updated_by": {
+                    "type": "string"
+                },
+                "view_count": {
+                    "description": "Stats",
+                    "type": "integer"
                 }
             }
         },
@@ -1824,6 +3292,102 @@
                 }
             }
         },
+        "dto.HotelResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "check_in_time": {
+                    "type": "string"
+                },
+                "check_out_time": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "last_viewed_at": {
+                    "type": "string"
+                },
+                "location": {
+                    "$ref": "#/definitions/types.Location"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/types.Metadata"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "popularity_score": {
+                    "type": "number"
+                },
+                "price_max": {
+                    "type": "number"
+                },
+                "price_min": {
+                    "type": "number"
+                },
+                "primary_image_url": {
+                    "type": "string"
+                },
+                "rating_avg": {
+                    "type": "number"
+                },
+                "rating_count": {
+                    "type": "integer"
+                },
+                "room_count": {
+                    "type": "integer"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "star_rating": {
+                    "type": "integer"
+                },
+                "status": {
+                    "$ref": "#/definitions/types.Status"
+                },
+                "thumbnail_url": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "updated_by": {
+                    "type": "string"
+                },
+                "view_count": {
+                    "description": "Engagement fields",
+                    "type": "integer"
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.ListCategoriesResponse": {
             "type": "object",
             "properties": {
@@ -1831,6 +3395,34 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.CategoryResponse"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/types.PaginationResponse"
+                }
+            }
+        },
+        "dto.ListEventsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.EventResponse"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/types.PaginationResponse"
+                }
+            }
+        },
+        "dto.ListHotelsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.HotelResponse"
                     }
                 },
                 "pagination": {
@@ -1878,6 +3470,70 @@
                 },
                 "role": {
                     "$ref": "#/definitions/types.UserRole"
+                },
+                "status": {
+                    "$ref": "#/definitions/types.Status"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "updated_by": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.OccurrenceResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "day_of_month": {
+                    "description": "1-31",
+                    "type": "integer"
+                },
+                "day_of_week": {
+                    "description": "Day specifics",
+                    "type": "integer"
+                },
+                "duration_minutes": {
+                    "type": "integer"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "exception_dates": {
+                    "description": "Exceptions",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "description": "Identity",
+                    "type": "string"
+                },
+                "metadata": {
+                    "description": "Metadata",
+                    "$ref": "#/definitions/types.Metadata"
+                },
+                "month_of_year": {
+                    "description": "1-12 (renamed from Month)",
+                    "type": "integer"
+                },
+                "recurrence_type": {
+                    "description": "Recurrence",
+                    "$ref": "#/definitions/types.RecurrenceType"
+                },
+                "start_time": {
+                    "description": "Time",
+                    "type": "string"
                 },
                 "status": {
                     "$ref": "#/definitions/types.Status"
@@ -2170,16 +3826,181 @@
             "type": "object",
             "properties": {
                 "description": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 2000
                 },
                 "name": {
                     "type": "string",
                     "maxLength": 255,
-                    "minLength": 1
+                    "minLength": 2
                 },
                 "slug": {
                     "type": "string",
-                    "minLength": 1
+                    "maxLength": 100,
+                    "minLength": 3
+                }
+            }
+        },
+        "dto.UpdateEventRequest": {
+            "type": "object",
+            "properties": {
+                "cover_image_url": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 10000
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "location_name": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "place_id": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "subtitle": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2
+                },
+                "type": {
+                    "$ref": "#/definitions/types.EventType"
+                }
+            }
+        },
+        "dto.UpdateHotelRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "check_in_time": {
+                    "type": "string"
+                },
+                "check_out_time": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 5000
+                },
+                "email": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "location": {
+                    "$ref": "#/definitions/types.Location"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2
+                },
+                "phone": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 10
+                },
+                "price_max": {
+                    "type": "number"
+                },
+                "price_min": {
+                    "type": "number"
+                },
+                "primary_image_url": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "room_count": {
+                    "type": "integer",
+                    "maximum": 10000,
+                    "minimum": 0
+                },
+                "star_rating": {
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1
+                },
+                "thumbnail_url": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "website": {
+                    "type": "string",
+                    "maxLength": 500
+                }
+            }
+        },
+        "dto.UpdateOccurrenceRequest": {
+            "type": "object",
+            "properties": {
+                "day_of_month": {
+                    "type": "integer"
+                },
+                "day_of_week": {
+                    "type": "integer"
+                },
+                "end_time": {
+                    "description": "ISO 8601 format, optional/nillable",
+                    "type": "string"
+                },
+                "exception_dates": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "month_of_year": {
+                    "type": "integer"
+                },
+                "recurrence_type": {
+                    "$ref": "#/definitions/types.RecurrenceType"
+                },
+                "start_time": {
+                    "description": "ISO 8601 format, optional/nillable",
+                    "type": "string"
                 }
             }
         },
@@ -2226,30 +4047,39 @@
                     "$ref": "#/definitions/types.Location"
                 },
                 "long_description": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 10000
                 },
                 "place_type": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
                 },
                 "primary_image_url": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 500
                 },
                 "short_description": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 1000
                 },
                 "slug": {
                     "type": "string",
-                    "minLength": 1
+                    "maxLength": 100,
+                    "minLength": 3
                 },
                 "subtitle": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 500
                 },
                 "thumbnail_url": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 500
                 },
                 "title": {
                     "type": "string",
-                    "minLength": 1
+                    "maxLength": 255,
+                    "minLength": 2
                 }
             }
         },
@@ -2258,7 +4088,7 @@
             "properties": {
                 "content": {
                     "type": "string",
-                    "maxLength": 2000
+                    "maxLength": 3000
                 },
                 "images": {
                     "type": "array",
@@ -2287,9 +4117,77 @@
             "type": "object",
             "properties": {
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2
                 },
                 "phone": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 10
+                }
+            }
+        },
+        "event.EventOccurrence": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "day_of_month": {
+                    "description": "1-31",
+                    "type": "integer"
+                },
+                "day_of_week": {
+                    "description": "Day specifics",
+                    "type": "integer"
+                },
+                "duration_minutes": {
+                    "type": "integer"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "exception_dates": {
+                    "description": "Exceptions",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "description": "Identity",
+                    "type": "string"
+                },
+                "metadata": {
+                    "description": "Metadata",
+                    "$ref": "#/definitions/types.Metadata"
+                },
+                "month_of_year": {
+                    "description": "1-12 (renamed from Month)",
+                    "type": "integer"
+                },
+                "recurrence_type": {
+                    "description": "Recurrence",
+                    "$ref": "#/definitions/types.RecurrenceType"
+                },
+                "start_time": {
+                    "description": "Time",
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/types.Status"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "updated_by": {
                     "type": "string"
                 }
             }
@@ -2358,6 +4256,23 @@
                 }
             }
         },
+        "types.EventType": {
+            "type": "string",
+            "enum": [
+                "AARTI",
+                "FESTIVAL",
+                "CULTURAL",
+                "WORKSHOP",
+                "SPECIAL_DARSHAN"
+            ],
+            "x-enum-varnames": [
+                "EventTypeAarti",
+                "EventTypeFestival",
+                "EventTypeCultural",
+                "EventTypeWorkshop",
+                "EventTypeSpecialDarshan"
+            ]
+        },
         "types.FeedSectionType": {
             "type": "string",
             "enum": [
@@ -2418,6 +4333,37 @@
                 }
             }
         },
+        "types.RecurrenceType": {
+            "type": "string",
+            "enum": [
+                "NONE",
+                "DAILY",
+                "WEEKLY",
+                "MONTHLY",
+                "YEARLY"
+            ],
+            "x-enum-comments": {
+                "RecurrenceDaily": "Every day",
+                "RecurrenceMonthly": "Specific date each month",
+                "RecurrenceNone": "One-time event",
+                "RecurrenceWeekly": "Specific day each week",
+                "RecurrenceYearly": "Specific date each year"
+            },
+            "x-enum-descriptions": [
+                "One-time event",
+                "Every day",
+                "Specific day each week",
+                "Specific date each month",
+                "Specific date each year"
+            ],
+            "x-enum-varnames": [
+                "RecurrenceNone",
+                "RecurrenceDaily",
+                "RecurrenceWeekly",
+                "RecurrenceMonthly",
+                "RecurrenceYearly"
+            ]
+        },
         "types.ReviewEntityType": {
             "type": "string",
             "enum": [
@@ -2444,14 +4390,16 @@
                 "deleted",
                 "archived",
                 "inactive",
-                "pending"
+                "pending",
+                "draft"
             ],
             "x-enum-varnames": [
                 "StatusPublished",
                 "StatusDeleted",
                 "StatusArchived",
                 "StatusInactive",
-                "StatusPending"
+                "StatusPending",
+                "StatusDraft"
             ]
         },
         "types.UserRole": {

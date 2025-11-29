@@ -46,7 +46,6 @@ Event (core metadata)
 | id                             | ULID                                                        | PK                                |
 | type                           | ENUM `AARTI`, `FESTIVAL`, `CULTURAL`, `CITY_EVENT`, `OTHER` | Distinguishes behaviour/FE render |
 | place_id                       | TEXT NULL                                                   | FK→places; NULL = citywide        |
-| city_id                        | TEXT NULL                                                   | e.g., "nashik"                    |
 | title / subtitle / description | TEXT                                                        | Display info                      |
 | start_date / end_date          | DATE                                                        | Validity window                   |
 | tags                           | TEXT[]                                                      | e.g. ["morning","spiritual"]      |

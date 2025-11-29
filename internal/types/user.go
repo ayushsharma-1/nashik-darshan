@@ -1,8 +1,7 @@
 package types
 
 import (
-	"fmt"
-
+	ierr "github.com/omkar273/nashikdarshan/internal/errors"
 	"github.com/samber/lo"
 )
 
@@ -41,7 +40,10 @@ func (f *UserFilter) Validate() error {
 	if len(f.Roles) > 0 {
 		for _, role := range f.Roles {
 			if !lo.Contains(UserRoles, role) {
-				return fmt.Errorf("invalid role: %s", role)
+				return ierr.NewError("invalid role").
+					WithHint("valid roles are: " + string(UserRoleUser) + ", " + string(UserRoleAdmin)).
+					WithReportableDetails(map[string]any{"role": role}).
+					Mark(ierr.ErrValidation)
 			}
 		}
 	}

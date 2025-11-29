@@ -9,6 +9,12 @@ import (
 // Category is the predicate function for category builders.
 type Category func(*sql.Selector)
 
+// Event is the predicate function for event builders.
+type Event func(*sql.Selector)
+
+// EventOccurrence is the predicate function for eventoccurrence builders.
+type EventOccurrence func(*sql.Selector)
+
 // Hotel is the predicate function for hotel builders.
 type Hotel func(*sql.Selector)
 

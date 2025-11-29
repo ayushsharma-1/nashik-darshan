@@ -1,7 +1,6 @@
 package types
 
 import (
-	"fmt"
 	"time"
 
 	ierr "github.com/omkar273/nashikdarshan/internal/errors"
@@ -85,7 +84,10 @@ func (f *PlaceFilter) Validate() error {
 	if len(f.PlaceTypes) > 0 {
 		for _, pt := range f.PlaceTypes {
 			if !lo.Contains(PlaceTypes, pt) {
-				return fmt.Errorf("invalid place_type: %s", pt)
+				return ierr.NewError("invalid place_type").
+					WithHint("valid place types are: hotel, apartment, attraction, restaurant, experience").
+					WithReportableDetails(map[string]any{"place_type": pt}).
+					Mark(ierr.ErrValidation)
 			}
 		}
 	}
@@ -93,7 +95,9 @@ func (f *PlaceFilter) Validate() error {
 	// Validate geospatial filters
 	if f.Latitude != nil || f.Longitude != nil || f.RadiusM != nil {
 		if f.Latitude == nil || f.Longitude == nil || f.RadiusM == nil {
-			return fmt.Errorf("latitude, longitude, and radius_m must all be provided for geospatial search")
+			return ierr.NewError("latitude, longitude, and radius_m must all be provided for geospatial search").
+				WithHint("Please provide all three values: latitude, longitude, and radius_m").
+				Mark(ierr.ErrValidation)
 		}
 
 		// Create location and validate coordinates
@@ -103,11 +107,15 @@ func (f *PlaceFilter) Validate() error {
 		}
 		// Cap radius at 15km (15000m) for v1
 		if f.RadiusM.GreaterThan(decimal.NewFromInt(15000)) {
-			return fmt.Errorf("radius_m cannot exceed 15000 meters (15km)")
+			return ierr.NewError("radius_m cannot exceed 15000 meters (15km)").
+				WithHint("Maximum allowed radius is 15km (15000 meters)").
+				Mark(ierr.ErrValidation)
 		}
 		// Radius must be positive
 		if f.RadiusM.LessThanOrEqual(decimal.Zero) {
-			return fmt.Errorf("radius_m must be greater than 0")
+			return ierr.NewError("radius_m must be greater than 0").
+				WithHint("Please provide a positive value for radius_m").
+				Mark(ierr.ErrValidation)
 		}
 	}
 
@@ -204,7 +212,8 @@ var FeedSectionTypes = []string{
 func (f FeedSectionType) Validate() error {
 	if !lo.Contains(FeedSectionTypes, string(f)) {
 		return ierr.NewError("invalid section type").
-			WithHint(fmt.Sprintf("invalid section type: %s. Valid types are: %v", f, FeedSectionTypes)).
+			WithHintf("valid types are: latest, trending, popular, nearby").
+			WithReportableDetails(map[string]any{"section_type": f}).
 			Mark(ierr.ErrValidation)
 	}
 	return nil

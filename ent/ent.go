@@ -13,6 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/omkar273/nashikdarshan/ent/category"
+	"github.com/omkar273/nashikdarshan/ent/event"
+	"github.com/omkar273/nashikdarshan/ent/eventoccurrence"
 	"github.com/omkar273/nashikdarshan/ent/hotel"
 	"github.com/omkar273/nashikdarshan/ent/place"
 	"github.com/omkar273/nashikdarshan/ent/placeimage"
@@ -78,12 +80,14 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			category.Table:   category.ValidColumn,
-			hotel.Table:      hotel.ValidColumn,
-			place.Table:      place.ValidColumn,
-			placeimage.Table: placeimage.ValidColumn,
-			review.Table:     review.ValidColumn,
-			user.Table:       user.ValidColumn,
+			category.Table:        category.ValidColumn,
+			event.Table:           event.ValidColumn,
+			eventoccurrence.Table: eventoccurrence.ValidColumn,
+			hotel.Table:           hotel.ValidColumn,
+			place.Table:           place.ValidColumn,
+			placeimage.Table:      placeimage.ValidColumn,
+			review.Table:          review.ValidColumn,
+			user.Table:            user.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

@@ -3,6 +3,7 @@ package repository
 import (
 	"github.com/omkar273/nashikdarshan/internal/config"
 	"github.com/omkar273/nashikdarshan/internal/domain/category"
+	eventdomain "github.com/omkar273/nashikdarshan/internal/domain/event"
 	"github.com/omkar273/nashikdarshan/internal/domain/hotel"
 	"github.com/omkar273/nashikdarshan/internal/domain/place"
 	"github.com/omkar273/nashikdarshan/internal/domain/review"
@@ -51,4 +52,8 @@ func NewReviewRepository(params RepositoryParams) review.Repository {
 
 func NewHotelRepository(params RepositoryParams) hotel.Repository {
 	return ent.NewHotelRepository(params.Client, params.Logger)
+}
+
+func NewEventRepository(params RepositoryParams) eventdomain.Repository {
+	return ent.NewEventRepository(params.Client, params.Logger)
 }

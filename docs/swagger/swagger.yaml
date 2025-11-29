@@ -26,30 +26,178 @@ definitions:
   dto.CreateCategoryRequest:
     properties:
       description:
+        maxLength: 2000
         type: string
       metadata:
         $ref: '#/definitions/types.Metadata'
       name:
         maxLength: 255
-        minLength: 1
+        minLength: 2
         type: string
       slug:
-        minLength: 1
+        maxLength: 100
+        minLength: 3
         type: string
     required:
     - name
     - slug
     type: object
+  dto.CreateEventRequest:
+    properties:
+      cover_image_url:
+        maxLength: 500
+        type: string
+      description:
+        maxLength: 10000
+        type: string
+      end_date:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      latitude:
+        type: number
+      location_name:
+        maxLength: 255
+        type: string
+      longitude:
+        type: number
+      metadata:
+        additionalProperties: true
+        type: object
+      place_id:
+        type: string
+      slug:
+        maxLength: 100
+        minLength: 3
+        type: string
+      start_date:
+        description: Required, defaults to now() if zero value
+        type: string
+      subtitle:
+        maxLength: 500
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        maxLength: 255
+        minLength: 2
+        type: string
+      type:
+        $ref: '#/definitions/types.EventType'
+    required:
+    - slug
+    - title
+    - type
+    type: object
+  dto.CreateHotelRequest:
+    properties:
+      address:
+        additionalProperties:
+          type: string
+        type: object
+      check_in_time:
+        type: string
+      check_out_time:
+        type: string
+      currency:
+        type: string
+      description:
+        maxLength: 5000
+        type: string
+      email:
+        maxLength: 255
+        type: string
+      location:
+        $ref: '#/definitions/types.Location'
+      name:
+        maxLength: 255
+        minLength: 2
+        type: string
+      phone:
+        maxLength: 20
+        minLength: 10
+        type: string
+      price_max:
+        type: number
+      price_min:
+        type: number
+      primary_image_url:
+        maxLength: 500
+        type: string
+      room_count:
+        maximum: 10000
+        minimum: 0
+        type: integer
+      slug:
+        maxLength: 100
+        minLength: 3
+        type: string
+      star_rating:
+        maximum: 5
+        minimum: 1
+        type: integer
+      thumbnail_url:
+        maxLength: 500
+        type: string
+      website:
+        maxLength: 500
+        type: string
+    required:
+    - location
+    - name
+    - slug
+    - star_rating
+    type: object
+  dto.CreateOccurrenceRequest:
+    properties:
+      day_of_month:
+        description: 1-31 for MONTHLY/YEARLY
+        type: integer
+      day_of_week:
+        description: 0-6 for WEEKLY
+        type: integer
+      end_time:
+        description: ISO 8601 format, optional/nillable
+        type: string
+      event_id:
+        type: string
+      exception_dates:
+        description: '["2025-12-25", ...]'
+        items:
+          type: string
+        type: array
+      metadata:
+        additionalProperties: true
+        type: object
+      month_of_year:
+        description: 1-12 for YEARLY
+        type: integer
+      recurrence_type:
+        $ref: '#/definitions/types.RecurrenceType'
+      start_time:
+        description: ISO 8601 format, optional/nillable
+        type: string
+    required:
+    - event_id
+    - recurrence_type
+    type: object
   dto.CreatePlaceImageRequest:
     properties:
       alt:
+        maxLength: 255
         type: string
       metadata:
         $ref: '#/definitions/types.Metadata'
       pos:
+        maximum: 100
         minimum: 0
         type: integer
       url:
+        maxLength: 500
         type: string
     required:
     - url
@@ -71,22 +219,31 @@ definitions:
       location:
         $ref: '#/definitions/types.Location'
       long_description:
+        maxLength: 10000
         type: string
       place_type:
+        maxLength: 50
+        minLength: 2
         type: string
       primary_image_url:
+        maxLength: 500
         type: string
       short_description:
+        maxLength: 1000
         type: string
       slug:
-        minLength: 1
+        maxLength: 100
+        minLength: 3
         type: string
       subtitle:
+        maxLength: 500
         type: string
       thumbnail_url:
+        maxLength: 500
         type: string
       title:
-        minLength: 1
+        maxLength: 255
+        minLength: 2
         type: string
     required:
     - location
@@ -97,12 +254,16 @@ definitions:
   dto.CreateReviewRequest:
     properties:
       content:
-        maxLength: 2000
+        maxLength: 3000
         type: string
       entity_id:
+        maxLength: 100
+        minLength: 1
         type: string
       entity_type:
-        $ref: '#/definitions/types.ReviewEntityType'
+        allOf:
+        - $ref: '#/definitions/types.ReviewEntityType'
+        maxLength: 50
       images:
         items:
           type: string
@@ -122,6 +283,73 @@ definitions:
     - entity_id
     - entity_type
     - rating
+    type: object
+  dto.EventResponse:
+    properties:
+      cover_image_url:
+        description: Media
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      description:
+        type: string
+      end_date:
+        type: string
+      id:
+        description: Identity
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      interested_count:
+        type: integer
+      latitude:
+        description: Location (for citywide)
+        type: number
+      location_name:
+        type: string
+      longitude:
+        type: number
+      metadata:
+        $ref: '#/definitions/types.Metadata'
+      occurrences:
+        description: Relations (populated when needed)
+        items:
+          $ref: '#/definitions/event.EventOccurrence'
+        type: array
+      place_id:
+        description: Association
+        type: string
+      slug:
+        type: string
+      start_date:
+        description: Validity
+        type: string
+      status:
+        $ref: '#/definitions/types.Status'
+      subtitle:
+        type: string
+      tags:
+        description: Metadata
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/types.EventType'
+        description: Core
+      updated_at:
+        type: string
+      updated_by:
+        type: string
+      view_count:
+        description: Stats
+        type: integer
     type: object
   dto.FeedRequest:
     properties:
@@ -213,11 +441,93 @@ definitions:
       type:
         $ref: '#/definitions/types.FeedSectionType'
     type: object
+  dto.HotelResponse:
+    properties:
+      address:
+        additionalProperties:
+          type: string
+        type: object
+      check_in_time:
+        type: string
+      check_out_time:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      currency:
+        type: string
+      description:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      last_viewed_at:
+        type: string
+      location:
+        $ref: '#/definitions/types.Location'
+      metadata:
+        $ref: '#/definitions/types.Metadata'
+      name:
+        type: string
+      phone:
+        type: string
+      popularity_score:
+        type: number
+      price_max:
+        type: number
+      price_min:
+        type: number
+      primary_image_url:
+        type: string
+      rating_avg:
+        type: number
+      rating_count:
+        type: integer
+      room_count:
+        type: integer
+      slug:
+        type: string
+      star_rating:
+        type: integer
+      status:
+        $ref: '#/definitions/types.Status'
+      thumbnail_url:
+        type: string
+      updated_at:
+        type: string
+      updated_by:
+        type: string
+      view_count:
+        description: Engagement fields
+        type: integer
+      website:
+        type: string
+    type: object
   dto.ListCategoriesResponse:
     properties:
       items:
         items:
           $ref: '#/definitions/dto.CategoryResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/types.PaginationResponse'
+    type: object
+  dto.ListEventsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.EventResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/types.PaginationResponse'
+    type: object
+  dto.ListHotelsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.HotelResponse'
         type: array
       pagination:
         $ref: '#/definitions/types.PaginationResponse'
@@ -249,6 +559,53 @@ definitions:
         type: string
       role:
         $ref: '#/definitions/types.UserRole'
+      status:
+        $ref: '#/definitions/types.Status'
+      updated_at:
+        type: string
+      updated_by:
+        type: string
+    type: object
+  dto.OccurrenceResponse:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
+      day_of_month:
+        description: 1-31
+        type: integer
+      day_of_week:
+        description: Day specifics
+        type: integer
+      duration_minutes:
+        type: integer
+      end_time:
+        type: string
+      event_id:
+        type: string
+      exception_dates:
+        description: Exceptions
+        items:
+          type: string
+        type: array
+      id:
+        description: Identity
+        type: string
+      metadata:
+        allOf:
+        - $ref: '#/definitions/types.Metadata'
+        description: Metadata
+      month_of_year:
+        description: 1-12 (renamed from Month)
+        type: integer
+      recurrence_type:
+        allOf:
+        - $ref: '#/definitions/types.RecurrenceType'
+        description: Recurrence
+      start_time:
+        description: Time
+        type: string
       status:
         $ref: '#/definitions/types.Status'
       updated_at:
@@ -443,13 +800,130 @@ definitions:
   dto.UpdateCategoryRequest:
     properties:
       description:
+        maxLength: 2000
         type: string
       name:
         maxLength: 255
-        minLength: 1
+        minLength: 2
         type: string
       slug:
-        minLength: 1
+        maxLength: 100
+        minLength: 3
+        type: string
+    type: object
+  dto.UpdateEventRequest:
+    properties:
+      cover_image_url:
+        type: string
+      description:
+        maxLength: 10000
+        type: string
+      end_date:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      latitude:
+        type: number
+      location_name:
+        maxLength: 255
+        type: string
+      longitude:
+        type: number
+      metadata:
+        additionalProperties: true
+        type: object
+      place_id:
+        type: string
+      start_date:
+        type: string
+      subtitle:
+        maxLength: 500
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        maxLength: 255
+        minLength: 2
+        type: string
+      type:
+        $ref: '#/definitions/types.EventType'
+    type: object
+  dto.UpdateHotelRequest:
+    properties:
+      address:
+        additionalProperties:
+          type: string
+        type: object
+      check_in_time:
+        type: string
+      check_out_time:
+        type: string
+      currency:
+        type: string
+      description:
+        maxLength: 5000
+        type: string
+      email:
+        maxLength: 255
+        type: string
+      location:
+        $ref: '#/definitions/types.Location'
+      name:
+        maxLength: 255
+        minLength: 2
+        type: string
+      phone:
+        maxLength: 20
+        minLength: 10
+        type: string
+      price_max:
+        type: number
+      price_min:
+        type: number
+      primary_image_url:
+        maxLength: 500
+        type: string
+      room_count:
+        maximum: 10000
+        minimum: 0
+        type: integer
+      star_rating:
+        maximum: 5
+        minimum: 1
+        type: integer
+      thumbnail_url:
+        maxLength: 500
+        type: string
+      website:
+        maxLength: 500
+        type: string
+    type: object
+  dto.UpdateOccurrenceRequest:
+    properties:
+      day_of_month:
+        type: integer
+      day_of_week:
+        type: integer
+      end_time:
+        description: ISO 8601 format, optional/nillable
+        type: string
+      exception_dates:
+        items:
+          type: string
+        type: array
+      metadata:
+        additionalProperties: true
+        type: object
+      month_of_year:
+        type: integer
+      recurrence_type:
+        $ref: '#/definitions/types.RecurrenceType'
+      start_time:
+        description: ISO 8601 format, optional/nillable
         type: string
     type: object
   dto.UpdatePlaceImageRequest:
@@ -481,28 +955,37 @@ definitions:
       location:
         $ref: '#/definitions/types.Location'
       long_description:
+        maxLength: 10000
         type: string
       place_type:
+        maxLength: 50
+        minLength: 2
         type: string
       primary_image_url:
+        maxLength: 500
         type: string
       short_description:
+        maxLength: 1000
         type: string
       slug:
-        minLength: 1
+        maxLength: 100
+        minLength: 3
         type: string
       subtitle:
+        maxLength: 500
         type: string
       thumbnail_url:
+        maxLength: 500
         type: string
       title:
-        minLength: 1
+        maxLength: 255
+        minLength: 2
         type: string
     type: object
   dto.UpdateReviewRequest:
     properties:
       content:
-        maxLength: 2000
+        maxLength: 3000
         type: string
       images:
         items:
@@ -523,8 +1006,59 @@ definitions:
   dto.UpdateUserRequest:
     properties:
       name:
+        maxLength: 255
+        minLength: 2
         type: string
       phone:
+        maxLength: 20
+        minLength: 10
+        type: string
+    type: object
+  event.EventOccurrence:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
+      day_of_month:
+        description: 1-31
+        type: integer
+      day_of_week:
+        description: Day specifics
+        type: integer
+      duration_minutes:
+        type: integer
+      end_time:
+        type: string
+      event_id:
+        type: string
+      exception_dates:
+        description: Exceptions
+        items:
+          type: string
+        type: array
+      id:
+        description: Identity
+        type: string
+      metadata:
+        allOf:
+        - $ref: '#/definitions/types.Metadata'
+        description: Metadata
+      month_of_year:
+        description: 1-12 (renamed from Month)
+        type: integer
+      recurrence_type:
+        allOf:
+        - $ref: '#/definitions/types.RecurrenceType'
+        description: Recurrence
+      start_time:
+        description: Time
+        type: string
+      status:
+        $ref: '#/definitions/types.Status'
+      updated_at:
+        type: string
+      updated_by:
         type: string
     type: object
   ierr.ErrorDetail:
@@ -569,6 +1103,20 @@ definitions:
       url:
         type: string
     type: object
+  types.EventType:
+    enum:
+    - AARTI
+    - FESTIVAL
+    - CULTURAL
+    - WORKSHOP
+    - SPECIAL_DARSHAN
+    type: string
+    x-enum-varnames:
+    - EventTypeAarti
+    - EventTypeFestival
+    - EventTypeCultural
+    - EventTypeWorkshop
+    - EventTypeSpecialDarshan
   types.FeedSectionType:
     enum:
     - latest
@@ -610,6 +1158,32 @@ definitions:
       total:
         type: integer
     type: object
+  types.RecurrenceType:
+    enum:
+    - NONE
+    - DAILY
+    - WEEKLY
+    - MONTHLY
+    - YEARLY
+    type: string
+    x-enum-comments:
+      RecurrenceDaily: Every day
+      RecurrenceMonthly: Specific date each month
+      RecurrenceNone: One-time event
+      RecurrenceWeekly: Specific day each week
+      RecurrenceYearly: Specific date each year
+    x-enum-descriptions:
+    - One-time event
+    - Every day
+    - Specific day each week
+    - Specific date each month
+    - Specific date each year
+    x-enum-varnames:
+    - RecurrenceNone
+    - RecurrenceDaily
+    - RecurrenceWeekly
+    - RecurrenceMonthly
+    - RecurrenceYearly
   types.ReviewEntityType:
     enum:
     - place
@@ -633,6 +1207,7 @@ definitions:
     - archived
     - inactive
     - pending
+    - draft
     type: string
     x-enum-varnames:
     - StatusPublished
@@ -640,6 +1215,7 @@ definitions:
     - StatusArchived
     - StatusInactive
     - StatusPending
+    - StatusDraft
   types.UserRole:
     enum:
     - USER
@@ -903,6 +1479,497 @@ paths:
       summary: Get category by slug
       tags:
       - Category
+  /events:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of events with filtering and pagination. Use
+        expand=true with from_date and to_date to get expanded occurrences.
+      parameters:
+      - description: If true, expand occurrences in date range
+        in: query
+        name: expand
+        type: boolean
+      - description: ISO date YYYY-MM-DD
+        in: query
+        name: from_date
+        type: string
+      - in: query
+        maximum: 1000
+        minimum: 1
+        name: limit
+        type: integer
+      - in: query
+        minimum: 0
+        name: offset
+        type: integer
+      - enum:
+        - asc
+        - desc
+        in: query
+        name: order
+        type: string
+      - in: query
+        name: place_id
+        type: string
+      - in: query
+        name: sort
+        type: string
+      - enum:
+        - published
+        - deleted
+        - archived
+        - inactive
+        - pending
+        - draft
+        in: query
+        name: status
+        type: string
+        x-enum-varnames:
+        - StatusPublished
+        - StatusDeleted
+        - StatusArchived
+        - StatusInactive
+        - StatusPending
+        - StatusDraft
+      - collectionFormat: csv
+        in: query
+        items:
+          type: string
+        name: tags
+        type: array
+      - description: ISO date YYYY-MM-DD
+        in: query
+        name: to_date
+        type: string
+      - enum:
+        - AARTI
+        - FESTIVAL
+        - CULTURAL
+        - WORKSHOP
+        - SPECIAL_DARSHAN
+        in: query
+        name: type
+        type: string
+        x-enum-varnames:
+        - EventTypeAarti
+        - EventTypeFestival
+        - EventTypeCultural
+        - EventTypeWorkshop
+        - EventTypeSpecialDarshan
+      - description: Expand occurrences in date range
+        in: query
+        name: expand
+        type: boolean
+      - description: Start date for expansion (YYYY-MM-DD)
+        in: query
+        name: from_date
+        type: string
+      - description: End date for expansion (YYYY-MM-DD)
+        in: query
+        name: to_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListEventsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: List events
+      tags:
+      - Event
+    post:
+      consumes:
+      - application/json
+      description: Create a new event with the provided details
+      parameters:
+      - description: Create event request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateEventRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.EventResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Create a new event
+      tags:
+      - Event
+  /events/{eventId}/occurrences:
+    get:
+      consumes:
+      - application/json
+      description: Get all occurrences for a specific event
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.OccurrenceResponse'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: List occurrences for event
+      tags:
+      - Event
+  /events/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete an event
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Delete an event
+      tags:
+      - Event
+    get:
+      consumes:
+      - application/json
+      description: Get an event by its ID
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.EventResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Get event by ID
+      tags:
+      - Event
+    put:
+      consumes:
+      - application/json
+      description: Update an existing event
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update event request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateEventRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.EventResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Update an event
+      tags:
+      - Event
+  /events/{id}/interested:
+    post:
+      consumes:
+      - application/json
+      description: Increment the interested count for an event (user marked as interested)
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Increment event interested count
+      tags:
+      - Event
+  /events/{id}/view:
+    post:
+      consumes:
+      - application/json
+      description: Increment the view count for an event (analytics)
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Increment event view count
+      tags:
+      - Event
+  /events/occurrences:
+    post:
+      consumes:
+      - application/json
+      description: Create a new occurrence for an event
+      parameters:
+      - description: Create occurrence request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateOccurrenceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.OccurrenceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Create event occurrence
+      tags:
+      - Event
+  /events/occurrences/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete an event occurrence
+      parameters:
+      - description: Occurrence ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Delete occurrence
+      tags:
+      - Event
+    get:
+      consumes:
+      - application/json
+      description: Get an event occurrence by its ID
+      parameters:
+      - description: Occurrence ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.OccurrenceResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Get occurrence by ID
+      tags:
+      - Event
+    put:
+      consumes:
+      - application/json
+      description: Update an existing event occurrence
+      parameters:
+      - description: Occurrence ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update occurrence request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateOccurrenceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.OccurrenceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Update occurrence
+      tags:
+      - Event
+  /events/slug/{slug}:
+    get:
+      consumes:
+      - application/json
+      description: Get an event by its slug
+      parameters:
+      - description: Event slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.EventResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Get event by slug
+      tags:
+      - Event
   /feed:
     post:
       consumes:
@@ -933,7 +2000,279 @@ paths:
             $ref: '#/definitions/ierr.ErrorResponse'
       summary: Get feed data
       tags:
-      - Feed
+      - Place
+  /hotels:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of hotels with filtering and pagination
+      parameters:
+      - in: query
+        name: end_time
+        type: string
+      - in: query
+        name: expand
+        type: string
+      - description: Trending filter
+        in: query
+        name: last_viewed_after
+        type: string
+      - description: Geospatial filters
+        in: query
+        name: latitude
+        type: number
+      - in: query
+        maximum: 1000
+        minimum: 1
+        name: limit
+        type: integer
+      - in: query
+        name: longitude
+        type: number
+      - in: query
+        name: max_price
+        type: number
+      - description: Price range filters
+        in: query
+        name: min_price
+        type: number
+      - in: query
+        minimum: 0
+        name: offset
+        type: integer
+      - enum:
+        - asc
+        - desc
+        in: query
+        name: order
+        type: string
+      - description: radius in meters
+        in: query
+        name: radius_m
+        type: number
+      - description: Search
+        in: query
+        name: search_query
+        type: string
+      - collectionFormat: csv
+        description: Custom filters
+        in: query
+        items:
+          type: string
+        name: slug
+        type: array
+      - in: query
+        name: sort
+        type: string
+      - collectionFormat: csv
+        in: query
+        items:
+          type: integer
+        name: star_rating
+        type: array
+      - in: query
+        name: start_time
+        type: string
+      - enum:
+        - published
+        - deleted
+        - archived
+        - inactive
+        - pending
+        - draft
+        in: query
+        name: status
+        type: string
+        x-enum-varnames:
+        - StatusPublished
+        - StatusDeleted
+        - StatusArchived
+        - StatusInactive
+        - StatusPending
+        - StatusDraft
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListHotelsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: List hotels
+      tags:
+      - Hotel
+    post:
+      consumes:
+      - application/json
+      description: Create a new hotel with the provided details
+      parameters:
+      - description: Create hotel request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateHotelRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.HotelResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Create a new hotel
+      tags:
+      - Hotel
+  /hotels/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete a hotel
+      parameters:
+      - description: Hotel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Delete a hotel
+      tags:
+      - Hotel
+    get:
+      consumes:
+      - application/json
+      description: Get a hotel by its ID
+      parameters:
+      - description: Hotel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HotelResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Get hotel by ID
+      tags:
+      - Hotel
+    put:
+      consumes:
+      - application/json
+      description: Update an existing hotel
+      parameters:
+      - description: Hotel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update hotel request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateHotelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HotelResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Update a hotel
+      tags:
+      - Hotel
+  /hotels/slug/{slug}:
+    get:
+      consumes:
+      - application/json
+      description: Get a hotel by its slug
+      parameters:
+      - description: Hotel slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HotelResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Get hotel by slug
+      tags:
+      - Hotel
   /places:
     get:
       consumes:
@@ -1267,7 +2606,7 @@ paths:
             $ref: '#/definitions/ierr.ErrorResponse'
       summary: Increment view count for a place
       tags:
-      - Feed
+      - Place
   /places/images/{image_id}:
     delete:
       consumes:

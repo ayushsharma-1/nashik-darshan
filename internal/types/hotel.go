@@ -1,9 +1,9 @@
 package types
 
 import (
-	"fmt"
 	"time"
 
+	ierr "github.com/omkar273/nashikdarshan/internal/errors"
 	"github.com/shopspring/decimal"
 )
 
@@ -48,7 +48,10 @@ func (f *HotelFilter) Validate() error {
 	if len(f.StarRating) > 0 {
 		for _, rating := range f.StarRating {
 			if rating < 1 || rating > 5 {
-				return fmt.Errorf("invalid star_rating: %d, must be between 1 and 5", rating)
+				return ierr.NewError("invalid star_rating").
+					WithHint("star_rating must be between 1 and 5").
+					WithReportableDetails(map[string]any{"star_rating": rating}).
+					Mark(ierr.ErrValidation)
 			}
 		}
 	}
@@ -56,20 +59,28 @@ func (f *HotelFilter) Validate() error {
 	// Validate price range
 	if f.MinPrice != nil && f.MaxPrice != nil {
 		if f.MinPrice.GreaterThan(*f.MaxPrice) {
-			return fmt.Errorf("min_price cannot be greater than max_price")
+			return ierr.NewError("min_price cannot be greater than max_price").
+				WithHint("Please ensure min_price is less than or equal to max_price").
+				Mark(ierr.ErrValidation)
 		}
 	}
 	if f.MinPrice != nil && f.MinPrice.LessThan(decimal.Zero) {
-		return fmt.Errorf("min_price cannot be negative")
+		return ierr.NewError("min_price cannot be negative").
+			WithHint("Please provide a positive value for min_price").
+			Mark(ierr.ErrValidation)
 	}
 	if f.MaxPrice != nil && f.MaxPrice.LessThan(decimal.Zero) {
-		return fmt.Errorf("max_price cannot be negative")
+		return ierr.NewError("max_price cannot be negative").
+			WithHint("Please provide a positive value for max_price").
+			Mark(ierr.ErrValidation)
 	}
 
 	// Validate geospatial filters
 	if f.Latitude != nil || f.Longitude != nil || f.RadiusM != nil {
 		if f.Latitude == nil || f.Longitude == nil || f.RadiusM == nil {
-			return fmt.Errorf("latitude, longitude, and radius_m must all be provided for geospatial search")
+			return ierr.NewError("latitude, longitude, and radius_m must all be provided for geospatial search").
+				WithHint("Please provide all three values: latitude, longitude, and radius_m").
+				Mark(ierr.ErrValidation)
 		}
 
 		// Create location and validate coordinates
@@ -79,11 +90,15 @@ func (f *HotelFilter) Validate() error {
 		}
 		// Cap radius at 15km (15000m)
 		if f.RadiusM.GreaterThan(decimal.NewFromInt(15000)) {
-			return fmt.Errorf("radius_m cannot exceed 15000 meters (15km)")
+			return ierr.NewError("radius_m cannot exceed 15000 meters (15km)").
+				WithHint("Maximum allowed radius is 15km (15000 meters)").
+				Mark(ierr.ErrValidation)
 		}
 		// Radius must be positive
 		if f.RadiusM.LessThanOrEqual(decimal.Zero) {
-			return fmt.Errorf("radius_m must be greater than 0")
+			return ierr.NewError("radius_m must be greater than 0").
+				WithHint("Please provide a positive value for radius_m").
+				Mark(ierr.ErrValidation)
 		}
 	}
 

@@ -1,8 +1,6 @@
 package types
 
 import (
-	"fmt"
-
 	ierr "github.com/omkar273/nashikdarshan/internal/errors"
 	"github.com/samber/lo"
 )
@@ -33,7 +31,8 @@ var ReviewEntityTypes = []string{
 func (e ReviewEntityType) Validate() error {
 	if !lo.Contains(ReviewEntityTypes, string(e)) {
 		return ierr.NewError("invalid entity type").
-			WithHint(fmt.Sprintf("invalid entity type: %s. Valid types are: %v", e, ReviewEntityTypes)).
+			WithHintf("valid types are: place, hotel, restaurant, event, experience, attraction").
+			WithReportableDetails(map[string]any{"entity_type": e}).
 			Mark(ierr.ErrValidation)
 	}
 	return nil

@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/omkar273/nashikdarshan/internal/config"
 	"github.com/omkar273/nashikdarshan/internal/domain/category"
+	eventdomain "github.com/omkar273/nashikdarshan/internal/domain/event"
 	"github.com/omkar273/nashikdarshan/internal/domain/hotel"
 	"github.com/omkar273/nashikdarshan/internal/domain/place"
 	"github.com/omkar273/nashikdarshan/internal/domain/review"
@@ -26,4 +27,5 @@ type ServiceParams struct {
 	PlaceRepo    place.Repository
 	ReviewRepo   review.Repository
 	HotelRepo    hotel.Repository
+	EventRepo    eventdomain.Repository
 }

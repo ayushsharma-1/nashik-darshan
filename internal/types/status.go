@@ -27,4 +27,8 @@ const (
 	// StatusPending is the status of a resource that is pending and not in use
 	// This is typically used for data that is not yet in use and should be returned in queries
 	StatusPending Status = "pending"
+
+	// StatusDraft is the status of a resource that is in draft and not yet published
+	// This is typically used for data that is being created but not yet ready to be published
+	StatusDraft Status = "draft"
 )

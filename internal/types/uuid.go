@@ -43,4 +43,6 @@ const (
 	UUID_PREFIX_PLACE_IMAGE = "plcimg"
 	UUID_PREFIX_REVIEW      = "review"
 	UUID_PREFIX_HOTEL       = "hotel"
+	UUID_PREFIX_EVENT       = "evt"
+	UUID_PREFIX_OCCURRENCE  = "occ"
 )

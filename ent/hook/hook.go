@@ -21,6 +21,30 @@ func (f CategoryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CategoryMutation", m)
 }
 
+// The EventFunc type is an adapter to allow the use of ordinary
+// function as Event mutator.
+type EventFunc func(context.Context, *ent.EventMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.EventMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EventMutation", m)
+}
+
+// The EventOccurrenceFunc type is an adapter to allow the use of ordinary
+// function as EventOccurrence mutator.
+type EventOccurrenceFunc func(context.Context, *ent.EventOccurrenceMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EventOccurrenceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.EventOccurrenceMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EventOccurrenceMutation", m)
+}
+
 // The HotelFunc type is an adapter to allow the use of ordinary
 // function as Hotel mutator.
 type HotelFunc func(context.Context, *ent.HotelMutation) (ent.Value, error)

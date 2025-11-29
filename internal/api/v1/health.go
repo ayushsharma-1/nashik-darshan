@@ -24,7 +24,7 @@ func NewHealthHandler(logger *logger.Logger) *HealthHandler {
 // @Produce json
 // @Success 200 {object} map[string]string
 func (h *HealthHandler) Health(c *gin.Context) {
-	request := map[string]interface{}{}
+	request := map[string]string{}
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 		return

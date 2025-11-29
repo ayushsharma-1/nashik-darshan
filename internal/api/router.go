@@ -18,6 +18,7 @@ type Handlers struct {
 	Place    *v1.PlaceHandler
 	Review   *v1.ReviewHandler
 	Hotel    *v1.HotelHandler
+	Event    *v1.EventHandler
 }
 
 func NewRouter(handlers *Handlers, cfg *config.Configuration, logger *logger.Logger) *gin.Engine {
@@ -118,6 +119,34 @@ func NewRouter(handlers *Handlers, cfg *config.Configuration, logger *logger.Log
 		v1Hotel.POST("", handlers.Hotel.Create)
 		v1Hotel.PUT("/:id", handlers.Hotel.Update)
 		v1Hotel.DELETE("/:id", handlers.Hotel.Delete)
+	}
+
+	// Event routes
+	v1Event := v1Router.Group("/events")
+	{
+		// Public event routes (specific paths BEFORE wildcard paths)
+		v1Event.GET("", handlers.Event.List) // Supports expand=true with from_date/to_date for occurrence expansion
+		v1Event.GET("/slug/:slug", handlers.Event.GetBySlug)
+
+		// Event-specific routes with :id (must come before /:id to avoid conflicts)
+		v1Event.POST("/:id/view", handlers.Event.IncrementView)             // Public for analytics
+		v1Event.POST("/:id/interested", handlers.Event.IncrementInterested) // Public for user engagement
+
+		// Generic get by ID (must come AFTER specific routes)
+		v1Event.GET("/:id", handlers.Event.Get)
+
+		// Authenticated event routes
+		v1Event.Use(middleware.AuthenticateMiddleware(cfg, logger))
+		v1Event.POST("", handlers.Event.Create)
+		v1Event.PUT("/:id", handlers.Event.Update)
+		v1Event.DELETE("/:id", handlers.Event.Delete)
+
+		// Occurrence routes under /events/occurrences for consistency
+		v1Event.GET("/occurrences/:id", handlers.Event.GetOccurrence)       // Public
+		v1Event.POST("/occurrences", handlers.Event.CreateOccurrence)       // Authenticated
+		v1Event.PUT("/occurrences/:id", handlers.Event.UpdateOccurrence)    // Authenticated
+		v1Event.DELETE("/occurrences/:id", handlers.Event.DeleteOccurrence) // Authenticated
+		v1Event.GET("/:id/occurrences", handlers.Event.ListOccurrences)     // Public - list occurrences for specific event
 	}
 
 	return router
