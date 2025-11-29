@@ -49,9 +49,11 @@ func (s *authService) Signup(ctx context.Context, req *dto.SignupRequest) (*dto.
 		var user *user.User
 		var err error
 
+		// this ensures we don't create a user if it already exists
 		_, err = userService.Get(ctx, claims.ID)
 		if err != nil {
 			if ent.IsNotFound(err) {
+				// create user if it doesn't exist
 				user, err = userService.Create(ctx, userReq)
 				if err != nil {
 					return err
