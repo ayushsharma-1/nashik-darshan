@@ -2772,7 +2772,9 @@
                 },
                 "metadata": {
                     "type": "object",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "place_id": {
                     "type": "string"
@@ -2917,7 +2919,9 @@
                 },
                 "metadata": {
                     "type": "object",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "month_of_year": {
                     "description": "1-12 for YEARLY",
@@ -3872,7 +3876,9 @@
                 },
                 "metadata": {
                     "type": "object",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "place_id": {
                     "type": "string"
@@ -3990,7 +3996,9 @@
                 },
                 "metadata": {
                     "type": "object",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "month_of_year": {
                     "type": "integer"

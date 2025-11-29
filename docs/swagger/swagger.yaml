@@ -64,7 +64,8 @@ definitions:
       longitude:
         type: number
       metadata:
-        additionalProperties: true
+        additionalProperties:
+          type: string
         type: object
       place_id:
         type: string
@@ -171,7 +172,8 @@ definitions:
           type: string
         type: array
       metadata:
-        additionalProperties: true
+        additionalProperties:
+          type: string
         type: object
       month_of_year:
         description: 1-12 for YEARLY
@@ -832,7 +834,8 @@ definitions:
       longitude:
         type: number
       metadata:
-        additionalProperties: true
+        additionalProperties:
+          type: string
         type: object
       place_id:
         type: string
@@ -916,7 +919,8 @@ definitions:
           type: string
         type: array
       metadata:
-        additionalProperties: true
+        additionalProperties:
+          type: string
         type: object
       month_of_year:
         type: integer
