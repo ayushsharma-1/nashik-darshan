@@ -245,8 +245,12 @@ func (r *PlaceRepository) List(ctx context.Context, filter *types.PlaceFilter) (
 	)
 
 	query := client.Place.Query()
-	query = r.queryOpts.ApplyBaseFilters(ctx, query, filter)
+
+	// Apply entity-specific filters first
 	query = r.queryOpts.ApplyEntityQueryOptions(ctx, filter, query)
+
+	// Apply common query options (status, pagination, sorting)
+	query = ApplyQueryOptions(ctx, query, filter, r.queryOpts)
 
 	// Load images if expand includes images
 	if filter != nil && filter.GetExpand().Has("images") {
@@ -341,13 +345,20 @@ func (r *PlaceRepository) Count(ctx context.Context, filter *types.PlaceFilter) 
 	r.log.Debugw("counting places")
 
 	query := client.Place.Query()
-	query = r.queryOpts.ApplyBaseFilters(ctx, query, filter)
+
+	// Apply base filters (status only, no pagination/sorting)
+	query = ApplyBaseFilters(ctx, query, filter, r.queryOpts)
+
+	// Apply entity-specific filters
 	query = r.queryOpts.ApplyEntityQueryOptions(ctx, filter, query)
 
 	count, err := query.Count(ctx)
 	if err != nil {
 		return 0, ierr.WithError(err).
 			WithHint("Failed to count places").
+			WithReportableDetails(map[string]any{
+				"filter": filter,
+			}).
 			Mark(ierr.ErrDatabase)
 	}
 
@@ -683,12 +694,10 @@ func (r *PlaceRepository) DeleteImage(ctx context.Context, imageID string) error
 type PlaceQuery = *ent.PlaceQuery
 
 // PlaceQueryOptions implements query options for place queries
-type PlaceQueryOptions struct {
-	QueryOptionsHelper
-}
+type PlaceQueryOptions struct{}
 
-// Ensure PlaceQueryOptions implements EntityQueryOptions interface
-var _ EntityQueryOptions[PlaceQuery, *types.PlaceFilter] = (*PlaceQueryOptions)(nil)
+// Ensure PlaceQueryOptions implements BaseQueryOptions interface
+var _ BaseQueryOptions[PlaceQuery] = (*PlaceQueryOptions)(nil)
 
 func (o PlaceQueryOptions) ApplyStatusFilter(query PlaceQuery, status string) PlaceQuery {
 	if status == "" {
@@ -698,7 +707,15 @@ func (o PlaceQueryOptions) ApplyStatusFilter(query PlaceQuery, status string) Pl
 }
 
 func (o PlaceQueryOptions) ApplySortFilter(query PlaceQuery, field string, order string) PlaceQuery {
-	field, order = o.ValidateSort(field, order)
+	// Validate order
+	if order != types.OrderAsc && order != types.OrderDesc {
+		order = types.OrderDesc
+	}
+	// Default field if empty
+	if field == "" {
+		field = "created_at"
+	}
+
 	fieldName := o.GetFieldName(field)
 	if order == types.OrderDesc {
 		return query.Order(ent.Desc(fieldName))
@@ -707,7 +724,17 @@ func (o PlaceQueryOptions) ApplySortFilter(query PlaceQuery, field string, order
 }
 
 func (o PlaceQueryOptions) ApplyPaginationFilter(query PlaceQuery, limit int, offset int) PlaceQuery {
-	limit, offset = o.ValidatePagination(limit, offset)
+	// Validate pagination values
+	if limit <= 0 {
+		limit = 20 // Default limit
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	if limit > 1000 {
+		limit = 1000
+	}
+
 	return query.Offset(offset).Limit(limit)
 }
 
@@ -726,33 +753,6 @@ func (o PlaceQueryOptions) GetFieldName(field string) string {
 	default:
 		return field
 	}
-}
-
-func (o PlaceQueryOptions) ApplyBaseFilters(
-	_ context.Context,
-	query PlaceQuery,
-	filter *types.PlaceFilter,
-) PlaceQuery {
-	if filter == nil {
-		return query.Where(place.StatusNotIn(string(types.StatusDeleted)))
-	}
-
-	// Apply status filter
-	query = o.ApplyStatusFilter(query, filter.GetStatus())
-
-	// Apply pagination
-	if !filter.IsUnlimited() {
-		query = o.ApplyPaginationFilter(query, filter.GetLimit(), filter.GetOffset())
-	}
-
-	// Apply sorting - skip if geospatial ordering will be applied
-	// (geospatial ordering takes precedence and will be applied in List method after distance calculation)
-	hasGeospatialOrdering := filter.Latitude != nil && filter.Longitude != nil && filter.RadiusM != nil
-	if !hasGeospatialOrdering {
-		query = o.ApplySortFilter(query, filter.GetSort(), filter.GetOrder())
-	}
-
-	return query
 }
 
 func (o PlaceQueryOptions) ApplyEntityQueryOptions(

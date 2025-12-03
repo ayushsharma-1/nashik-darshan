@@ -148,8 +148,12 @@ func (r *CategoryRepository) List(ctx context.Context, filter *types.CategoryFil
 	)
 
 	query := client.Category.Query()
-	query = r.queryOpts.ApplyBaseFilters(ctx, query, filter)
+
+	// Apply entity-specific filters first
 	query = r.queryOpts.ApplyEntityQueryOptions(ctx, filter, query)
+
+	// Apply common query options (status, pagination, sorting)
+	query = ApplyQueryOptions(ctx, query, filter, r.queryOpts)
 
 	categories, err := query.All(ctx)
 	if err != nil {
@@ -183,13 +187,20 @@ func (r *CategoryRepository) Count(ctx context.Context, filter *types.CategoryFi
 	r.log.Debugw("counting categories")
 
 	query := client.Category.Query()
-	query = r.queryOpts.ApplyBaseFilters(ctx, query, filter)
+
+	// Apply base filters (status only, no pagination/sorting)
+	query = ApplyBaseFilters(ctx, query, filter, r.queryOpts)
+
+	// Apply entity-specific filters
 	query = r.queryOpts.ApplyEntityQueryOptions(ctx, filter, query)
 
 	count, err := query.Count(ctx)
 	if err != nil {
 		return 0, ierr.WithError(err).
 			WithHint("Failed to count categories").
+			WithReportableDetails(map[string]any{
+				"filter": filter,
+			}).
 			Mark(ierr.ErrDatabase)
 	}
 
@@ -284,12 +295,10 @@ func (r *CategoryRepository) Delete(ctx context.Context, c *domain.Category) err
 type CategoryQuery = *ent.CategoryQuery
 
 // CategoryQueryOptions implements query options for category queries
-type CategoryQueryOptions struct {
-	QueryOptionsHelper
-}
+type CategoryQueryOptions struct{}
 
-// Ensure CategoryQueryOptions implements EntityQueryOptions interface
-var _ EntityQueryOptions[CategoryQuery, *types.CategoryFilter] = (*CategoryQueryOptions)(nil)
+// Ensure CategoryQueryOptions implements BaseQueryOptions interface
+var _ BaseQueryOptions[CategoryQuery] = (*CategoryQueryOptions)(nil)
 
 func (o CategoryQueryOptions) ApplyStatusFilter(query CategoryQuery, status string) CategoryQuery {
 	if status == "" {
@@ -299,7 +308,15 @@ func (o CategoryQueryOptions) ApplyStatusFilter(query CategoryQuery, status stri
 }
 
 func (o CategoryQueryOptions) ApplySortFilter(query CategoryQuery, field string, order string) CategoryQuery {
-	field, order = o.ValidateSort(field, order)
+	// Validate order
+	if order != types.OrderAsc && order != types.OrderDesc {
+		order = types.OrderDesc
+	}
+	// Default field if empty
+	if field == "" {
+		field = "created_at"
+	}
+
 	fieldName := o.GetFieldName(field)
 	if order == types.OrderDesc {
 		return query.Order(ent.Desc(fieldName))
@@ -308,7 +325,17 @@ func (o CategoryQueryOptions) ApplySortFilter(query CategoryQuery, field string,
 }
 
 func (o CategoryQueryOptions) ApplyPaginationFilter(query CategoryQuery, limit int, offset int) CategoryQuery {
-	limit, offset = o.ValidatePagination(limit, offset)
+	// Validate pagination values
+	if limit <= 0 {
+		limit = 20 // Default limit
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	if limit > 1000 {
+		limit = 1000
+	}
+
 	return query.Offset(offset).Limit(limit)
 }
 
@@ -325,29 +352,6 @@ func (o CategoryQueryOptions) GetFieldName(field string) string {
 	default:
 		return field
 	}
-}
-
-func (o CategoryQueryOptions) ApplyBaseFilters(
-	_ context.Context,
-	query CategoryQuery,
-	filter *types.CategoryFilter,
-) CategoryQuery {
-	if filter == nil {
-		return query.Where(category.StatusNotIn(string(types.StatusDeleted)))
-	}
-
-	// Apply status filter
-	query = o.ApplyStatusFilter(query, filter.GetStatus())
-
-	// Apply pagination
-	if !filter.IsUnlimited() {
-		query = o.ApplyPaginationFilter(query, filter.GetLimit(), filter.GetOffset())
-	}
-
-	// Apply sorting
-	query = o.ApplySortFilter(query, filter.GetSort(), filter.GetOrder())
-
-	return query
 }
 
 func (o CategoryQueryOptions) ApplyEntityQueryOptions(

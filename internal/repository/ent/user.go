@@ -142,8 +142,12 @@ func (r *UserRepository) List(ctx context.Context, filter *types.UserFilter) ([]
 	)
 
 	query := client.User.Query()
-	query = r.queryOpts.ApplyBaseFilters(ctx, query, filter)
+
+	// Apply entity-specific filters first
 	query = r.queryOpts.ApplyEntityQueryOptions(ctx, filter, query)
+
+	// Apply common query options (status, pagination, sorting)
+	query = ApplyQueryOptions(ctx, query, filter, r.queryOpts)
 
 	users, err := query.All(ctx)
 	if err != nil {
@@ -177,13 +181,20 @@ func (r *UserRepository) Count(ctx context.Context, filter *types.UserFilter) (i
 	r.log.Debugw("counting users")
 
 	query := client.User.Query()
-	query = r.queryOpts.ApplyBaseFilters(ctx, query, filter)
+
+	// Apply base filters (status only, no pagination/sorting)
+	query = ApplyBaseFilters(ctx, query, filter, r.queryOpts)
+
+	// Apply entity-specific filters
 	query = r.queryOpts.ApplyEntityQueryOptions(ctx, filter, query)
 
 	count, err := query.Count(ctx)
 	if err != nil {
 		return 0, ierr.WithError(err).
 			WithHint("Failed to count users").
+			WithReportableDetails(map[string]any{
+				"filter": filter,
+			}).
 			Mark(ierr.ErrDatabase)
 	}
 
@@ -274,12 +285,10 @@ func (r *UserRepository) Delete(ctx context.Context, userData *domainUser.User) 
 type UserQuery = *ent.UserQuery
 
 // UserQueryOptions implements query options for user queries
-type UserQueryOptions struct {
-	QueryOptionsHelper
-}
+type UserQueryOptions struct{}
 
-// Ensure UserQueryOptions implements EntityQueryOptions interface
-var _ EntityQueryOptions[UserQuery, *types.UserFilter] = (*UserQueryOptions)(nil)
+// Ensure UserQueryOptions implements BaseQueryOptions interface
+var _ BaseQueryOptions[UserQuery] = (*UserQueryOptions)(nil)
 
 func (o UserQueryOptions) ApplyStatusFilter(query UserQuery, status string) UserQuery {
 	if status == "" {
@@ -289,7 +298,15 @@ func (o UserQueryOptions) ApplyStatusFilter(query UserQuery, status string) User
 }
 
 func (o UserQueryOptions) ApplySortFilter(query UserQuery, field string, order string) UserQuery {
-	field, order = o.ValidateSort(field, order)
+	// Validate order
+	if order != types.OrderAsc && order != types.OrderDesc {
+		order = types.OrderDesc
+	}
+	// Default field if empty
+	if field == "" {
+		field = "created_at"
+	}
+
 	fieldName := o.GetFieldName(field)
 	if order == types.OrderDesc {
 		return query.Order(ent.Desc(fieldName))
@@ -298,7 +315,17 @@ func (o UserQueryOptions) ApplySortFilter(query UserQuery, field string, order s
 }
 
 func (o UserQueryOptions) ApplyPaginationFilter(query UserQuery, limit int, offset int) UserQuery {
-	limit, offset = o.ValidatePagination(limit, offset)
+	// Validate pagination values
+	if limit <= 0 {
+		limit = 20 // Default limit
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	if limit > 1000 {
+		limit = 1000
+	}
+
 	return query.Offset(offset).Limit(limit)
 }
 
@@ -317,29 +344,6 @@ func (o UserQueryOptions) GetFieldName(field string) string {
 	default:
 		return field
 	}
-}
-
-func (o UserQueryOptions) ApplyBaseFilters(
-	_ context.Context,
-	query UserQuery,
-	filter *types.UserFilter,
-) UserQuery {
-	if filter == nil {
-		return query.Where(user.StatusNotIn(string(types.StatusDeleted)))
-	}
-
-	// Apply status filter
-	query = o.ApplyStatusFilter(query, filter.GetStatus())
-
-	// Apply pagination
-	if !filter.IsUnlimited() {
-		query = o.ApplyPaginationFilter(query, filter.GetLimit(), filter.GetOffset())
-	}
-
-	// Apply sorting
-	query = o.ApplySortFilter(query, filter.GetSort(), filter.GetOrder())
-
-	return query
 }
 
 func (o UserQueryOptions) ApplyEntityQueryOptions(

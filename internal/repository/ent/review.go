@@ -201,8 +201,11 @@ func (r *ReviewRepository) List(ctx context.Context, filter *types.ReviewFilter)
 
 	query := client.Review.Query()
 
-	// Apply filters using query options
+	// Apply entity-specific filters first
 	query = r.queryOpts.ApplyEntityQueryOptions(ctx, filter, query)
+
+	// Apply common query options (status, pagination, sorting)
+	query = ApplyQueryOptions(ctx, query, filter, r.queryOpts)
 
 	entReviews, err := query.All(ctx)
 	if err != nil {
@@ -222,18 +225,19 @@ func (r *ReviewRepository) Count(ctx context.Context, filter *types.ReviewFilter
 
 	query := client.Review.Query()
 
-	// Apply filters (without pagination)
-	countFilter := *filter
-	countFilter.QueryFilter = &types.QueryFilter{
-		Status: filter.QueryFilter.Status,
-		// Don't include limit/offset for counting
-	}
-	query = r.queryOpts.ApplyEntityQueryOptions(ctx, &countFilter, query)
+	// Apply base filters (status only, no pagination/sorting)
+	query = ApplyBaseFilters(ctx, query, filter, r.queryOpts)
+
+	// Apply entity-specific filters
+	query = r.queryOpts.ApplyEntityQueryOptions(ctx, filter, query)
 
 	count, err := query.Count(ctx)
 	if err != nil {
 		return 0, ierr.WithError(err).
 			WithMessage("failed to count reviews").
+			WithReportableDetails(map[string]any{
+				"filter": filter,
+			}).
 			Mark(ierr.ErrDatabase)
 	}
 
@@ -475,21 +479,29 @@ func (r *ReviewRepository) GetAverageRatingByTimeRange(ctx context.Context, enti
 }
 
 // ReviewQueryOptions implements query options for review entities
-type ReviewQueryOptions struct {
-	QueryOptionsHelper
-}
+type ReviewQueryOptions struct{}
+
+// Ensure ReviewQueryOptions implements BaseQueryOptions interface
+var _ BaseQueryOptions[*ent.ReviewQuery] = (*ReviewQueryOptions)(nil)
 
 // ApplyStatusFilter applies status filtering to review queries
 func (opts ReviewQueryOptions) ApplyStatusFilter(query *ent.ReviewQuery, status string) *ent.ReviewQuery {
 	if status == "" {
-		status = opts.GetDefaultStatus()
+		return query.Where(review.StatusNotIn(string(types.StatusDeleted)))
 	}
 	return query.Where(review.Status(status))
 }
 
 // ApplySortFilter applies sorting to review queries
 func (opts ReviewQueryOptions) ApplySortFilter(query *ent.ReviewQuery, field string, order string) *ent.ReviewQuery {
-	field, order = opts.ValidateSort(field, order)
+	// Validate order
+	if order != types.OrderAsc && order != types.OrderDesc {
+		order = types.OrderDesc
+	}
+	// Default field if empty
+	if field == "" {
+		field = "created_at"
+	}
 
 	switch field {
 	case "rating":
@@ -521,7 +533,17 @@ func (opts ReviewQueryOptions) ApplySortFilter(query *ent.ReviewQuery, field str
 
 // ApplyPaginationFilter applies pagination to review queries
 func (opts ReviewQueryOptions) ApplyPaginationFilter(query *ent.ReviewQuery, limit int, offset int) *ent.ReviewQuery {
-	limit, offset = opts.ValidatePagination(limit, offset)
+	// Validate pagination values
+	if limit <= 0 {
+		limit = 20 // Default limit
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	if limit > 1000 {
+		limit = 1000
+	}
+
 	return query.Limit(limit).Offset(offset)
 }
 
@@ -547,26 +569,11 @@ func (opts ReviewQueryOptions) GetFieldName(field string) string {
 	}
 }
 
-// ApplyBaseFilters applies common filters to review queries
-func (opts ReviewQueryOptions) ApplyBaseFilters(ctx context.Context, query *ent.ReviewQuery, filter types.BaseFilter) *ent.ReviewQuery {
-	// Apply status filter
-	query = opts.ApplyStatusFilter(query, filter.GetStatus())
-
-	// Apply sorting
-	query = opts.ApplySortFilter(query, filter.GetSort(), filter.GetOrder())
-
-	// Apply pagination (only if not unlimited)
-	if !filter.IsUnlimited() {
-		query = opts.ApplyPaginationFilter(query, filter.GetLimit(), filter.GetOffset())
-	}
-
-	return query
-}
-
 // ApplyEntityQueryOptions applies entity-specific filters to review queries
 func (opts ReviewQueryOptions) ApplyEntityQueryOptions(ctx context.Context, filter *types.ReviewFilter, query *ent.ReviewQuery) *ent.ReviewQuery {
-	// Apply base filters first
-	query = opts.ApplyBaseFilters(ctx, query, filter)
+	if filter == nil {
+		return query
+	}
 
 	// Apply review-specific filters
 	if filter.EntityType != "" {

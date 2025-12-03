@@ -193,8 +193,12 @@ func (r *EventRepository) List(ctx context.Context, filter *types.EventFilter) (
 	)
 
 	query := client.Event.Query()
-	query = r.queryOpts.ApplyBaseFilters(ctx, query, filter)
+
+	// Apply entity-specific filters first
 	query = r.queryOpts.ApplyEntityQueryOptions(ctx, filter, query)
+
+	// Apply common query options (status, pagination, sorting)
+	query = ApplyQueryOptions(ctx, query, filter, r.queryOpts)
 
 	events, err := query.All(ctx)
 	if err != nil {
@@ -212,12 +216,20 @@ func (r *EventRepository) Count(ctx context.Context, filter *types.EventFilter) 
 	r.log.Debugw("counting events", "filter", filter)
 
 	query := client.Event.Query()
-	query = r.queryOpts.ApplyBaseFilters(ctx, query, filter)
+
+	// Apply base filters (status only, no pagination/sorting)
+	query = ApplyBaseFilters(ctx, query, filter, r.queryOpts)
+
+	// Apply entity-specific filters (note: original didn't apply these, adding for consistency)
+	query = r.queryOpts.ApplyEntityQueryOptions(ctx, filter, query)
 
 	count, err := query.Count(ctx)
 	if err != nil {
 		return 0, ierr.WithError(err).
 			WithHint("Failed to count events").
+			WithReportableDetails(map[string]any{
+				"filter": filter,
+			}).
 			Mark(ierr.ErrDatabase)
 	}
 
@@ -683,12 +695,10 @@ func (r *EventRepository) IncrementInterestedCount(ctx context.Context, id strin
 type EventQuery = *ent.EventQuery
 
 // EventQueryOptions implements query options for event queries
-type EventQueryOptions struct {
-	QueryOptionsHelper
-}
+type EventQueryOptions struct{}
 
-// Ensure EventQueryOptions implements EntityQueryOptions interface
-var _ EntityQueryOptions[EventQuery, *types.EventFilter] = (*EventQueryOptions)(nil)
+// Ensure EventQueryOptions implements BaseQueryOptions interface
+var _ BaseQueryOptions[EventQuery] = (*EventQueryOptions)(nil)
 
 func (o EventQueryOptions) ApplyStatusFilter(query EventQuery, status string) EventQuery {
 	if status == "" {
@@ -698,7 +708,15 @@ func (o EventQueryOptions) ApplyStatusFilter(query EventQuery, status string) Ev
 }
 
 func (o EventQueryOptions) ApplySortFilter(query EventQuery, field string, order string) EventQuery {
-	field, order = o.ValidateSort(field, order)
+	// Validate order
+	if order != types.OrderAsc && order != types.OrderDesc {
+		order = types.OrderDesc
+	}
+	// Default field if empty
+	if field == "" {
+		field = "created_at"
+	}
+
 	fieldName := o.GetFieldName(field)
 
 	// Apply sorting with secondary sort by ID for consistency
@@ -709,7 +727,17 @@ func (o EventQueryOptions) ApplySortFilter(query EventQuery, field string, order
 }
 
 func (o EventQueryOptions) ApplyPaginationFilter(query EventQuery, limit int, offset int) EventQuery {
-	limit, offset = o.ValidatePagination(limit, offset)
+	// Validate pagination values
+	if limit <= 0 {
+		limit = 20 // Default limit
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	if limit > 1000 {
+		limit = 1000
+	}
+
 	return query.Offset(offset).Limit(limit)
 }
 
@@ -732,29 +760,6 @@ func (o EventQueryOptions) GetFieldName(field string) string {
 	default:
 		return event.FieldStartDate // Default to start date
 	}
-}
-
-func (o EventQueryOptions) ApplyBaseFilters(
-	_ context.Context,
-	query EventQuery,
-	filter *types.EventFilter,
-) EventQuery {
-	if filter == nil {
-		return query.Where(event.StatusNotIn(string(types.StatusDeleted)))
-	}
-
-	// Apply status filter
-	query = o.ApplyStatusFilter(query, filter.GetStatus())
-
-	// Apply pagination
-	if !filter.IsUnlimited() {
-		query = o.ApplyPaginationFilter(query, filter.GetLimit(), filter.GetOffset())
-	}
-
-	// Apply sorting
-	query = o.ApplySortFilter(query, filter.GetSort(), filter.GetOrder())
-
-	return query
 }
 
 func (o EventQueryOptions) ApplyEntityQueryOptions(
