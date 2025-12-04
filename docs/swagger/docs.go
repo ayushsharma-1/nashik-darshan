@@ -3049,12 +3049,6 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "amenities": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "location": {
                     "$ref": "#/definitions/types.Location"
                 },
@@ -3063,9 +3057,13 @@ const docTemplate = `{
                     "maxLength": 10000
                 },
                 "place_type": {
-                    "type": "string",
                     "maxLength": 50,
-                    "minLength": 2
+                    "minLength": 2,
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/types.PlaceType"
+                        }
+                    ]
                 },
                 "primary_image_url": {
                     "type": "string",
@@ -3706,7 +3704,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "place_type": {
-                    "type": "string"
+                    "$ref": "#/definitions/types.PlaceType"
                 },
                 "popularity_score": {
                     "type": "number"
@@ -4119,9 +4117,13 @@ const docTemplate = `{
                     "maxLength": 10000
                 },
                 "place_type": {
-                    "type": "string",
                     "maxLength": 50,
-                    "minLength": 2
+                    "minLength": 2,
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/types.PlaceType"
+                        }
+                    ]
                 },
                 "primary_image_url": {
                     "type": "string",
@@ -4408,6 +4410,23 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        },
+        "types.PlaceType": {
+            "type": "string",
+            "enum": [
+                "hotel",
+                "apartment",
+                "attraction",
+                "restaurant",
+                "experience"
+            ],
+            "x-enum-varnames": [
+                "PlaceTypeHotel",
+                "PlaceTypeApartment",
+                "PlaceTypeAttraction",
+                "PlaceTypeRestaurant",
+                "PlaceTypeExperience"
+            ]
         },
         "types.RecurrenceType": {
             "type": "string",

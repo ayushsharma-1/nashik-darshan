@@ -220,19 +220,16 @@ definitions:
         additionalProperties:
           type: string
         type: object
-      amenities:
-        items:
-          type: string
-        type: array
       location:
         $ref: '#/definitions/types.Location'
       long_description:
         maxLength: 10000
         type: string
       place_type:
+        allOf:
+        - $ref: '#/definitions/types.PlaceType'
         maxLength: 50
         minLength: 2
-        type: string
       primary_image_url:
         maxLength: 500
         type: string
@@ -669,7 +666,7 @@ definitions:
       long_description:
         type: string
       place_type:
-        type: string
+        $ref: '#/definitions/types.PlaceType'
       popularity_score:
         type: number
       primary_image_url:
@@ -952,9 +949,10 @@ definitions:
         maxLength: 10000
         type: string
       place_type:
+        allOf:
+        - $ref: '#/definitions/types.PlaceType'
         maxLength: 50
         minLength: 2
-        type: string
       primary_image_url:
         maxLength: 500
         type: string
@@ -1152,6 +1150,20 @@ definitions:
       total:
         type: integer
     type: object
+  types.PlaceType:
+    enum:
+    - hotel
+    - apartment
+    - attraction
+    - restaurant
+    - experience
+    type: string
+    x-enum-varnames:
+    - PlaceTypeHotel
+    - PlaceTypeApartment
+    - PlaceTypeAttraction
+    - PlaceTypeRestaurant
+    - PlaceTypeExperience
   types.RecurrenceType:
     enum:
     - NONE

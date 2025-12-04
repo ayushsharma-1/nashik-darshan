@@ -3618,12 +3618,6 @@
                             "type": "string"
                         }
                     },
-                    "amenities": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
                     "location": {
                         "$ref": "#/components/schemas/types.Location"
                     },
@@ -3632,9 +3626,7 @@
                         "type": "string"
                     },
                     "place_type": {
-                        "maxLength": 50,
-                        "minLength": 2,
-                        "type": "string"
+                        "$ref": "#/components/schemas/types.PlaceType"
                     },
                     "primary_image_url": {
                         "maxLength": 500,
@@ -4254,7 +4246,7 @@
                         "type": "string"
                     },
                     "place_type": {
-                        "type": "string"
+                        "$ref": "#/components/schemas/types.PlaceType"
                     },
                     "popularity_score": {
                         "type": "number"
@@ -4667,9 +4659,7 @@
                         "type": "string"
                     },
                     "place_type": {
-                        "maxLength": 50,
-                        "minLength": 2,
-                        "type": "string"
+                        "$ref": "#/components/schemas/types.PlaceType"
                     },
                     "primary_image_url": {
                         "maxLength": 500,
@@ -4948,6 +4938,23 @@
                         "type": "integer"
                     }
                 }
+            },
+            "types.PlaceType": {
+                "type": "string",
+                "enum": [
+                    "hotel",
+                    "apartment",
+                    "attraction",
+                    "restaurant",
+                    "experience"
+                ],
+                "x-enum-varnames": [
+                    "PlaceTypeHotel",
+                    "PlaceTypeApartment",
+                    "PlaceTypeAttraction",
+                    "PlaceTypeRestaurant",
+                    "PlaceTypeExperience"
+                ]
             },
             "types.RecurrenceType": {
                 "type": "string",
