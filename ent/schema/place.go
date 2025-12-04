@@ -4,7 +4,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"entgo.io/ent/schema/index"
 	baseMixin "github.com/omkar273/nashikdarshan/ent/mixin"
 	"github.com/omkar273/nashikdarshan/internal/types"
 	"github.com/shopspring/decimal"
@@ -31,35 +30,43 @@ func (Place) Fields() []ent.Field {
 				return types.GenerateUUIDWithPrefix(types.UUID_PREFIX_PLACE)
 			}).
 			Immutable(),
+
 		field.String("slug").
 			SchemaType(map[string]string{
 				"postgres": "text",
 			}).
+			Immutable().
 			NotEmpty(),
+
 		field.String("title").
 			SchemaType(map[string]string{
 				"postgres": "text",
 			}).
 			NotEmpty(),
+
 		field.String("subtitle").
 			SchemaType(map[string]string{
 				"postgres": "text",
 			}).
 			Optional(),
+
 		field.String("short_description").
 			SchemaType(map[string]string{
 				"postgres": "text",
 			}).
 			Optional(),
+
 		field.String("long_description").
 			SchemaType(map[string]string{
 				"postgres": "text",
 			}).
 			Optional(),
+
 		field.String("place_type").
 			SchemaType(map[string]string{
 				"postgres": "text",
 			}).
+			Immutable().
 			NotEmpty(),
 
 		field.JSON("address", map[string]string{}).
@@ -85,6 +92,7 @@ func (Place) Fields() []ent.Field {
 				"postgres": "text",
 			}).
 			Optional(),
+
 		field.String("thumbnail_url").
 			SchemaType(map[string]string{
 				"postgres": "text",
@@ -136,17 +144,6 @@ func (Place) Edges() []ent.Edge {
 
 func (Place) Indexes() []ent.Index {
 	return []ent.Index{
-		// Unique slug
-		index.Fields("slug", "status").
-			Unique(),
-		// Index for bounding box queries
-		index.Fields("latitude", "longitude"),
-		// Indexes for feed functionality
-		index.Fields("popularity_score"),
-		index.Fields("view_count"),
-		index.Fields("rating_avg"),
-		index.Fields("last_viewed_at"),
-		// Composite index for trending queries
-		index.Fields("last_viewed_at", "popularity_score"),
+		// TODO: Add indexes
 	}
 }

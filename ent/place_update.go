@@ -83,20 +83,6 @@ func (_u *PlaceUpdate) ClearMetadata() *PlaceUpdate {
 	return _u
 }
 
-// SetSlug sets the "slug" field.
-func (_u *PlaceUpdate) SetSlug(v string) *PlaceUpdate {
-	_u.mutation.SetSlug(v)
-	return _u
-}
-
-// SetNillableSlug sets the "slug" field if the given value is not nil.
-func (_u *PlaceUpdate) SetNillableSlug(v *string) *PlaceUpdate {
-	if v != nil {
-		_u.SetSlug(*v)
-	}
-	return _u
-}
-
 // SetTitle sets the "title" field.
 func (_u *PlaceUpdate) SetTitle(v string) *PlaceUpdate {
 	_u.mutation.SetTitle(v)
@@ -168,20 +154,6 @@ func (_u *PlaceUpdate) SetNillableLongDescription(v *string) *PlaceUpdate {
 // ClearLongDescription clears the value of the "long_description" field.
 func (_u *PlaceUpdate) ClearLongDescription() *PlaceUpdate {
 	_u.mutation.ClearLongDescription()
-	return _u
-}
-
-// SetPlaceType sets the "place_type" field.
-func (_u *PlaceUpdate) SetPlaceType(v string) *PlaceUpdate {
-	_u.mutation.SetPlaceType(v)
-	return _u
-}
-
-// SetNillablePlaceType sets the "place_type" field if the given value is not nil.
-func (_u *PlaceUpdate) SetNillablePlaceType(v *string) *PlaceUpdate {
-	if v != nil {
-		_u.SetPlaceType(*v)
-	}
 	return _u
 }
 
@@ -470,19 +442,9 @@ func (_u *PlaceUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *PlaceUpdate) check() error {
-	if v, ok := _u.mutation.Slug(); ok {
-		if err := place.SlugValidator(v); err != nil {
-			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Place.slug": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.Title(); ok {
 		if err := place.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Place.title": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.PlaceType(); ok {
-		if err := place.PlaceTypeValidator(v); err != nil {
-			return &ValidationError{Name: "place_type", err: fmt.Errorf(`ent: validator failed for field "Place.place_type": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.ViewCount(); ok {
@@ -531,9 +493,6 @@ func (_u *PlaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.MetadataCleared() {
 		_spec.ClearField(place.FieldMetadata, field.TypeJSON)
 	}
-	if value, ok := _u.mutation.Slug(); ok {
-		_spec.SetField(place.FieldSlug, field.TypeString, value)
-	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(place.FieldTitle, field.TypeString, value)
 	}
@@ -554,9 +513,6 @@ func (_u *PlaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.LongDescriptionCleared() {
 		_spec.ClearField(place.FieldLongDescription, field.TypeString)
-	}
-	if value, ok := _u.mutation.PlaceType(); ok {
-		_spec.SetField(place.FieldPlaceType, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Address(); ok {
 		_spec.SetField(place.FieldAddress, field.TypeJSON, value)
@@ -768,20 +724,6 @@ func (_u *PlaceUpdateOne) ClearMetadata() *PlaceUpdateOne {
 	return _u
 }
 
-// SetSlug sets the "slug" field.
-func (_u *PlaceUpdateOne) SetSlug(v string) *PlaceUpdateOne {
-	_u.mutation.SetSlug(v)
-	return _u
-}
-
-// SetNillableSlug sets the "slug" field if the given value is not nil.
-func (_u *PlaceUpdateOne) SetNillableSlug(v *string) *PlaceUpdateOne {
-	if v != nil {
-		_u.SetSlug(*v)
-	}
-	return _u
-}
-
 // SetTitle sets the "title" field.
 func (_u *PlaceUpdateOne) SetTitle(v string) *PlaceUpdateOne {
 	_u.mutation.SetTitle(v)
@@ -853,20 +795,6 @@ func (_u *PlaceUpdateOne) SetNillableLongDescription(v *string) *PlaceUpdateOne 
 // ClearLongDescription clears the value of the "long_description" field.
 func (_u *PlaceUpdateOne) ClearLongDescription() *PlaceUpdateOne {
 	_u.mutation.ClearLongDescription()
-	return _u
-}
-
-// SetPlaceType sets the "place_type" field.
-func (_u *PlaceUpdateOne) SetPlaceType(v string) *PlaceUpdateOne {
-	_u.mutation.SetPlaceType(v)
-	return _u
-}
-
-// SetNillablePlaceType sets the "place_type" field if the given value is not nil.
-func (_u *PlaceUpdateOne) SetNillablePlaceType(v *string) *PlaceUpdateOne {
-	if v != nil {
-		_u.SetPlaceType(*v)
-	}
 	return _u
 }
 
@@ -1168,19 +1096,9 @@ func (_u *PlaceUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *PlaceUpdateOne) check() error {
-	if v, ok := _u.mutation.Slug(); ok {
-		if err := place.SlugValidator(v); err != nil {
-			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Place.slug": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.Title(); ok {
 		if err := place.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Place.title": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.PlaceType(); ok {
-		if err := place.PlaceTypeValidator(v); err != nil {
-			return &ValidationError{Name: "place_type", err: fmt.Errorf(`ent: validator failed for field "Place.place_type": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.ViewCount(); ok {
@@ -1246,9 +1164,6 @@ func (_u *PlaceUpdateOne) sqlSave(ctx context.Context) (_node *Place, err error)
 	if _u.mutation.MetadataCleared() {
 		_spec.ClearField(place.FieldMetadata, field.TypeJSON)
 	}
-	if value, ok := _u.mutation.Slug(); ok {
-		_spec.SetField(place.FieldSlug, field.TypeString, value)
-	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(place.FieldTitle, field.TypeString, value)
 	}
@@ -1269,9 +1184,6 @@ func (_u *PlaceUpdateOne) sqlSave(ctx context.Context) (_node *Place, err error)
 	}
 	if _u.mutation.LongDescriptionCleared() {
 		_spec.ClearField(place.FieldLongDescription, field.TypeString)
-	}
-	if value, ok := _u.mutation.PlaceType(); ok {
-		_spec.SetField(place.FieldPlaceType, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Address(); ok {
 		_spec.SetField(place.FieldAddress, field.TypeJSON, value)

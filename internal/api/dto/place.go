@@ -52,7 +52,7 @@ type UpdatePlaceRequest struct {
 	Subtitle         *string           `json:"subtitle,omitempty" binding:"omitempty,max=500"`
 	ShortDescription *string           `json:"short_description,omitempty" binding:"omitempty,max=1000"`
 	LongDescription  *string           `json:"long_description,omitempty" binding:"omitempty,max=10000"`
-	PlaceType        *string           `json:"place_type,omitempty" binding:"omitempty,min=2,max=50"`
+	PlaceType        *types.PlaceType  `json:"place_type,omitempty" binding:"omitempty,min=2,max=50"`
 	Address          map[string]string `json:"address,omitempty"`
 	Location         *types.Location   `json:"location,omitempty"`
 	PrimaryImageURL  *string           `json:"primary_image_url,omitempty" binding:"omitempty,url,max=500"`

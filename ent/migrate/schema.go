@@ -281,43 +281,6 @@ var (
 		Name:       "places",
 		Columns:    PlacesColumns,
 		PrimaryKey: []*schema.Column{PlacesColumns[0]},
-		Indexes: []*schema.Index{
-			{
-				Name:    "place_slug_status",
-				Unique:  true,
-				Columns: []*schema.Column{PlacesColumns[7], PlacesColumns[1]},
-			},
-			{
-				Name:    "place_latitude_longitude",
-				Unique:  false,
-				Columns: []*schema.Column{PlacesColumns[14], PlacesColumns[15]},
-			},
-			{
-				Name:    "place_popularity_score",
-				Unique:  false,
-				Columns: []*schema.Column{PlacesColumns[22]},
-			},
-			{
-				Name:    "place_view_count",
-				Unique:  false,
-				Columns: []*schema.Column{PlacesColumns[18]},
-			},
-			{
-				Name:    "place_rating_avg",
-				Unique:  false,
-				Columns: []*schema.Column{PlacesColumns[19]},
-			},
-			{
-				Name:    "place_last_viewed_at",
-				Unique:  false,
-				Columns: []*schema.Column{PlacesColumns[21]},
-			},
-			{
-				Name:    "place_last_viewed_at_popularity_score",
-				Unique:  false,
-				Columns: []*schema.Column{PlacesColumns[21], PlacesColumns[22]},
-			},
-		},
 	}
 	// PlaceImagesColumns holds the columns for the "place_images" table.
 	PlaceImagesColumns = []*schema.Column{
