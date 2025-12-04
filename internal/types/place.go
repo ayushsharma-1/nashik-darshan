@@ -11,19 +11,11 @@ import (
 type PlaceType string
 
 const (
-	PlaceTypeHotel      PlaceType = "hotel"
-	PlaceTypeApartment  PlaceType = "apartment"
-	PlaceTypeAttraction PlaceType = "attraction"
-	PlaceTypeRestaurant PlaceType = "restaurant"
-	PlaceTypeExperience PlaceType = "experience"
+	PlaceTypeTemple PlaceType = "temple"
 )
 
 var PlaceTypes = []string{
-	string(PlaceTypeHotel),
-	string(PlaceTypeApartment),
-	string(PlaceTypeAttraction),
-	string(PlaceTypeRestaurant),
-	string(PlaceTypeExperience),
+	string(PlaceTypeTemple),
 }
 
 // ValidateCoordinates validates latitude and longitude values
