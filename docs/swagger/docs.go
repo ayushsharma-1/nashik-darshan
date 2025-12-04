@@ -456,20 +456,16 @@ const docTemplate = `{
                     {
                         "enum": [
                             "published",
-                            "deleted",
+                            "draft",
                             "archived",
-                            "inactive",
-                            "pending",
-                            "draft"
+                            "deleted"
                         ],
                         "type": "string",
                         "x-enum-varnames": [
                             "StatusPublished",
-                            "StatusDeleted",
+                            "StatusDraft",
                             "StatusArchived",
-                            "StatusInactive",
-                            "StatusPending",
-                            "StatusDraft"
+                            "StatusDeleted"
                         ],
                         "name": "status",
                         "in": "query"
@@ -1304,20 +1300,16 @@ const docTemplate = `{
                     {
                         "enum": [
                             "published",
-                            "deleted",
+                            "draft",
                             "archived",
-                            "inactive",
-                            "pending",
-                            "draft"
+                            "deleted"
                         ],
                         "type": "string",
                         "x-enum-varnames": [
                             "StatusPublished",
-                            "StatusDeleted",
+                            "StatusDraft",
                             "StatusArchived",
-                            "StatusInactive",
-                            "StatusPending",
-                            "StatusDraft"
+                            "StatusDeleted"
                         ],
                         "name": "status",
                         "in": "query"
@@ -2106,6 +2098,67 @@ const docTemplate = `{
                 }
             }
         },
+        "/places/{id}/categories": {
+            "put": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Assign categories to a place by replacing existing category relationships",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Place"
+                ],
+                "summary": "Assign categories to a place",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Place ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Assign categories request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AssignCategoriesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/places/{id}/images": {
             "get": {
                 "description": "Get all images for a place",
@@ -2680,6 +2733,21 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.AssignCategoriesRequest": {
+            "type": "object",
+            "required": [
+                "category_ids"
+            ],
+            "properties": {
+                "category_ids": {
+                    "type": "array",
+                    "minItems": 0,
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "dto.CategoryResponse": {
             "type": "object",
             "properties": {
@@ -2982,12 +3050,6 @@ const docTemplate = `{
                     }
                 },
                 "amenities": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "categories": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -3619,18 +3681,6 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "amenities": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "categories": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "created_at": {
                     "type": "string"
                 },
@@ -4061,18 +4111,6 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "amenities": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "categories": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "location": {
                     "$ref": "#/definitions/types.Location"
                 },
@@ -4425,19 +4463,15 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "published",
-                "deleted",
+                "draft",
                 "archived",
-                "inactive",
-                "pending",
-                "draft"
+                "deleted"
             ],
             "x-enum-varnames": [
                 "StatusPublished",
-                "StatusDeleted",
+                "StatusDraft",
                 "StatusArchived",
-                "StatusInactive",
-                "StatusPending",
-                "StatusDraft"
+                "StatusDeleted"
             ]
         },
         "types.UserRole": {
