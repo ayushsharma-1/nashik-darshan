@@ -23,7 +23,6 @@ type CreatePlaceRequest struct {
 	Location         types.Location    `json:"location" binding:"required"`
 	PrimaryImageURL  *string           `json:"primary_image_url,omitempty" binding:"omitempty,url,max=500"`
 	ThumbnailURL     *string           `json:"thumbnail_url,omitempty" binding:"omitempty,url,max=500"`
-	Amenities        []string          `json:"amenities,omitempty"`
 }
 
 // Validate validates the CreatePlaceRequest
