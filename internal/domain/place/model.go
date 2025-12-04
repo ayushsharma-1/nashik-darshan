@@ -17,7 +17,7 @@ type Place struct {
 	Subtitle         *string           `json:"subtitle,omitempty" db:"subtitle"`
 	ShortDescription *string           `json:"short_description,omitempty" db:"short_description"`
 	LongDescription  *string           `json:"long_description,omitempty" db:"long_description"`
-	PlaceType        string            `json:"place_type" db:"place_type"`
+	PlaceType        types.PlaceType   `json:"place_type" db:"place_type"`
 	Address          map[string]string `json:"address,omitempty" db:"address"`
 	Location         types.Location    `json:"location" db:"location"`
 	PrimaryImageURL  *string           `json:"primary_image_url,omitempty" db:"primary_image_url"`
@@ -55,7 +55,7 @@ func FromEnt(place *ent.Place) *Place {
 		Subtitle:         lo.ToPtr(place.Subtitle),
 		ShortDescription: lo.ToPtr(place.ShortDescription),
 		LongDescription:  lo.ToPtr(place.LongDescription),
-		PlaceType:        place.PlaceType,
+		PlaceType:        types.PlaceType(place.PlaceType),
 		Location: types.Location{
 			Latitude:  place.Latitude,
 			Longitude: place.Longitude,

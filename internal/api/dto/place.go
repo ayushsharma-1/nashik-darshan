@@ -18,7 +18,7 @@ type CreatePlaceRequest struct {
 	Subtitle         *string           `json:"subtitle,omitempty" binding:"omitempty,max=500"`
 	ShortDescription *string           `json:"short_description,omitempty" binding:"omitempty,max=1000"`
 	LongDescription  *string           `json:"long_description,omitempty" binding:"omitempty,max=10000"`
-	PlaceType        string            `json:"place_type" binding:"required,min=2,max=50"`
+	PlaceType        types.PlaceType   `json:"place_type" binding:"required,min=2,max=50"`
 	Address          map[string]string `json:"address,omitempty"`
 	Location         types.Location    `json:"location" binding:"required"`
 	PrimaryImageURL  *string           `json:"primary_image_url,omitempty" binding:"omitempty,url,max=500"`
@@ -238,7 +238,7 @@ func (req *UpdatePlaceRequest) ApplyToPlace(ctx context.Context, p *place.Place)
 		p.LongDescription = req.LongDescription
 	}
 	if req.PlaceType != nil {
-		p.PlaceType = *req.PlaceType
+		p.PlaceType = types.PlaceType(*req.PlaceType)
 	}
 	if req.Address != nil {
 		p.Address = req.Address
