@@ -2,6 +2,7 @@ package validator
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 	"sync"
@@ -119,9 +120,8 @@ func ValidateCurrencyCode(currency string) error {
 
 	// Check if it's a valid currency code
 	if !validCurrencies[currency] {
-		return ierr.NewError("invalid currency code").
-			WithHintf("Please use standard ISO 4217 currency codes like USD, EUR, GBP, INR").
-			WithReportableDetails(map[string]any{"currency": currency}).
+		return ierr.NewError(fmt.Sprintf("invalid currency code: %s", currency)).
+			WithHint("Please use standard ISO 4217 currency codes like USD, EUR, GBP, INR").
 			Mark(ierr.ErrValidation)
 	}
 

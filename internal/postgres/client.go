@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect"
@@ -10,7 +11,6 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/omkar273/nashikdarshan/ent"
 	"github.com/omkar273/nashikdarshan/internal/config"
-	ierr "github.com/omkar273/nashikdarshan/internal/errors"
 	"github.com/omkar273/nashikdarshan/internal/logger"
 	"github.com/omkar273/nashikdarshan/internal/types"
 	"go.uber.org/fx"
@@ -52,18 +52,14 @@ func NewEntClient(config *config.Configuration, logger *logger.Logger) (*ent.Cli
 	// Open PostgreSQL connection
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
-		return nil, ierr.WithError(err).
-			WithMessage("failed to connect to postgres").
-			Mark(ierr.ErrDatabase)
+		return nil, fmt.Errorf("failed to connect to postgres: %w", err)
 	}
 
 	// ✅ Check if the database is actually reachable
 	if err := db.Ping(); err != nil {
-		return nil, ierr.WithError(err).
-			WithMessage("unable to reach postgres database").
-			Mark(ierr.ErrDatabase)
+		return nil, fmt.Errorf("unable to reach postgres database: %w", err)
 	}
-	logger.Info("connected to postgres...")
+	fmt.Print("connected to postgres...")
 
 	// Configure connection pool
 	db.SetMaxOpenConns(config.Postgres.MaxOpenConns)
@@ -93,9 +89,7 @@ func NewEntClient(config *config.Configuration, logger *logger.Logger) (*ent.Cli
 	if config.Postgres.AutoMigrate {
 		logger.Debugw("running auto migration")
 		if err := client.Schema.Create(context.Background()); err != nil {
-			return nil, ierr.WithError(err).
-				WithMessage("failed creating schema resources").
-				Mark(ierr.ErrDatabase)
+			return nil, fmt.Errorf("failed creating schema resources: %w", err)
 		}
 	}
 
@@ -122,9 +116,7 @@ func (c *Client) WithTx(ctx context.Context, fn func(ctx context.Context) error)
 	// Start a new transaction
 	tx, err := c.entClient.Tx(ctx)
 	if err != nil {
-		return ierr.WithError(err).
-			WithMessage("starting transaction").
-			Mark(ierr.ErrDatabase)
+		return fmt.Errorf("starting transaction: %w", err)
 	}
 
 	// Ensure transaction is rolled back on panic
@@ -143,9 +135,7 @@ func (c *Client) WithTx(ctx context.Context, fn func(ctx context.Context) error)
 
 	if err := fn(txCtx); err != nil {
 		if rerr := tx.Rollback(); rerr != nil {
-			err = ierr.WithError(err).
-				WithMessagef("rolling back transaction: %v (original error)", rerr).
-				Mark(ierr.ErrDatabase)
+			err = fmt.Errorf("rolling back transaction: %v (original error: %w)", rerr, err)
 		}
 		c.logger.Errorw("rolling back transaction due to error",
 			"error", err,
@@ -157,9 +147,7 @@ func (c *Client) WithTx(ctx context.Context, fn func(ctx context.Context) error)
 		c.logger.Errorw("committing transaction",
 			"error", err,
 		)
-		return ierr.WithError(err).
-			WithMessage("committing transaction").
-			Mark(ierr.ErrDatabase)
+		return fmt.Errorf("committing transaction: %w", err)
 	}
 
 	c.logger.Debugw("committed transaction")

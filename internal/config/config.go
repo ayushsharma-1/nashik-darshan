@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/joho/godotenv"
-	ierr "github.com/omkar273/nashikdarshan/internal/errors"
 	"github.com/omkar273/nashikdarshan/internal/types"
 	"github.com/omkar273/nashikdarshan/internal/validator"
 	"github.com/spf13/viper"
@@ -87,9 +86,7 @@ func NewConfig() (*Configuration, error) {
 			configFileFound = false
 			fmt.Printf("Warning: No config file found\n")
 		} else {
-			return nil, ierr.WithError(err).
-				WithMessage("error reading config file").
-				Mark(ierr.ErrInternal)
+			return nil, fmt.Errorf("error reading config file: %v", err)
 		}
 	} else {
 		fmt.Printf("Using config file: %s\n", v.ConfigFileUsed())
@@ -102,17 +99,12 @@ func NewConfig() (*Configuration, error) {
 
 	var cfg Configuration
 	if err := v.Unmarshal(&cfg); err != nil {
-		return nil, ierr.WithError(err).
-			WithMessage("unable to decode into config struct").
-			Mark(ierr.ErrInternal)
+		return nil, fmt.Errorf("unable to decode into config struct, %v", err)
 	}
 
 	// Step 7: Validate the configuration
 	if err := cfg.Validate(); err != nil {
-		return nil, ierr.WithError(err).
-			WithMessage("configuration validation failed").
-			WithHint("Please ensure you have either:\n1. A valid config.yaml file in ./internal/config/ or ./config/\n2. A .env file with required variables\n3. Environment variables with CAYGNUS_ prefix\n\nRequired fields: server.address, logging.level, postgres.host, postgres.port, postgres.user, postgres.password, postgres.dbname, postgres.sslmode, supabase.url, supabase.publishable_key, supabase.secret_key, secrets.encryption_key").
-			Mark(ierr.ErrValidation)
+		return nil, fmt.Errorf("configuration validation failed: %v\n\nPlease ensure you have either:\n1. A valid config.yaml file in ./internal/config/ or ./config/\n2. A .env file with required variables\n3. Environment variables with CAYGNUS_ prefix\n\nRequired fields: server.address, logging.level, postgres.host, postgres.port, postgres.user, postgres.password, postgres.dbname, postgres.sslmode, supabase.url, supabase.publishable_key, supabase.secret_key, secrets.encryption_key", err)
 	}
 
 	// print the config in json format for debugging during development
