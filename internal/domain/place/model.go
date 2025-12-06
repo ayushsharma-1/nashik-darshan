@@ -17,13 +17,11 @@ type Place struct {
 	Subtitle         *string           `json:"subtitle,omitempty" db:"subtitle"`
 	ShortDescription *string           `json:"short_description,omitempty" db:"short_description"`
 	LongDescription  *string           `json:"long_description,omitempty" db:"long_description"`
-	PlaceType        string            `json:"place_type" db:"place_type"`
-	Categories       []string          `json:"categories" db:"categories"`
+	PlaceType        types.PlaceType   `json:"place_type" db:"place_type"`
 	Address          map[string]string `json:"address,omitempty" db:"address"`
 	Location         types.Location    `json:"location" db:"location"`
 	PrimaryImageURL  *string           `json:"primary_image_url,omitempty" db:"primary_image_url"`
 	ThumbnailURL     *string           `json:"thumbnail_url,omitempty" db:"thumbnail_url"`
-	Amenities        []string          `json:"amenities" db:"amenities"`
 
 	// Engagement fields for feed functionality
 	ViewCount       int             `json:"view_count" db:"view_count"`
@@ -57,15 +55,13 @@ func FromEnt(place *ent.Place) *Place {
 		Subtitle:         lo.ToPtr(place.Subtitle),
 		ShortDescription: lo.ToPtr(place.ShortDescription),
 		LongDescription:  lo.ToPtr(place.LongDescription),
-		PlaceType:        place.PlaceType,
-		Categories:       place.Categories,
+		PlaceType:        types.PlaceType(place.PlaceType),
 		Location: types.Location{
 			Latitude:  place.Latitude,
 			Longitude: place.Longitude,
 		},
 		PrimaryImageURL: lo.ToPtr(place.PrimaryImageURL),
 		ThumbnailURL:    lo.ToPtr(place.ThumbnailURL),
-		Amenities:       place.Amenities,
 
 		// Engagement fields
 		ViewCount:       place.ViewCount,
@@ -106,11 +102,12 @@ func FromEntList(places []*ent.Place) []*Place {
 // FromEntImage converts ent.PlaceImage to domain PlaceImage
 func FromEntImage(image *ent.PlaceImage) *PlaceImage {
 	pi := &PlaceImage{
-		ID:      image.ID,
-		PlaceID: image.PlaceID,
-		URL:     image.URL,
-		Alt:     image.Alt,
-		Pos:     image.Pos,
+		ID:       image.ID,
+		PlaceID:  image.PlaceID,
+		URL:      image.URL,
+		Alt:      image.Alt,
+		Pos:      image.Pos,
+		Metadata: types.NewMetadataFromMap(image.Metadata),
 		BaseModel: types.BaseModel{
 			Status:    types.Status(image.Status),
 			CreatedAt: image.CreatedAt,
@@ -118,13 +115,6 @@ func FromEntImage(image *ent.PlaceImage) *PlaceImage {
 			CreatedBy: image.CreatedBy,
 			UpdatedBy: image.UpdatedBy,
 		},
-	}
-
-	// Convert metadata from map[string]string to types.Metadata
-	// Note: This requires ent.PlaceImage to have Metadata field after regenerating ent code
-	// TODO: Uncomment after regenerating ent code with MetadataMixin included
-	if len(image.Metadata) > 0 {
-		pi.Metadata = types.NewMetadataFromMap(image.Metadata)
 	}
 
 	return pi

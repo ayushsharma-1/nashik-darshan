@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -31,8 +32,15 @@ const (
 	FieldSlug = "slug"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
+	// EdgePlaces holds the string denoting the places edge name in mutations.
+	EdgePlaces = "places"
 	// Table holds the table name of the category in the database.
 	Table = "categories"
+	// PlacesTable is the table that holds the places relation/edge. The primary key declared below.
+	PlacesTable = "category_places"
+	// PlacesInverseTable is the table name for the Place entity.
+	// It exists in this package in order to avoid circular dependency with the "place" package.
+	PlacesInverseTable = "places"
 )
 
 // Columns holds all SQL columns for category fields.
@@ -48,6 +56,12 @@ var Columns = []string{
 	FieldSlug,
 	FieldDescription,
 }
+
+var (
+	// PlacesPrimaryKey and PlacesColumn2 are the table columns denoting the
+	// primary key for the places relation (M2M).
+	PlacesPrimaryKey = []string{"category_id", "place_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -124,4 +138,25 @@ func BySlug(opts ...sql.OrderTermOption) OrderOption {
 // ByDescription orders the results by the description field.
 func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
+// ByPlacesCount orders the results by places count.
+func ByPlacesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newPlacesStep(), opts...)
+	}
+}
+
+// ByPlaces orders the results by places terms.
+func ByPlaces(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPlacesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newPlacesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PlacesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, PlacesTable, PlacesPrimaryKey...),
+	)
 }

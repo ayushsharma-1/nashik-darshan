@@ -35,8 +35,29 @@ type Category struct {
 	// Slug holds the value of the "slug" field.
 	Slug string `json:"slug,omitempty"`
 	// Description holds the value of the "description" field.
-	Description  string `json:"description,omitempty"`
+	Description string `json:"description,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the CategoryQuery when eager-loading is set.
+	Edges        CategoryEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// CategoryEdges holds the relations/edges for other nodes in the graph.
+type CategoryEdges struct {
+	// Places holds the value of the places edge.
+	Places []*Place `json:"places,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// PlacesOrErr returns the Places value or an error if the edge
+// was not loaded in eager-loading.
+func (e CategoryEdges) PlacesOrErr() ([]*Place, error) {
+	if e.loadedTypes[0] {
+		return e.Places, nil
+	}
+	return nil, &NotLoadedError{edge: "places"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -138,6 +159,11 @@ func (_m *Category) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (_m *Category) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
+}
+
+// QueryPlaces queries the "places" edge of the Category entity.
+func (_m *Category) QueryPlaces() *PlaceQuery {
+	return NewCategoryClient(_m.config).QueryPlaces(_m)
 }
 
 // Update returns a builder for updating this Category.

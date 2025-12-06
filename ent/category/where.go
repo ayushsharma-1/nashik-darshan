@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/omkar273/nashikdarshan/ent/predicate"
 )
 
@@ -612,6 +613,29 @@ func DescriptionEqualFold(v string) predicate.Category {
 // DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
 func DescriptionContainsFold(v string) predicate.Category {
 	return predicate.Category(sql.FieldContainsFold(FieldDescription, v))
+}
+
+// HasPlaces applies the HasEdge predicate on the "places" edge.
+func HasPlaces() predicate.Category {
+	return predicate.Category(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, PlacesTable, PlacesPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPlacesWith applies the HasEdge predicate on the "places" edge with a given conditions (other predicates).
+func HasPlacesWith(preds ...predicate.Place) predicate.Category {
+	return predicate.Category(func(s *sql.Selector) {
+		step := newPlacesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

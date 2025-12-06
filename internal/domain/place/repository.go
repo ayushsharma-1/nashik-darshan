@@ -32,4 +32,7 @@ type Repository interface {
 	IncrementViewCount(ctx context.Context, placeID string) error
 	UpdateRating(ctx context.Context, placeID string, newRating decimal.Decimal) error
 	UpdatePopularityScore(ctx context.Context, placeID string, score decimal.Decimal) error
+
+	// Category operations
+	AssignCategories(ctx context.Context, placeID string, categoryIDs []string) error
 }

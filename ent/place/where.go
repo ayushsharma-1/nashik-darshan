@@ -891,16 +891,6 @@ func PlaceTypeContainsFold(v string) predicate.Place {
 	return predicate.Place(sql.FieldContainsFold(FieldPlaceType, v))
 }
 
-// CategoriesIsNil applies the IsNil predicate on the "categories" field.
-func CategoriesIsNil() predicate.Place {
-	return predicate.Place(sql.FieldIsNull(FieldCategories))
-}
-
-// CategoriesNotNil applies the NotNil predicate on the "categories" field.
-func CategoriesNotNil() predicate.Place {
-	return predicate.Place(sql.FieldNotNull(FieldCategories))
-}
-
 // AddressIsNil applies the IsNil predicate on the "address" field.
 func AddressIsNil() predicate.Place {
 	return predicate.Place(sql.FieldIsNull(FieldAddress))
@@ -1141,16 +1131,6 @@ func ThumbnailURLContainsFold(v string) predicate.Place {
 	return predicate.Place(sql.FieldContainsFold(FieldThumbnailURL, v))
 }
 
-// AmenitiesIsNil applies the IsNil predicate on the "amenities" field.
-func AmenitiesIsNil() predicate.Place {
-	return predicate.Place(sql.FieldIsNull(FieldAmenities))
-}
-
-// AmenitiesNotNil applies the NotNil predicate on the "amenities" field.
-func AmenitiesNotNil() predicate.Place {
-	return predicate.Place(sql.FieldNotNull(FieldAmenities))
-}
-
 // ViewCountEQ applies the EQ predicate on the "view_count" field.
 func ViewCountEQ(v int) predicate.Place {
 	return predicate.Place(sql.FieldEQ(FieldViewCount, v))
@@ -1376,6 +1356,29 @@ func HasImages() predicate.Place {
 func HasImagesWith(preds ...predicate.PlaceImage) predicate.Place {
 	return predicate.Place(func(s *sql.Selector) {
 		step := newImagesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasCategory applies the HasEdge predicate on the "category" edge.
+func HasCategory() predicate.Place {
+	return predicate.Place(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, CategoryTable, CategoryPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCategoryWith applies the HasEdge predicate on the "category" edge with a given conditions (other predicates).
+func HasCategoryWith(preds ...predicate.Category) predicate.Place {
+	return predicate.Place(func(s *sql.Selector) {
+		step := newCategoryStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

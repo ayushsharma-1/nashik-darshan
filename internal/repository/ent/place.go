@@ -6,12 +6,9 @@ import (
 	"sort"
 	"time"
 
-	entsql "entgo.io/ent/dialect/sql"
-	"github.com/lib/pq"
 	"github.com/omkar273/nashikdarshan/ent"
 	"github.com/omkar273/nashikdarshan/ent/place"
 	"github.com/omkar273/nashikdarshan/ent/placeimage"
-	"github.com/omkar273/nashikdarshan/ent/predicate"
 	domain "github.com/omkar273/nashikdarshan/internal/domain/place"
 	ierr "github.com/omkar273/nashikdarshan/internal/errors"
 	"github.com/omkar273/nashikdarshan/internal/logger"
@@ -95,7 +92,7 @@ func (r *PlaceRepository) Create(ctx context.Context, p *domain.Place) error {
 		SetID(p.ID).
 		SetSlug(p.Slug).
 		SetTitle(p.Title).
-		SetPlaceType(p.PlaceType).
+		SetPlaceType(string(p.PlaceType)).
 		SetLatitude(p.Location.Latitude).
 		SetLongitude(p.Location.Longitude).
 		SetStatus(string(p.Status)).
@@ -113,19 +110,6 @@ func (r *PlaceRepository) Create(ctx context.Context, p *domain.Place) error {
 	if p.LongDescription != nil {
 		create = create.SetLongDescription(*p.LongDescription)
 	}
-	// Set categories - filter out empty strings to avoid issues
-	if len(p.Categories) > 0 {
-		// Filter out empty strings
-		validCategories := []string{}
-		for _, cat := range p.Categories {
-			if cat != "" {
-				validCategories = append(validCategories, cat)
-			}
-		}
-		if len(validCategories) > 0 {
-			create = create.SetCategories(validCategories)
-		}
-	}
 	if len(p.Address) > 0 {
 		create = create.SetAddress(p.Address)
 	}
@@ -134,18 +118,6 @@ func (r *PlaceRepository) Create(ctx context.Context, p *domain.Place) error {
 	}
 	if p.ThumbnailURL != nil {
 		create = create.SetThumbnailURL(*p.ThumbnailURL)
-	}
-	if len(p.Amenities) > 0 {
-		// Filter out empty strings
-		validAmenities := []string{}
-		for _, amenity := range p.Amenities {
-			if amenity != "" {
-				validAmenities = append(validAmenities, amenity)
-			}
-		}
-		if len(validAmenities) > 0 {
-			create = create.SetAmenities(validAmenities)
-		}
 	}
 
 	_, err := create.Save(ctx)
@@ -245,8 +217,12 @@ func (r *PlaceRepository) List(ctx context.Context, filter *types.PlaceFilter) (
 	)
 
 	query := client.Place.Query()
-	query = r.queryOpts.ApplyBaseFilters(ctx, query, filter)
+
+	// Apply entity-specific filters first
 	query = r.queryOpts.ApplyEntityQueryOptions(ctx, filter, query)
+
+	// Apply common query options (status, pagination, sorting)
+	query = ApplyQueryOptions(ctx, query, filter, r.queryOpts)
 
 	// Load images if expand includes images
 	if filter != nil && filter.GetExpand().Has("images") {
@@ -341,13 +317,20 @@ func (r *PlaceRepository) Count(ctx context.Context, filter *types.PlaceFilter) 
 	r.log.Debugw("counting places")
 
 	query := client.Place.Query()
-	query = r.queryOpts.ApplyBaseFilters(ctx, query, filter)
+
+	// Apply base filters (status only, no pagination/sorting)
+	query = ApplyBaseFilters(ctx, query, filter, r.queryOpts)
+
+	// Apply entity-specific filters
 	query = r.queryOpts.ApplyEntityQueryOptions(ctx, filter, query)
 
 	count, err := query.Count(ctx)
 	if err != nil {
 		return 0, ierr.WithError(err).
 			WithHint("Failed to count places").
+			WithReportableDetails(map[string]any{
+				"filter": filter,
+			}).
 			Mark(ierr.ErrDatabase)
 	}
 
@@ -364,9 +347,7 @@ func (r *PlaceRepository) Update(ctx context.Context, p *domain.Place) error {
 	)
 
 	update := client.Place.UpdateOneID(p.ID).
-		SetSlug(p.Slug).
 		SetTitle(p.Title).
-		SetPlaceType(p.PlaceType).
 		SetLatitude(p.Location.Latitude).
 		SetLongitude(p.Location.Longitude).
 		SetStatus(string(p.Status)).
@@ -388,22 +369,6 @@ func (r *PlaceRepository) Update(ctx context.Context, p *domain.Place) error {
 	} else {
 		update = update.ClearLongDescription()
 	}
-	if len(p.Categories) > 0 {
-		// Filter out empty strings to avoid PostgreSQL array issues
-		validCategories := []string{}
-		for _, cat := range p.Categories {
-			if cat != "" {
-				validCategories = append(validCategories, cat)
-			}
-		}
-		if len(validCategories) > 0 {
-			update = update.SetCategories(validCategories)
-		} else {
-			update = update.ClearCategories()
-		}
-	} else {
-		update = update.ClearCategories()
-	}
 	if len(p.Address) > 0 {
 		update = update.SetAddress(p.Address)
 	} else {
@@ -418,22 +383,6 @@ func (r *PlaceRepository) Update(ctx context.Context, p *domain.Place) error {
 		update = update.SetThumbnailURL(*p.ThumbnailURL)
 	} else {
 		update = update.ClearThumbnailURL()
-	}
-	if len(p.Amenities) > 0 {
-		// Filter out empty strings to avoid PostgreSQL array issues
-		validAmenities := []string{}
-		for _, amenity := range p.Amenities {
-			if amenity != "" {
-				validAmenities = append(validAmenities, amenity)
-			}
-		}
-		if len(validAmenities) > 0 {
-			update = update.SetAmenities(validAmenities)
-		} else {
-			update = update.ClearAmenities()
-		}
-	} else {
-		update = update.ClearAmenities()
 	}
 
 	_, err := update.Save(ctx)
@@ -683,12 +632,10 @@ func (r *PlaceRepository) DeleteImage(ctx context.Context, imageID string) error
 type PlaceQuery = *ent.PlaceQuery
 
 // PlaceQueryOptions implements query options for place queries
-type PlaceQueryOptions struct {
-	QueryOptionsHelper
-}
+type PlaceQueryOptions struct{}
 
-// Ensure PlaceQueryOptions implements EntityQueryOptions interface
-var _ EntityQueryOptions[PlaceQuery, *types.PlaceFilter] = (*PlaceQueryOptions)(nil)
+// Ensure PlaceQueryOptions implements BaseQueryOptions interface
+var _ BaseQueryOptions[PlaceQuery] = (*PlaceQueryOptions)(nil)
 
 func (o PlaceQueryOptions) ApplyStatusFilter(query PlaceQuery, status string) PlaceQuery {
 	if status == "" {
@@ -698,7 +645,15 @@ func (o PlaceQueryOptions) ApplyStatusFilter(query PlaceQuery, status string) Pl
 }
 
 func (o PlaceQueryOptions) ApplySortFilter(query PlaceQuery, field string, order string) PlaceQuery {
-	field, order = o.ValidateSort(field, order)
+	// Validate order
+	if order != types.OrderAsc && order != types.OrderDesc {
+		order = types.OrderDesc
+	}
+	// Default field if empty
+	if field == "" {
+		field = "created_at"
+	}
+
 	fieldName := o.GetFieldName(field)
 	if order == types.OrderDesc {
 		return query.Order(ent.Desc(fieldName))
@@ -707,7 +662,17 @@ func (o PlaceQueryOptions) ApplySortFilter(query PlaceQuery, field string, order
 }
 
 func (o PlaceQueryOptions) ApplyPaginationFilter(query PlaceQuery, limit int, offset int) PlaceQuery {
-	limit, offset = o.ValidatePagination(limit, offset)
+	// Validate pagination values
+	if limit <= 0 {
+		limit = 20 // Default limit
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	if limit > 1000 {
+		limit = 1000
+	}
+
 	return query.Offset(offset).Limit(limit)
 }
 
@@ -728,33 +693,6 @@ func (o PlaceQueryOptions) GetFieldName(field string) string {
 	}
 }
 
-func (o PlaceQueryOptions) ApplyBaseFilters(
-	_ context.Context,
-	query PlaceQuery,
-	filter *types.PlaceFilter,
-) PlaceQuery {
-	if filter == nil {
-		return query.Where(place.StatusNotIn(string(types.StatusDeleted)))
-	}
-
-	// Apply status filter
-	query = o.ApplyStatusFilter(query, filter.GetStatus())
-
-	// Apply pagination
-	if !filter.IsUnlimited() {
-		query = o.ApplyPaginationFilter(query, filter.GetLimit(), filter.GetOffset())
-	}
-
-	// Apply sorting - skip if geospatial ordering will be applied
-	// (geospatial ordering takes precedence and will be applied in List method after distance calculation)
-	hasGeospatialOrdering := filter.Latitude != nil && filter.Longitude != nil && filter.RadiusM != nil
-	if !hasGeospatialOrdering {
-		query = o.ApplySortFilter(query, filter.GetSort(), filter.GetOrder())
-	}
-
-	return query
-}
-
 func (o PlaceQueryOptions) ApplyEntityQueryOptions(
 	_ context.Context,
 	f *types.PlaceFilter,
@@ -773,33 +711,6 @@ func (o PlaceQueryOptions) ApplyEntityQueryOptions(
 	if len(f.PlaceTypes) > 0 {
 		query = query.Where(place.PlaceTypeIn(f.PlaceTypes...))
 	}
-
-	// Apply categories filter if specified
-	// PostgreSQL array overlap operator: && (returns true if arrays have any elements in common)
-	if len(f.Categories) > 0 {
-		// Use raw SQL predicate for array overlap
-		// Convert categories slice to PostgreSQL array format
-		categoriesArray := pq.Array(f.Categories)
-		query = query.Where(predicate.Place(func(s *entsql.Selector) {
-			s.Where(entsql.ExprP("categories && ?", categoriesArray))
-		}))
-	}
-
-	// Apply amenities filter if specified
-	// PostgreSQL array overlap operator: && (returns true if arrays have any elements in common)
-	if len(f.Amenities) > 0 {
-		// Use raw SQL predicate for array overlap
-		// Convert amenities slice to PostgreSQL array format
-		amenitiesArray := pq.Array(f.Amenities)
-		query = query.Where(predicate.Place(func(s *entsql.Selector) {
-			s.Where(entsql.ExprP("amenities && ?", amenitiesArray))
-		}))
-	}
-
-	// Apply rating filters if specified
-	// Note: Rating is not stored in Place entity, so this would need to be handled
-	// via a join with a ratings table or calculated field
-	// For now, we'll skip this as it's not in the schema
 
 	// Apply search query if specified
 	if f.SearchQuery != nil && *f.SearchQuery != "" {
@@ -938,6 +849,45 @@ func (r *PlaceRepository) UpdatePopularityScore(ctx context.Context, placeID str
 	if err != nil {
 		return ierr.WithError(err).
 			WithHint("Failed to update popularity score").
+			Mark(ierr.ErrDatabase)
+	}
+
+	return nil
+}
+
+// AssignCategories assigns categories to a place by replacing existing category relationships
+func (r *PlaceRepository) AssignCategories(ctx context.Context, placeID string, categoryIDs []string) error {
+	client := r.client.Querier(ctx)
+
+	r.log.Debugw("assigning categories to place",
+		"place_id", placeID,
+		"category_count", len(categoryIDs),
+	)
+
+	now := time.Now().UTC()
+
+	_, err := client.Place.UpdateOneID(placeID).
+		ClearCategory().
+		AddCategoryIDs(categoryIDs...).
+		SetUpdatedAt(now).
+		SetUpdatedBy(types.GetUserID(ctx)).
+		Save(ctx)
+
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return ierr.WithError(err).
+				WithHintf("Place with ID %s was not found", placeID).
+				WithReportableDetails(map[string]any{
+					"place_id": placeID,
+				}).
+				Mark(ierr.ErrNotFound)
+		}
+		return ierr.WithError(err).
+			WithHint("Failed to assign categories to place").
+			WithReportableDetails(map[string]any{
+				"place_id":     placeID,
+				"category_ids": categoryIDs,
+			}).
 			Mark(ierr.ErrDatabase)
 	}
 

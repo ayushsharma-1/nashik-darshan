@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	baseMixin "github.com/omkar273/nashikdarshan/ent/mixin"
@@ -45,7 +46,9 @@ func (Category) Fields() []ent.Field {
 }
 
 func (Category) Edges() []ent.Edge {
-	return []ent.Edge{}
+	return []ent.Edge{
+		edge.To("places", Place.Type),
+	}
 }
 
 func (Category) Indexes() []ent.Index {

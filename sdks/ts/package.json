@@ -1,0 +1,46 @@
+{
+  "name": "@caygnus/nashik-darshan-sdk",
+  "version": "1.0.2",
+  "description": "Official TypeScript/JavaScript SDK for Nashik Darshan API",
+  "author": "Caygnus",
+  "license": "PROPRIETARY",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Caygnus/nashik-darshan-v2.git",
+    "directory": "sdks/ts"
+  },
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "scripts": {
+    "build": "echo 'No build step required - TypeScript source files are used directly'",
+    "prepublishOnly": "echo 'Run make generate-ts-sdk to regenerate SDK before publishing'"
+  },
+  "keywords": [
+    "nashik-darshan",
+    "sdk",
+    "typescript",
+    "javascript",
+    "api",
+    "tourism",
+    "travel"
+  ],
+  "files": [
+    "*.ts",
+    "docs/",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

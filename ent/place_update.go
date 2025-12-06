@@ -10,8 +10,8 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
+	"github.com/omkar273/nashikdarshan/ent/category"
 	"github.com/omkar273/nashikdarshan/ent/place"
 	"github.com/omkar273/nashikdarshan/ent/placeimage"
 	"github.com/omkar273/nashikdarshan/ent/predicate"
@@ -80,20 +80,6 @@ func (_u *PlaceUpdate) SetMetadata(v map[string]string) *PlaceUpdate {
 // ClearMetadata clears the value of the "metadata" field.
 func (_u *PlaceUpdate) ClearMetadata() *PlaceUpdate {
 	_u.mutation.ClearMetadata()
-	return _u
-}
-
-// SetSlug sets the "slug" field.
-func (_u *PlaceUpdate) SetSlug(v string) *PlaceUpdate {
-	_u.mutation.SetSlug(v)
-	return _u
-}
-
-// SetNillableSlug sets the "slug" field if the given value is not nil.
-func (_u *PlaceUpdate) SetNillableSlug(v *string) *PlaceUpdate {
-	if v != nil {
-		_u.SetSlug(*v)
-	}
 	return _u
 }
 
@@ -168,38 +154,6 @@ func (_u *PlaceUpdate) SetNillableLongDescription(v *string) *PlaceUpdate {
 // ClearLongDescription clears the value of the "long_description" field.
 func (_u *PlaceUpdate) ClearLongDescription() *PlaceUpdate {
 	_u.mutation.ClearLongDescription()
-	return _u
-}
-
-// SetPlaceType sets the "place_type" field.
-func (_u *PlaceUpdate) SetPlaceType(v string) *PlaceUpdate {
-	_u.mutation.SetPlaceType(v)
-	return _u
-}
-
-// SetNillablePlaceType sets the "place_type" field if the given value is not nil.
-func (_u *PlaceUpdate) SetNillablePlaceType(v *string) *PlaceUpdate {
-	if v != nil {
-		_u.SetPlaceType(*v)
-	}
-	return _u
-}
-
-// SetCategories sets the "categories" field.
-func (_u *PlaceUpdate) SetCategories(v []string) *PlaceUpdate {
-	_u.mutation.SetCategories(v)
-	return _u
-}
-
-// AppendCategories appends value to the "categories" field.
-func (_u *PlaceUpdate) AppendCategories(v []string) *PlaceUpdate {
-	_u.mutation.AppendCategories(v)
-	return _u
-}
-
-// ClearCategories clears the value of the "categories" field.
-func (_u *PlaceUpdate) ClearCategories() *PlaceUpdate {
-	_u.mutation.ClearCategories()
 	return _u
 }
 
@@ -280,24 +234,6 @@ func (_u *PlaceUpdate) SetNillableThumbnailURL(v *string) *PlaceUpdate {
 // ClearThumbnailURL clears the value of the "thumbnail_url" field.
 func (_u *PlaceUpdate) ClearThumbnailURL() *PlaceUpdate {
 	_u.mutation.ClearThumbnailURL()
-	return _u
-}
-
-// SetAmenities sets the "amenities" field.
-func (_u *PlaceUpdate) SetAmenities(v []string) *PlaceUpdate {
-	_u.mutation.SetAmenities(v)
-	return _u
-}
-
-// AppendAmenities appends value to the "amenities" field.
-func (_u *PlaceUpdate) AppendAmenities(v []string) *PlaceUpdate {
-	_u.mutation.AppendAmenities(v)
-	return _u
-}
-
-// ClearAmenities clears the value of the "amenities" field.
-func (_u *PlaceUpdate) ClearAmenities() *PlaceUpdate {
-	_u.mutation.ClearAmenities()
 	return _u
 }
 
@@ -406,6 +342,21 @@ func (_u *PlaceUpdate) AddImages(v ...*PlaceImage) *PlaceUpdate {
 	return _u.AddImageIDs(ids...)
 }
 
+// AddCategoryIDs adds the "category" edge to the Category entity by IDs.
+func (_u *PlaceUpdate) AddCategoryIDs(ids ...string) *PlaceUpdate {
+	_u.mutation.AddCategoryIDs(ids...)
+	return _u
+}
+
+// AddCategory adds the "category" edges to the Category entity.
+func (_u *PlaceUpdate) AddCategory(v ...*Category) *PlaceUpdate {
+	ids := make([]string, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCategoryIDs(ids...)
+}
+
 // Mutation returns the PlaceMutation object of the builder.
 func (_u *PlaceUpdate) Mutation() *PlaceMutation {
 	return _u.mutation
@@ -430,6 +381,27 @@ func (_u *PlaceUpdate) RemoveImages(v ...*PlaceImage) *PlaceUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveImageIDs(ids...)
+}
+
+// ClearCategory clears all "category" edges to the Category entity.
+func (_u *PlaceUpdate) ClearCategory() *PlaceUpdate {
+	_u.mutation.ClearCategory()
+	return _u
+}
+
+// RemoveCategoryIDs removes the "category" edge to Category entities by IDs.
+func (_u *PlaceUpdate) RemoveCategoryIDs(ids ...string) *PlaceUpdate {
+	_u.mutation.RemoveCategoryIDs(ids...)
+	return _u
+}
+
+// RemoveCategory removes "category" edges to Category entities.
+func (_u *PlaceUpdate) RemoveCategory(v ...*Category) *PlaceUpdate {
+	ids := make([]string, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCategoryIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -470,19 +442,9 @@ func (_u *PlaceUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *PlaceUpdate) check() error {
-	if v, ok := _u.mutation.Slug(); ok {
-		if err := place.SlugValidator(v); err != nil {
-			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Place.slug": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.Title(); ok {
 		if err := place.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Place.title": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.PlaceType(); ok {
-		if err := place.PlaceTypeValidator(v); err != nil {
-			return &ValidationError{Name: "place_type", err: fmt.Errorf(`ent: validator failed for field "Place.place_type": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.ViewCount(); ok {
@@ -531,9 +493,6 @@ func (_u *PlaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.MetadataCleared() {
 		_spec.ClearField(place.FieldMetadata, field.TypeJSON)
 	}
-	if value, ok := _u.mutation.Slug(); ok {
-		_spec.SetField(place.FieldSlug, field.TypeString, value)
-	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(place.FieldTitle, field.TypeString, value)
 	}
@@ -554,20 +513,6 @@ func (_u *PlaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.LongDescriptionCleared() {
 		_spec.ClearField(place.FieldLongDescription, field.TypeString)
-	}
-	if value, ok := _u.mutation.PlaceType(); ok {
-		_spec.SetField(place.FieldPlaceType, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Categories(); ok {
-		_spec.SetField(place.FieldCategories, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedCategories(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, place.FieldCategories, value)
-		})
-	}
-	if _u.mutation.CategoriesCleared() {
-		_spec.ClearField(place.FieldCategories, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.Address(); ok {
 		_spec.SetField(place.FieldAddress, field.TypeJSON, value)
@@ -592,17 +537,6 @@ func (_u *PlaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.ThumbnailURLCleared() {
 		_spec.ClearField(place.FieldThumbnailURL, field.TypeString)
-	}
-	if value, ok := _u.mutation.Amenities(); ok {
-		_spec.SetField(place.FieldAmenities, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedAmenities(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, place.FieldAmenities, value)
-		})
-	}
-	if _u.mutation.AmenitiesCleared() {
-		_spec.ClearField(place.FieldAmenities, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.ViewCount(); ok {
 		_spec.SetField(place.FieldViewCount, field.TypeInt, value)
@@ -666,6 +600,51 @@ func (_u *PlaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(placeimage.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CategoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   place.CategoryTable,
+			Columns: place.CategoryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(category.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCategoryIDs(); len(nodes) > 0 && !_u.mutation.CategoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   place.CategoryTable,
+			Columns: place.CategoryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(category.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CategoryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   place.CategoryTable,
+			Columns: place.CategoryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(category.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -745,20 +724,6 @@ func (_u *PlaceUpdateOne) ClearMetadata() *PlaceUpdateOne {
 	return _u
 }
 
-// SetSlug sets the "slug" field.
-func (_u *PlaceUpdateOne) SetSlug(v string) *PlaceUpdateOne {
-	_u.mutation.SetSlug(v)
-	return _u
-}
-
-// SetNillableSlug sets the "slug" field if the given value is not nil.
-func (_u *PlaceUpdateOne) SetNillableSlug(v *string) *PlaceUpdateOne {
-	if v != nil {
-		_u.SetSlug(*v)
-	}
-	return _u
-}
-
 // SetTitle sets the "title" field.
 func (_u *PlaceUpdateOne) SetTitle(v string) *PlaceUpdateOne {
 	_u.mutation.SetTitle(v)
@@ -830,38 +795,6 @@ func (_u *PlaceUpdateOne) SetNillableLongDescription(v *string) *PlaceUpdateOne 
 // ClearLongDescription clears the value of the "long_description" field.
 func (_u *PlaceUpdateOne) ClearLongDescription() *PlaceUpdateOne {
 	_u.mutation.ClearLongDescription()
-	return _u
-}
-
-// SetPlaceType sets the "place_type" field.
-func (_u *PlaceUpdateOne) SetPlaceType(v string) *PlaceUpdateOne {
-	_u.mutation.SetPlaceType(v)
-	return _u
-}
-
-// SetNillablePlaceType sets the "place_type" field if the given value is not nil.
-func (_u *PlaceUpdateOne) SetNillablePlaceType(v *string) *PlaceUpdateOne {
-	if v != nil {
-		_u.SetPlaceType(*v)
-	}
-	return _u
-}
-
-// SetCategories sets the "categories" field.
-func (_u *PlaceUpdateOne) SetCategories(v []string) *PlaceUpdateOne {
-	_u.mutation.SetCategories(v)
-	return _u
-}
-
-// AppendCategories appends value to the "categories" field.
-func (_u *PlaceUpdateOne) AppendCategories(v []string) *PlaceUpdateOne {
-	_u.mutation.AppendCategories(v)
-	return _u
-}
-
-// ClearCategories clears the value of the "categories" field.
-func (_u *PlaceUpdateOne) ClearCategories() *PlaceUpdateOne {
-	_u.mutation.ClearCategories()
 	return _u
 }
 
@@ -942,24 +875,6 @@ func (_u *PlaceUpdateOne) SetNillableThumbnailURL(v *string) *PlaceUpdateOne {
 // ClearThumbnailURL clears the value of the "thumbnail_url" field.
 func (_u *PlaceUpdateOne) ClearThumbnailURL() *PlaceUpdateOne {
 	_u.mutation.ClearThumbnailURL()
-	return _u
-}
-
-// SetAmenities sets the "amenities" field.
-func (_u *PlaceUpdateOne) SetAmenities(v []string) *PlaceUpdateOne {
-	_u.mutation.SetAmenities(v)
-	return _u
-}
-
-// AppendAmenities appends value to the "amenities" field.
-func (_u *PlaceUpdateOne) AppendAmenities(v []string) *PlaceUpdateOne {
-	_u.mutation.AppendAmenities(v)
-	return _u
-}
-
-// ClearAmenities clears the value of the "amenities" field.
-func (_u *PlaceUpdateOne) ClearAmenities() *PlaceUpdateOne {
-	_u.mutation.ClearAmenities()
 	return _u
 }
 
@@ -1068,6 +983,21 @@ func (_u *PlaceUpdateOne) AddImages(v ...*PlaceImage) *PlaceUpdateOne {
 	return _u.AddImageIDs(ids...)
 }
 
+// AddCategoryIDs adds the "category" edge to the Category entity by IDs.
+func (_u *PlaceUpdateOne) AddCategoryIDs(ids ...string) *PlaceUpdateOne {
+	_u.mutation.AddCategoryIDs(ids...)
+	return _u
+}
+
+// AddCategory adds the "category" edges to the Category entity.
+func (_u *PlaceUpdateOne) AddCategory(v ...*Category) *PlaceUpdateOne {
+	ids := make([]string, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCategoryIDs(ids...)
+}
+
 // Mutation returns the PlaceMutation object of the builder.
 func (_u *PlaceUpdateOne) Mutation() *PlaceMutation {
 	return _u.mutation
@@ -1092,6 +1022,27 @@ func (_u *PlaceUpdateOne) RemoveImages(v ...*PlaceImage) *PlaceUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveImageIDs(ids...)
+}
+
+// ClearCategory clears all "category" edges to the Category entity.
+func (_u *PlaceUpdateOne) ClearCategory() *PlaceUpdateOne {
+	_u.mutation.ClearCategory()
+	return _u
+}
+
+// RemoveCategoryIDs removes the "category" edge to Category entities by IDs.
+func (_u *PlaceUpdateOne) RemoveCategoryIDs(ids ...string) *PlaceUpdateOne {
+	_u.mutation.RemoveCategoryIDs(ids...)
+	return _u
+}
+
+// RemoveCategory removes "category" edges to Category entities.
+func (_u *PlaceUpdateOne) RemoveCategory(v ...*Category) *PlaceUpdateOne {
+	ids := make([]string, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCategoryIDs(ids...)
 }
 
 // Where appends a list predicates to the PlaceUpdate builder.
@@ -1145,19 +1096,9 @@ func (_u *PlaceUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *PlaceUpdateOne) check() error {
-	if v, ok := _u.mutation.Slug(); ok {
-		if err := place.SlugValidator(v); err != nil {
-			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Place.slug": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.Title(); ok {
 		if err := place.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Place.title": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.PlaceType(); ok {
-		if err := place.PlaceTypeValidator(v); err != nil {
-			return &ValidationError{Name: "place_type", err: fmt.Errorf(`ent: validator failed for field "Place.place_type": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.ViewCount(); ok {
@@ -1223,9 +1164,6 @@ func (_u *PlaceUpdateOne) sqlSave(ctx context.Context) (_node *Place, err error)
 	if _u.mutation.MetadataCleared() {
 		_spec.ClearField(place.FieldMetadata, field.TypeJSON)
 	}
-	if value, ok := _u.mutation.Slug(); ok {
-		_spec.SetField(place.FieldSlug, field.TypeString, value)
-	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(place.FieldTitle, field.TypeString, value)
 	}
@@ -1246,20 +1184,6 @@ func (_u *PlaceUpdateOne) sqlSave(ctx context.Context) (_node *Place, err error)
 	}
 	if _u.mutation.LongDescriptionCleared() {
 		_spec.ClearField(place.FieldLongDescription, field.TypeString)
-	}
-	if value, ok := _u.mutation.PlaceType(); ok {
-		_spec.SetField(place.FieldPlaceType, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Categories(); ok {
-		_spec.SetField(place.FieldCategories, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedCategories(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, place.FieldCategories, value)
-		})
-	}
-	if _u.mutation.CategoriesCleared() {
-		_spec.ClearField(place.FieldCategories, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.Address(); ok {
 		_spec.SetField(place.FieldAddress, field.TypeJSON, value)
@@ -1284,17 +1208,6 @@ func (_u *PlaceUpdateOne) sqlSave(ctx context.Context) (_node *Place, err error)
 	}
 	if _u.mutation.ThumbnailURLCleared() {
 		_spec.ClearField(place.FieldThumbnailURL, field.TypeString)
-	}
-	if value, ok := _u.mutation.Amenities(); ok {
-		_spec.SetField(place.FieldAmenities, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedAmenities(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, place.FieldAmenities, value)
-		})
-	}
-	if _u.mutation.AmenitiesCleared() {
-		_spec.ClearField(place.FieldAmenities, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.ViewCount(); ok {
 		_spec.SetField(place.FieldViewCount, field.TypeInt, value)
@@ -1358,6 +1271,51 @@ func (_u *PlaceUpdateOne) sqlSave(ctx context.Context) (_node *Place, err error)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(placeimage.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CategoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   place.CategoryTable,
+			Columns: place.CategoryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(category.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCategoryIDs(); len(nodes) > 0 && !_u.mutation.CategoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   place.CategoryTable,
+			Columns: place.CategoryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(category.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CategoryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   place.CategoryTable,
+			Columns: place.CategoryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(category.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

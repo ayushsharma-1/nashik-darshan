@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/omkar273/nashikdarshan/ent"
 	"github.com/omkar273/nashikdarshan/internal/api/dto"
 	"github.com/omkar273/nashikdarshan/internal/auth"
 )
@@ -43,13 +44,24 @@ func (s *authService) Signup(ctx context.Context, req *dto.SignupRequest) (*dto.
 
 		userReq := req.ToUser(ctx)
 		userReq.ID = claims.ID
-		user, err := userService.Create(ctx, userReq)
+
+		// Get existing user or create if not found (idempotent behavior)
+		existingUser, err := userService.Get(ctx, claims.ID)
 		if err != nil {
-			return err
+			if ent.IsNotFound(err) {
+				// Create user if it doesn't exist
+				existingUser, err = userService.Create(ctx, userReq)
+				if err != nil {
+					return err
+				}
+			} else {
+				// Return other errors
+				return err
+			}
 		}
 
 		err = onboardingService.Onboard(ctx, &dto.OnboardingRequest{
-			User: *user,
+			User: *existingUser,
 		})
 
 		if err != nil {

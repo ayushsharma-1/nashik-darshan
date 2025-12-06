@@ -1,0 +1,25 @@
+# OpenAPI Generator Ignore File for TypeScript SDK
+# Files and directories listed here will be preserved during regeneration
+
+# Preserve custom configurations (IMPORTANT: These files are customized for publishing)
+package.json
+tsconfig.json
+jest.config.js
+.eslintrc.js
+.gitignore
+.npmignore
+README.md
+LICENSE
+
+# Preserve custom source files (if any)
+# src/custom/
+
+# Preserve examples directory
+examples/
+
+# Preserve test files (if customized)
+# **/*.test.ts
+# **/*.spec.ts
+
+# Ignore generated git push script
+git_push.sh

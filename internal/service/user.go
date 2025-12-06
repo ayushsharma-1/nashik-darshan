@@ -13,6 +13,7 @@ type UserService interface {
 	Me(ctx context.Context) (*dto.MeResponse, error)
 	Update(ctx context.Context, req *dto.UpdateUserRequest) (*dto.MeResponse, error)
 	Create(ctx context.Context, user *user.User) (*user.User, error)
+	Get(ctx context.Context, userID string) (*user.User, error)
 }
 
 type userService struct {
@@ -83,6 +84,14 @@ func (s *userService) Update(ctx context.Context, req *dto.UpdateUserRequest) (*
 
 func (s *userService) Create(ctx context.Context, user *user.User) (*user.User, error) {
 	err := s.UserRepo.Create(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (s *userService) Get(ctx context.Context, userID string) (*user.User, error) {
+	user, err := s.UserRepo.Get(ctx, userID)
 	if err != nil {
 		return nil, err
 	}

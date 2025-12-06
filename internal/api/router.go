@@ -77,6 +77,7 @@ func NewRouter(handlers *Handlers, cfg *config.Configuration, logger *logger.Log
 		v1Place.PUT("/:id", handlers.Place.Update)
 		v1Place.DELETE("/:id", handlers.Place.Delete)
 		v1Place.POST("/:id/images", handlers.Place.AddImage)
+		v1Place.PUT("/:id/categories", handlers.Place.AssignCategories)
 	}
 
 	// Place image routes (authenticated only)

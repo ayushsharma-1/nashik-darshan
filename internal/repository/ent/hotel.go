@@ -186,8 +186,12 @@ func (r *HotelRepository) List(ctx context.Context, filter *types.HotelFilter) (
 	)
 
 	query := client.Hotel.Query()
-	query = r.queryOpts.ApplyBaseFilters(ctx, query, filter)
+
+	// Apply entity-specific filters first
 	query = r.queryOpts.ApplyEntityQueryOptions(ctx, filter, query)
+
+	// Apply common query options (status, pagination, sorting)
+	query = ApplyQueryOptions(ctx, query, filter, r.queryOpts)
 
 	hotels, err := query.All(ctx)
 	if err != nil {
@@ -277,13 +281,20 @@ func (r *HotelRepository) Count(ctx context.Context, filter *types.HotelFilter) 
 	r.log.Debugw("counting hotels")
 
 	query := client.Hotel.Query()
-	query = r.queryOpts.ApplyBaseFilters(ctx, query, filter)
+
+	// Apply base filters (status only, no pagination/sorting)
+	query = ApplyBaseFilters(ctx, query, filter, r.queryOpts)
+
+	// Apply entity-specific filters
 	query = r.queryOpts.ApplyEntityQueryOptions(ctx, filter, query)
 
 	count, err := query.Count(ctx)
 	if err != nil {
 		return 0, ierr.WithError(err).
 			WithHint("Failed to count hotels").
+			WithReportableDetails(map[string]any{
+				"filter": filter,
+			}).
 			Mark(ierr.ErrDatabase)
 	}
 
@@ -521,22 +532,30 @@ func (r *HotelRepository) UpdatePopularityScore(ctx context.Context, hotelID str
 type HotelQuery = *ent.HotelQuery
 
 // HotelQueryOptions implements query options for hotel queries
-type HotelQueryOptions struct {
-	QueryOptionsHelper
-}
+type HotelQueryOptions struct{}
 
-// Ensure HotelQueryOptions implements EntityQueryOptions interface
-var _ EntityQueryOptions[HotelQuery, *types.HotelFilter] = (*HotelQueryOptions)(nil)
+// Ensure HotelQueryOptions implements BaseQueryOptions interface
+var _ BaseQueryOptions[HotelQuery] = (*HotelQueryOptions)(nil)
 
 func (o HotelQueryOptions) ApplyStatusFilter(query HotelQuery, status string) HotelQuery {
 	if status == "" {
-		return query.Where(hotel.StatusNotIn(string(types.StatusDeleted)))
+		// By default, exclude archived and deleted items from queries
+		// Archived can be restored, deleted is permanent
+		return query.Where(hotel.StatusNotIn(string(types.StatusArchived), string(types.StatusDeleted)))
 	}
 	return query.Where(hotel.Status(status))
 }
 
 func (o HotelQueryOptions) ApplySortFilter(query HotelQuery, field string, order string) HotelQuery {
-	field, order = o.ValidateSort(field, order)
+	// Validate order
+	if order != types.OrderAsc && order != types.OrderDesc {
+		order = types.OrderDesc
+	}
+	// Default field if empty
+	if field == "" {
+		field = "created_at"
+	}
+
 	fieldName := o.GetFieldName(field)
 	if order == types.OrderDesc {
 		return query.Order(ent.Desc(fieldName))
@@ -545,7 +564,17 @@ func (o HotelQueryOptions) ApplySortFilter(query HotelQuery, field string, order
 }
 
 func (o HotelQueryOptions) ApplyPaginationFilter(query HotelQuery, limit int, offset int) HotelQuery {
-	limit, offset = o.ValidatePagination(limit, offset)
+	// Validate pagination values
+	if limit <= 0 {
+		limit = 20 // Default limit
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	if limit > 1000 {
+		limit = 1000
+	}
+
 	return query.Offset(offset).Limit(limit)
 }
 
@@ -568,32 +597,6 @@ func (o HotelQueryOptions) GetFieldName(field string) string {
 	default:
 		return field
 	}
-}
-
-func (o HotelQueryOptions) ApplyBaseFilters(
-	_ context.Context,
-	query HotelQuery,
-	filter *types.HotelFilter,
-) HotelQuery {
-	if filter == nil {
-		return query.Where(hotel.StatusNotIn(string(types.StatusDeleted)))
-	}
-
-	// Apply status filter
-	query = o.ApplyStatusFilter(query, filter.GetStatus())
-
-	// Apply pagination
-	if !filter.IsUnlimited() {
-		query = o.ApplyPaginationFilter(query, filter.GetLimit(), filter.GetOffset())
-	}
-
-	// Apply sorting - skip if geospatial ordering will be applied
-	hasGeospatialOrdering := filter.Latitude != nil && filter.Longitude != nil && filter.RadiusM != nil
-	if !hasGeospatialOrdering {
-		query = o.ApplySortFilter(query, filter.GetSort(), filter.GetOrder())
-	}
-
-	return query
 }
 
 func (o HotelQueryOptions) ApplyEntityQueryOptions(

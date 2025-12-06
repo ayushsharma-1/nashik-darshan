@@ -3,6 +3,7 @@
 package migrate
 
 import (
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/dialect/sql/schema"
 	"entgo.io/ent/schema/field"
 )
@@ -264,13 +265,11 @@ var (
 		{Name: "short_description", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
 		{Name: "long_description", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
 		{Name: "place_type", Type: field.TypeString, SchemaType: map[string]string{"postgres": "text"}},
-		{Name: "categories", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "text[]"}},
 		{Name: "address", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "latitude", Type: field.TypeOther, SchemaType: map[string]string{"postgres": "decimal(10,8)"}},
 		{Name: "longitude", Type: field.TypeOther, SchemaType: map[string]string{"postgres": "decimal(11,8)"}},
 		{Name: "primary_image_url", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
 		{Name: "thumbnail_url", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
-		{Name: "amenities", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "text[]"}},
 		{Name: "view_count", Type: field.TypeInt, Default: 0, SchemaType: map[string]string{"postgres": "integer"}},
 		{Name: "rating_avg", Type: field.TypeOther, SchemaType: map[string]string{"postgres": "decimal(3,2)"}},
 		{Name: "rating_count", Type: field.TypeInt, Default: 0, SchemaType: map[string]string{"postgres": "integer"}},
@@ -282,43 +281,6 @@ var (
 		Name:       "places",
 		Columns:    PlacesColumns,
 		PrimaryKey: []*schema.Column{PlacesColumns[0]},
-		Indexes: []*schema.Index{
-			{
-				Name:    "place_slug_status",
-				Unique:  true,
-				Columns: []*schema.Column{PlacesColumns[7], PlacesColumns[1]},
-			},
-			{
-				Name:    "place_latitude_longitude",
-				Unique:  false,
-				Columns: []*schema.Column{PlacesColumns[15], PlacesColumns[16]},
-			},
-			{
-				Name:    "place_popularity_score",
-				Unique:  false,
-				Columns: []*schema.Column{PlacesColumns[24]},
-			},
-			{
-				Name:    "place_view_count",
-				Unique:  false,
-				Columns: []*schema.Column{PlacesColumns[20]},
-			},
-			{
-				Name:    "place_rating_avg",
-				Unique:  false,
-				Columns: []*schema.Column{PlacesColumns[21]},
-			},
-			{
-				Name:    "place_last_viewed_at",
-				Unique:  false,
-				Columns: []*schema.Column{PlacesColumns[23]},
-			},
-			{
-				Name:    "place_last_viewed_at_popularity_score",
-				Unique:  false,
-				Columns: []*schema.Column{PlacesColumns[23], PlacesColumns[24]},
-			},
-		},
 	}
 	// PlaceImagesColumns holds the columns for the "place_images" table.
 	PlaceImagesColumns = []*schema.Column{
@@ -454,11 +416,50 @@ var (
 				Name:    "user_email",
 				Unique:  true,
 				Columns: []*schema.Column{UsersColumns[8]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "email IS NOT NULL AND email != ''",
+				},
 			},
 			{
 				Name:    "user_phone",
-				Unique:  false,
+				Unique:  true,
 				Columns: []*schema.Column{UsersColumns[9]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "phone IS NOT NULL AND phone != ''",
+				},
+			},
+			{
+				Name:    "user_email_phone",
+				Unique:  true,
+				Columns: []*schema.Column{UsersColumns[8], UsersColumns[9]},
+				Annotation: &entsql.IndexAnnotation{
+					Where: "(email IS NOT NULL AND email != '') AND (phone IS NOT NULL AND phone != '')",
+				},
+			},
+		},
+	}
+	// CategoryPlacesColumns holds the columns for the "category_places" table.
+	CategoryPlacesColumns = []*schema.Column{
+		{Name: "category_id", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(255)"}},
+		{Name: "place_id", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(255)"}},
+	}
+	// CategoryPlacesTable holds the schema information for the "category_places" table.
+	CategoryPlacesTable = &schema.Table{
+		Name:       "category_places",
+		Columns:    CategoryPlacesColumns,
+		PrimaryKey: []*schema.Column{CategoryPlacesColumns[0], CategoryPlacesColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "category_places_category_id",
+				Columns:    []*schema.Column{CategoryPlacesColumns[0]},
+				RefColumns: []*schema.Column{CategoriesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "category_places_place_id",
+				Columns:    []*schema.Column{CategoryPlacesColumns[1]},
+				RefColumns: []*schema.Column{PlacesColumns[0]},
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -472,10 +473,13 @@ var (
 		PlaceImagesTable,
 		ReviewsTable,
 		UsersTable,
+		CategoryPlacesTable,
 	}
 )
 
 func init() {
 	EventOccurrencesTable.ForeignKeys[0].RefTable = EventsTable
 	PlaceImagesTable.ForeignKeys[0].RefTable = PlacesTable
+	CategoryPlacesTable.ForeignKeys[0].RefTable = CategoriesTable
+	CategoryPlacesTable.ForeignKeys[1].RefTable = PlacesTable
 }

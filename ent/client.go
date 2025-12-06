@@ -371,6 +371,22 @@ func (c *CategoryClient) GetX(ctx context.Context, id string) *Category {
 	return obj
 }
 
+// QueryPlaces queries the places edge of a Category.
+func (c *CategoryClient) QueryPlaces(_m *Category) *PlaceQuery {
+	query := (&PlaceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(category.Table, category.FieldID, id),
+			sqlgraph.To(place.Table, place.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, category.PlacesTable, category.PlacesPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *CategoryClient) Hooks() []Hook {
 	return c.hooks.Category
@@ -944,6 +960,22 @@ func (c *PlaceClient) QueryImages(_m *Place) *PlaceImageQuery {
 			sqlgraph.From(place.Table, place.FieldID, id),
 			sqlgraph.To(placeimage.Table, placeimage.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, place.ImagesTable, place.ImagesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCategory queries the category edge of a Place.
+func (c *PlaceClient) QueryCategory(_m *Place) *CategoryQuery {
+	query := (&CategoryClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(place.Table, place.FieldID, id),
+			sqlgraph.To(category.Table, category.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, place.CategoryTable, place.CategoryPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

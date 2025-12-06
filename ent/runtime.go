@@ -365,31 +365,31 @@ func init() {
 	// place.PlaceTypeValidator is a validator for the "place_type" field. It is called by the builders before save.
 	place.PlaceTypeValidator = placeDescPlaceType.Validators[0].(func(string) error)
 	// placeDescLatitude is the schema descriptor for latitude field.
-	placeDescLatitude := placeFields[9].Descriptor()
+	placeDescLatitude := placeFields[8].Descriptor()
 	// place.DefaultLatitude holds the default value on creation for the latitude field.
 	place.DefaultLatitude = placeDescLatitude.Default.(decimal.Decimal)
 	// placeDescLongitude is the schema descriptor for longitude field.
-	placeDescLongitude := placeFields[10].Descriptor()
+	placeDescLongitude := placeFields[9].Descriptor()
 	// place.DefaultLongitude holds the default value on creation for the longitude field.
 	place.DefaultLongitude = placeDescLongitude.Default.(decimal.Decimal)
 	// placeDescViewCount is the schema descriptor for view_count field.
-	placeDescViewCount := placeFields[14].Descriptor()
+	placeDescViewCount := placeFields[12].Descriptor()
 	// place.DefaultViewCount holds the default value on creation for the view_count field.
 	place.DefaultViewCount = placeDescViewCount.Default.(int)
 	// place.ViewCountValidator is a validator for the "view_count" field. It is called by the builders before save.
 	place.ViewCountValidator = placeDescViewCount.Validators[0].(func(int) error)
 	// placeDescRatingAvg is the schema descriptor for rating_avg field.
-	placeDescRatingAvg := placeFields[15].Descriptor()
+	placeDescRatingAvg := placeFields[13].Descriptor()
 	// place.DefaultRatingAvg holds the default value on creation for the rating_avg field.
 	place.DefaultRatingAvg = placeDescRatingAvg.Default.(decimal.Decimal)
 	// placeDescRatingCount is the schema descriptor for rating_count field.
-	placeDescRatingCount := placeFields[16].Descriptor()
+	placeDescRatingCount := placeFields[14].Descriptor()
 	// place.DefaultRatingCount holds the default value on creation for the rating_count field.
 	place.DefaultRatingCount = placeDescRatingCount.Default.(int)
 	// place.RatingCountValidator is a validator for the "rating_count" field. It is called by the builders before save.
 	place.RatingCountValidator = placeDescRatingCount.Validators[0].(func(int) error)
 	// placeDescPopularityScore is the schema descriptor for popularity_score field.
-	placeDescPopularityScore := placeFields[18].Descriptor()
+	placeDescPopularityScore := placeFields[16].Descriptor()
 	// place.DefaultPopularityScore holds the default value on creation for the popularity_score field.
 	place.DefaultPopularityScore = placeDescPopularityScore.Default.(decimal.Decimal)
 	// placeDescID is the schema descriptor for id field.

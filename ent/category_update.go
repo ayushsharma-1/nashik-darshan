@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/omkar273/nashikdarshan/ent/category"
+	"github.com/omkar273/nashikdarshan/ent/place"
 	"github.com/omkar273/nashikdarshan/ent/predicate"
 )
 
@@ -128,9 +129,45 @@ func (_u *CategoryUpdate) ClearDescription() *CategoryUpdate {
 	return _u
 }
 
+// AddPlaceIDs adds the "places" edge to the Place entity by IDs.
+func (_u *CategoryUpdate) AddPlaceIDs(ids ...string) *CategoryUpdate {
+	_u.mutation.AddPlaceIDs(ids...)
+	return _u
+}
+
+// AddPlaces adds the "places" edges to the Place entity.
+func (_u *CategoryUpdate) AddPlaces(v ...*Place) *CategoryUpdate {
+	ids := make([]string, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddPlaceIDs(ids...)
+}
+
 // Mutation returns the CategoryMutation object of the builder.
 func (_u *CategoryUpdate) Mutation() *CategoryMutation {
 	return _u.mutation
+}
+
+// ClearPlaces clears all "places" edges to the Place entity.
+func (_u *CategoryUpdate) ClearPlaces() *CategoryUpdate {
+	_u.mutation.ClearPlaces()
+	return _u
+}
+
+// RemovePlaceIDs removes the "places" edge to Place entities by IDs.
+func (_u *CategoryUpdate) RemovePlaceIDs(ids ...string) *CategoryUpdate {
+	_u.mutation.RemovePlaceIDs(ids...)
+	return _u
+}
+
+// RemovePlaces removes "places" edges to Place entities.
+func (_u *CategoryUpdate) RemovePlaces(v ...*Place) *CategoryUpdate {
+	ids := make([]string, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemovePlaceIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -228,6 +265,51 @@ func (_u *CategoryUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(category.FieldDescription, field.TypeString)
+	}
+	if _u.mutation.PlacesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   category.PlacesTable,
+			Columns: category.PlacesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(place.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedPlacesIDs(); len(nodes) > 0 && !_u.mutation.PlacesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   category.PlacesTable,
+			Columns: category.PlacesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(place.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PlacesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   category.PlacesTable,
+			Columns: category.PlacesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(place.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -349,9 +431,45 @@ func (_u *CategoryUpdateOne) ClearDescription() *CategoryUpdateOne {
 	return _u
 }
 
+// AddPlaceIDs adds the "places" edge to the Place entity by IDs.
+func (_u *CategoryUpdateOne) AddPlaceIDs(ids ...string) *CategoryUpdateOne {
+	_u.mutation.AddPlaceIDs(ids...)
+	return _u
+}
+
+// AddPlaces adds the "places" edges to the Place entity.
+func (_u *CategoryUpdateOne) AddPlaces(v ...*Place) *CategoryUpdateOne {
+	ids := make([]string, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddPlaceIDs(ids...)
+}
+
 // Mutation returns the CategoryMutation object of the builder.
 func (_u *CategoryUpdateOne) Mutation() *CategoryMutation {
 	return _u.mutation
+}
+
+// ClearPlaces clears all "places" edges to the Place entity.
+func (_u *CategoryUpdateOne) ClearPlaces() *CategoryUpdateOne {
+	_u.mutation.ClearPlaces()
+	return _u
+}
+
+// RemovePlaceIDs removes the "places" edge to Place entities by IDs.
+func (_u *CategoryUpdateOne) RemovePlaceIDs(ids ...string) *CategoryUpdateOne {
+	_u.mutation.RemovePlaceIDs(ids...)
+	return _u
+}
+
+// RemovePlaces removes "places" edges to Place entities.
+func (_u *CategoryUpdateOne) RemovePlaces(v ...*Place) *CategoryUpdateOne {
+	ids := make([]string, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemovePlaceIDs(ids...)
 }
 
 // Where appends a list predicates to the CategoryUpdate builder.
@@ -479,6 +597,51 @@ func (_u *CategoryUpdateOne) sqlSave(ctx context.Context) (_node *Category, err 
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(category.FieldDescription, field.TypeString)
+	}
+	if _u.mutation.PlacesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   category.PlacesTable,
+			Columns: category.PlacesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(place.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedPlacesIDs(); len(nodes) > 0 && !_u.mutation.PlacesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   category.PlacesTable,
+			Columns: category.PlacesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(place.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PlacesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   category.PlacesTable,
+			Columns: category.PlacesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(place.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Category{config: _u.config}
 	_spec.Assign = _node.assignValues

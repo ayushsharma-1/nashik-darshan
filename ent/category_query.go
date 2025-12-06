@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -12,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/omkar273/nashikdarshan/ent/category"
+	"github.com/omkar273/nashikdarshan/ent/place"
 	"github.com/omkar273/nashikdarshan/ent/predicate"
 )
 
@@ -22,6 +24,7 @@ type CategoryQuery struct {
 	order      []category.OrderOption
 	inters     []Interceptor
 	predicates []predicate.Category
+	withPlaces *PlaceQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -56,6 +59,28 @@ func (_q *CategoryQuery) Unique(unique bool) *CategoryQuery {
 func (_q *CategoryQuery) Order(o ...category.OrderOption) *CategoryQuery {
 	_q.order = append(_q.order, o...)
 	return _q
+}
+
+// QueryPlaces chains the current query on the "places" edge.
+func (_q *CategoryQuery) QueryPlaces() *PlaceQuery {
+	query := (&PlaceClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(category.Table, category.FieldID, selector),
+			sqlgraph.To(place.Table, place.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, category.PlacesTable, category.PlacesPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Category entity from the query.
@@ -250,10 +275,22 @@ func (_q *CategoryQuery) Clone() *CategoryQuery {
 		order:      append([]category.OrderOption{}, _q.order...),
 		inters:     append([]Interceptor{}, _q.inters...),
 		predicates: append([]predicate.Category{}, _q.predicates...),
+		withPlaces: _q.withPlaces.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
+}
+
+// WithPlaces tells the query-builder to eager-load the nodes that are connected to
+// the "places" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *CategoryQuery) WithPlaces(opts ...func(*PlaceQuery)) *CategoryQuery {
+	query := (&PlaceClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withPlaces = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -332,8 +369,11 @@ func (_q *CategoryQuery) prepareQuery(ctx context.Context) error {
 
 func (_q *CategoryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Category, error) {
 	var (
-		nodes = []*Category{}
-		_spec = _q.querySpec()
+		nodes       = []*Category{}
+		_spec       = _q.querySpec()
+		loadedTypes = [1]bool{
+			_q.withPlaces != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Category).scanValues(nil, columns)
@@ -341,6 +381,7 @@ func (_q *CategoryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Cat
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Category{config: _q.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -352,7 +393,76 @@ func (_q *CategoryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Cat
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := _q.withPlaces; query != nil {
+		if err := _q.loadPlaces(ctx, query, nodes,
+			func(n *Category) { n.Edges.Places = []*Place{} },
+			func(n *Category, e *Place) { n.Edges.Places = append(n.Edges.Places, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (_q *CategoryQuery) loadPlaces(ctx context.Context, query *PlaceQuery, nodes []*Category, init func(*Category), assign func(*Category, *Place)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[string]*Category)
+	nids := make(map[string]map[*Category]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(category.PlacesTable)
+		s.Join(joinT).On(s.C(place.FieldID), joinT.C(category.PlacesPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(category.PlacesPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(category.PlacesPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullString)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := values[0].(*sql.NullString).String
+				inValue := values[1].(*sql.NullString).String
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Category]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Place](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "places" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
 }
 
 func (_q *CategoryQuery) sqlCount(ctx context.Context) (int, error) {

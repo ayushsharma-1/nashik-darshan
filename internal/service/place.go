@@ -30,6 +30,9 @@ type PlaceService interface {
 	GetFeed(ctx context.Context, req *dto.FeedRequest) (*dto.FeedResponse, error)
 	IncrementViewCount(ctx context.Context, placeID string) error
 	UpdatePopularityScores(ctx context.Context) error
+
+	// Category operations
+	AssignCategories(ctx context.Context, placeID string, req *dto.AssignCategoriesRequest) error
 }
 
 type placeService struct {
@@ -340,5 +343,25 @@ func (s *placeService) UpdatePopularityScores(ctx context.Context) error {
 	}
 
 	s.Logger.Infow("completed popularity score update", "places_updated", len(places))
+	return nil
+}
+
+// AssignCategories assigns categories to a place
+func (s *placeService) AssignCategories(ctx context.Context, placeID string, req *dto.AssignCategoriesRequest) error {
+	if err := req.Validate(); err != nil {
+		return err
+	}
+
+	// Verify place exists
+	_, err := s.PlaceRepo.Get(ctx, placeID)
+	if err != nil {
+		return err
+	}
+
+	err = s.PlaceRepo.AssignCategories(ctx, placeID, req.CategoryIDs)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

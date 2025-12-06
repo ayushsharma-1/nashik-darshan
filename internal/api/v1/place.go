@@ -409,3 +409,41 @@ func (h *PlaceHandler) IncrementViewCount(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
+
+// @Summary Assign categories to a place
+// @Description Assign categories to a place by replacing existing category relationships
+// @Tags Place
+// @Accept json
+// @Produce json
+// @Param id path string true "Place ID"
+// @Param request body dto.AssignCategoriesRequest true "Assign categories request"
+// @Success 204
+// @Failure 400 {object} ierr.ErrorResponse
+// @Failure 404 {object} ierr.ErrorResponse
+// @Failure 500 {object} ierr.ErrorResponse
+// @Router /places/{id}/categories [put]
+// @Security Authorization
+func (h *PlaceHandler) AssignCategories(c *gin.Context) {
+	placeID := c.Param("id")
+	if placeID == "" {
+		c.Error(ierr.NewError("place ID is required").
+			WithHint("Please provide a valid place ID").
+			Mark(ierr.ErrValidation))
+		return
+	}
+
+	var req dto.AssignCategoriesRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Error(ierr.WithError(err).
+			WithHint("Please check the request payload").
+			Mark(ierr.ErrValidation))
+		return
+	}
+
+	err := h.placeService.AssignCategories(c.Request.Context(), placeID, &req)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}

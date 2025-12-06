@@ -1,5 +1,7 @@
 # Configuration Guide
 
+> 📖 **Navigation:** [README.md](./README.md) → [Configuration](../README.md#configuration) → This Guide
+
 This application requires proper configuration to run. The configuration system supports multiple sources with the following priority order:
 
 1. **Environment Variables** (highest priority)

@@ -39,8 +39,6 @@ const (
 	FieldLongDescription = "long_description"
 	// FieldPlaceType holds the string denoting the place_type field in the database.
 	FieldPlaceType = "place_type"
-	// FieldCategories holds the string denoting the categories field in the database.
-	FieldCategories = "categories"
 	// FieldAddress holds the string denoting the address field in the database.
 	FieldAddress = "address"
 	// FieldLatitude holds the string denoting the latitude field in the database.
@@ -51,8 +49,6 @@ const (
 	FieldPrimaryImageURL = "primary_image_url"
 	// FieldThumbnailURL holds the string denoting the thumbnail_url field in the database.
 	FieldThumbnailURL = "thumbnail_url"
-	// FieldAmenities holds the string denoting the amenities field in the database.
-	FieldAmenities = "amenities"
 	// FieldViewCount holds the string denoting the view_count field in the database.
 	FieldViewCount = "view_count"
 	// FieldRatingAvg holds the string denoting the rating_avg field in the database.
@@ -65,6 +61,8 @@ const (
 	FieldPopularityScore = "popularity_score"
 	// EdgeImages holds the string denoting the images edge name in mutations.
 	EdgeImages = "images"
+	// EdgeCategory holds the string denoting the category edge name in mutations.
+	EdgeCategory = "category"
 	// Table holds the table name of the place in the database.
 	Table = "places"
 	// ImagesTable is the table that holds the images relation/edge.
@@ -74,6 +72,11 @@ const (
 	ImagesInverseTable = "place_images"
 	// ImagesColumn is the table column denoting the images relation/edge.
 	ImagesColumn = "place_id"
+	// CategoryTable is the table that holds the category relation/edge. The primary key declared below.
+	CategoryTable = "category_places"
+	// CategoryInverseTable is the table name for the Category entity.
+	// It exists in this package in order to avoid circular dependency with the "category" package.
+	CategoryInverseTable = "categories"
 )
 
 // Columns holds all SQL columns for place fields.
@@ -91,19 +94,23 @@ var Columns = []string{
 	FieldShortDescription,
 	FieldLongDescription,
 	FieldPlaceType,
-	FieldCategories,
 	FieldAddress,
 	FieldLatitude,
 	FieldLongitude,
 	FieldPrimaryImageURL,
 	FieldThumbnailURL,
-	FieldAmenities,
 	FieldViewCount,
 	FieldRatingAvg,
 	FieldRatingCount,
 	FieldLastViewedAt,
 	FieldPopularityScore,
 }
+
+var (
+	// CategoryPrimaryKey and CategoryColumn2 are the table columns denoting the
+	// primary key for the category relation (M2M).
+	CategoryPrimaryKey = []string{"category_id", "place_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -273,10 +280,31 @@ func ByImages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newImagesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByCategoryCount orders the results by category count.
+func ByCategoryCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCategoryStep(), opts...)
+	}
+}
+
+// ByCategory orders the results by category terms.
+func ByCategory(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCategoryStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newImagesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ImagesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ImagesTable, ImagesColumn),
+	)
+}
+func newCategoryStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CategoryInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, CategoryTable, CategoryPrimaryKey...),
 	)
 }

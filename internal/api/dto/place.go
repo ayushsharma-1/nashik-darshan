@@ -18,13 +18,11 @@ type CreatePlaceRequest struct {
 	Subtitle         *string           `json:"subtitle,omitempty" binding:"omitempty,max=500"`
 	ShortDescription *string           `json:"short_description,omitempty" binding:"omitempty,max=1000"`
 	LongDescription  *string           `json:"long_description,omitempty" binding:"omitempty,max=10000"`
-	PlaceType        string            `json:"place_type" binding:"required,min=2,max=50"`
-	Categories       []string          `json:"categories,omitempty"`
+	PlaceType        types.PlaceType   `json:"place_type" binding:"required"`
 	Address          map[string]string `json:"address,omitempty"`
 	Location         types.Location    `json:"location" binding:"required"`
 	PrimaryImageURL  *string           `json:"primary_image_url,omitempty" binding:"omitempty,url,max=500"`
 	ThumbnailURL     *string           `json:"thumbnail_url,omitempty" binding:"omitempty,url,max=500"`
-	Amenities        []string          `json:"amenities,omitempty"`
 }
 
 // Validate validates the CreatePlaceRequest
@@ -44,6 +42,11 @@ func (req *CreatePlaceRequest) Validate() error {
 		return err
 	}
 
+	// Validate place type
+	if err := req.PlaceType.Validate(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -54,13 +57,10 @@ type UpdatePlaceRequest struct {
 	Subtitle         *string           `json:"subtitle,omitempty" binding:"omitempty,max=500"`
 	ShortDescription *string           `json:"short_description,omitempty" binding:"omitempty,max=1000"`
 	LongDescription  *string           `json:"long_description,omitempty" binding:"omitempty,max=10000"`
-	PlaceType        *string           `json:"place_type,omitempty" binding:"omitempty,min=2,max=50"`
-	Categories       []string          `json:"categories,omitempty"`
 	Address          map[string]string `json:"address,omitempty"`
 	Location         *types.Location   `json:"location,omitempty"`
 	PrimaryImageURL  *string           `json:"primary_image_url,omitempty" binding:"omitempty,url,max=500"`
 	ThumbnailURL     *string           `json:"thumbnail_url,omitempty" binding:"omitempty,url,max=500"`
-	Amenities        []string          `json:"amenities,omitempty"`
 }
 
 // Validate validates the UpdatePlaceRequest
@@ -83,6 +83,8 @@ func (req *UpdatePlaceRequest) Validate() error {
 			return err
 		}
 	}
+
+	// Validate place type
 
 	return nil
 }
@@ -162,6 +164,29 @@ func (req *UpdatePlaceImageRequest) ApplyToPlaceImage(ctx context.Context, image
 	}
 }
 
+// AssignCategoriesRequest represents a request to assign categories to a place
+type AssignCategoriesRequest struct {
+	CategoryIDs []string `json:"category_ids" binding:"required,min=0"`
+}
+
+// Validate validates the AssignCategoriesRequest
+func (req *AssignCategoriesRequest) Validate() error {
+	// Validate struct tags
+	if err := validator.ValidateRequest(req); err != nil {
+		return err
+	}
+
+	for _, id := range req.CategoryIDs {
+		if id == "" {
+			return ierr.NewError("category ID is required").
+				WithHint("Please provide a valid category ID").
+				Mark(ierr.ErrValidation)
+		}
+	}
+
+	return nil
+}
+
 // ListPlacesResponse represents a paginated list of places
 type ListPlacesResponse = types.ListResponse[*PlaceResponse]
 
@@ -193,12 +218,10 @@ func (req *CreatePlaceRequest) ToPlace(ctx context.Context) (*place.Place, error
 		ShortDescription: req.ShortDescription,
 		LongDescription:  req.LongDescription,
 		PlaceType:        req.PlaceType,
-		Categories:       req.Categories,
 		Address:          req.Address,
 		Location:         req.Location,
 		PrimaryImageURL:  req.PrimaryImageURL,
 		ThumbnailURL:     req.ThumbnailURL,
-		Amenities:        req.Amenities,
 		BaseModel:        baseModel,
 	}, nil
 }
@@ -220,12 +243,6 @@ func (req *UpdatePlaceRequest) ApplyToPlace(ctx context.Context, p *place.Place)
 	if req.LongDescription != nil {
 		p.LongDescription = req.LongDescription
 	}
-	if req.PlaceType != nil {
-		p.PlaceType = *req.PlaceType
-	}
-	if req.Categories != nil {
-		p.Categories = req.Categories
-	}
 	if req.Address != nil {
 		p.Address = req.Address
 	}
@@ -237,9 +254,6 @@ func (req *UpdatePlaceRequest) ApplyToPlace(ctx context.Context, p *place.Place)
 	}
 	if req.ThumbnailURL != nil {
 		p.ThumbnailURL = req.ThumbnailURL
-	}
-	if req.Amenities != nil {
-		p.Amenities = req.Amenities
 	}
 	p.UpdatedBy = types.GetUserID(ctx)
 	return nil

@@ -1,34 +1,29 @@
 package types
 
-// Status is a type for the status of a resource (e.g. meter, event) in the Database
+// Status is a type for the status of a resource (e.g. place, event, hotel, etc.) in the Database
 // This is used to track the lifecycle of a resource and to determine if it should be included in queries
 // Any changes to this type should be reflected in the database schema by running migrations
 type Status string
 
 const (
 	// StatusPublished is the status of a resource that is published and visible to users
+	// This is the default active state for publicly visible content
 	StatusPublished Status = "published"
 
-	// StatusDeleted is the status of a resource that is deleted and not in use
-	// This is typically used for data that is no longer in use and should be removed from the database
-	// These rows should not be returned in queries and should not be visible to users
-	StatusDeleted Status = "deleted"
+	// StatusDraft is the status of a resource that is in draft and not yet published
+	// This is used for data that is being created but not yet ready to be published
+	// Draft items are typically only visible to creators/admins
+	StatusDraft Status = "draft"
 
-	// StatusArchived is the status of a resource that is archived and not in use
-	// This is typically used for data that is no longer in use but we want to keep for historical purposes
-	// These rows might be returned in queries and might be visible to users in some cases only
+	// StatusArchived is the status of a resource that is archived (soft-deleted but reversible)
+	// This is used for data that is no longer active but kept for historical/audit purposes
+	// Archived items are excluded from default queries and not visible to regular users
+	// Archived items CAN be restored back to published status
 	StatusArchived Status = "archived"
 
-	// StatusInactive is the status of a resource that is inactive and not in use
-	// This is typically used for data that is no longer in use but we want to keep for historical purposes
-	// These rows might be returned in queries and might be visible to users in some cases only
-	StatusInactive Status = "inactive"
-
-	// StatusPending is the status of a resource that is pending and not in use
-	// This is typically used for data that is not yet in use and should be returned in queries
-	StatusPending Status = "pending"
-
-	// StatusDraft is the status of a resource that is in draft and not yet published
-	// This is typically used for data that is being created but not yet ready to be published
-	StatusDraft Status = "draft"
+	// StatusDeleted is the status of a resource that is permanently deleted
+	// This is used for data that should NEVER be included in queries under any circumstances
+	// Deleted items are ALWAYS excluded from queries and cannot be restored
+	// Unlike archived, deleted status is irreversible - use with caution
+	StatusDeleted Status = "deleted"
 )

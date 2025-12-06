@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/omkar273/nashikdarshan/ent/category"
+	"github.com/omkar273/nashikdarshan/ent/place"
 )
 
 // CategoryCreate is the builder for creating a Category entity.
@@ -126,6 +127,21 @@ func (_c *CategoryCreate) SetNillableDescription(v *string) *CategoryCreate {
 func (_c *CategoryCreate) SetID(v string) *CategoryCreate {
 	_c.mutation.SetID(v)
 	return _c
+}
+
+// AddPlaceIDs adds the "places" edge to the Place entity by IDs.
+func (_c *CategoryCreate) AddPlaceIDs(ids ...string) *CategoryCreate {
+	_c.mutation.AddPlaceIDs(ids...)
+	return _c
+}
+
+// AddPlaces adds the "places" edges to the Place entity.
+func (_c *CategoryCreate) AddPlaces(v ...*Place) *CategoryCreate {
+	ids := make([]string, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddPlaceIDs(ids...)
 }
 
 // Mutation returns the CategoryMutation object of the builder.
@@ -283,6 +299,22 @@ func (_c *CategoryCreate) createSpec() (*Category, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(category.FieldDescription, field.TypeString, value)
 		_node.Description = value
+	}
+	if nodes := _c.mutation.PlacesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   category.PlacesTable,
+			Columns: category.PlacesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(place.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

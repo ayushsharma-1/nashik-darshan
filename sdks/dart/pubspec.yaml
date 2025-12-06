@@ -1,0 +1,23 @@
+name: nashik_darshan_sdk
+version: 1.0.2
+description: Official Dart SDK for Nashik Darshan API - A tourism and travel discovery platform
+homepage: https://github.com/Caygnus/nashik-darshan-v2
+repository: https://github.com/Caygnus/nashik-darshan-v2/tree/main/sdks/dart
+issue_tracker: https://github.com/Caygnus/nashik-darshan-v2/issues
+documentation: https://github.com/Caygnus/nashik-darshan-v2/tree/main/sdks/dart#readme
+license: MIT
+
+environment:
+  sdk: ">=2.18.0 <4.0.0"
+
+dependencies:
+  dio: "^5.7.0"
+  one_of: ">=1.5.0 <2.0.0"
+  one_of_serializer: ">=1.5.0 <2.0.0"
+  built_value: ">=8.4.0 <9.0.0"
+  built_collection: ">=5.1.1 <6.0.0"
+
+dev_dependencies:
+  built_value_generator: ">=8.4.0 <9.0.0"
+  build_runner: any
+  test: "^1.16.0"

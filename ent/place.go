@@ -43,8 +43,6 @@ type Place struct {
 	LongDescription string `json:"long_description,omitempty"`
 	// PlaceType holds the value of the "place_type" field.
 	PlaceType string `json:"place_type,omitempty"`
-	// Categories holds the value of the "categories" field.
-	Categories []string `json:"categories,omitempty"`
 	// Address holds the value of the "address" field.
 	Address map[string]string `json:"address,omitempty"`
 	// Latitude holds the value of the "latitude" field.
@@ -55,8 +53,6 @@ type Place struct {
 	PrimaryImageURL string `json:"primary_image_url,omitempty"`
 	// ThumbnailURL holds the value of the "thumbnail_url" field.
 	ThumbnailURL string `json:"thumbnail_url,omitempty"`
-	// Amenities holds the value of the "amenities" field.
-	Amenities []string `json:"amenities,omitempty"`
 	// ViewCount holds the value of the "view_count" field.
 	ViewCount int `json:"view_count,omitempty"`
 	// RatingAvg holds the value of the "rating_avg" field.
@@ -77,9 +73,11 @@ type Place struct {
 type PlaceEdges struct {
 	// Images holds the value of the images edge.
 	Images []*PlaceImage `json:"images,omitempty"`
+	// Category holds the value of the category edge.
+	Category []*Category `json:"category,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // ImagesOrErr returns the Images value or an error if the edge
@@ -91,12 +89,21 @@ func (e PlaceEdges) ImagesOrErr() ([]*PlaceImage, error) {
 	return nil, &NotLoadedError{edge: "images"}
 }
 
+// CategoryOrErr returns the Category value or an error if the edge
+// was not loaded in eager-loading.
+func (e PlaceEdges) CategoryOrErr() ([]*Category, error) {
+	if e.loadedTypes[1] {
+		return e.Category, nil
+	}
+	return nil, &NotLoadedError{edge: "category"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Place) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case place.FieldMetadata, place.FieldCategories, place.FieldAddress, place.FieldAmenities:
+		case place.FieldMetadata, place.FieldAddress:
 			values[i] = new([]byte)
 		case place.FieldLatitude, place.FieldLongitude, place.FieldRatingAvg, place.FieldPopularityScore:
 			values[i] = new(decimal.Decimal)
@@ -201,14 +208,6 @@ func (_m *Place) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.PlaceType = value.String
 			}
-		case place.FieldCategories:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field categories", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Categories); err != nil {
-					return fmt.Errorf("unmarshal field categories: %w", err)
-				}
-			}
 		case place.FieldAddress:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field address", values[i])
@@ -240,14 +239,6 @@ func (_m *Place) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field thumbnail_url", values[i])
 			} else if value.Valid {
 				_m.ThumbnailURL = value.String
-			}
-		case place.FieldAmenities:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field amenities", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Amenities); err != nil {
-					return fmt.Errorf("unmarshal field amenities: %w", err)
-				}
 			}
 		case place.FieldViewCount:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -295,6 +286,11 @@ func (_m *Place) Value(name string) (ent.Value, error) {
 // QueryImages queries the "images" edge of the Place entity.
 func (_m *Place) QueryImages() *PlaceImageQuery {
 	return NewPlaceClient(_m.config).QueryImages(_m)
+}
+
+// QueryCategory queries the "category" edge of the Place entity.
+func (_m *Place) QueryCategory() *CategoryQuery {
+	return NewPlaceClient(_m.config).QueryCategory(_m)
 }
 
 // Update returns a builder for updating this Place.
@@ -356,9 +352,6 @@ func (_m *Place) String() string {
 	builder.WriteString("place_type=")
 	builder.WriteString(_m.PlaceType)
 	builder.WriteString(", ")
-	builder.WriteString("categories=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Categories))
-	builder.WriteString(", ")
 	builder.WriteString("address=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Address))
 	builder.WriteString(", ")
@@ -373,9 +366,6 @@ func (_m *Place) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("thumbnail_url=")
 	builder.WriteString(_m.ThumbnailURL)
-	builder.WriteString(", ")
-	builder.WriteString("amenities=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Amenities))
 	builder.WriteString(", ")
 	builder.WriteString("view_count=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ViewCount))

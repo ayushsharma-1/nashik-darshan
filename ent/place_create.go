@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/omkar273/nashikdarshan/ent/category"
 	"github.com/omkar273/nashikdarshan/ent/place"
 	"github.com/omkar273/nashikdarshan/ent/placeimage"
 	"github.com/shopspring/decimal"
@@ -158,12 +159,6 @@ func (_c *PlaceCreate) SetPlaceType(v string) *PlaceCreate {
 	return _c
 }
 
-// SetCategories sets the "categories" field.
-func (_c *PlaceCreate) SetCategories(v []string) *PlaceCreate {
-	_c.mutation.SetCategories(v)
-	return _c
-}
-
 // SetAddress sets the "address" field.
 func (_c *PlaceCreate) SetAddress(v map[string]string) *PlaceCreate {
 	_c.mutation.SetAddress(v)
@@ -223,12 +218,6 @@ func (_c *PlaceCreate) SetNillableThumbnailURL(v *string) *PlaceCreate {
 	if v != nil {
 		_c.SetThumbnailURL(*v)
 	}
-	return _c
-}
-
-// SetAmenities sets the "amenities" field.
-func (_c *PlaceCreate) SetAmenities(v []string) *PlaceCreate {
-	_c.mutation.SetAmenities(v)
 	return _c
 }
 
@@ -329,6 +318,21 @@ func (_c *PlaceCreate) AddImages(v ...*PlaceImage) *PlaceCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddImageIDs(ids...)
+}
+
+// AddCategoryIDs adds the "category" edge to the Category entity by IDs.
+func (_c *PlaceCreate) AddCategoryIDs(ids ...string) *PlaceCreate {
+	_c.mutation.AddCategoryIDs(ids...)
+	return _c
+}
+
+// AddCategory adds the "category" edges to the Category entity.
+func (_c *PlaceCreate) AddCategory(v ...*Category) *PlaceCreate {
+	ids := make([]string, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddCategoryIDs(ids...)
 }
 
 // Mutation returns the PlaceMutation object of the builder.
@@ -558,10 +562,6 @@ func (_c *PlaceCreate) createSpec() (*Place, *sqlgraph.CreateSpec) {
 		_spec.SetField(place.FieldPlaceType, field.TypeString, value)
 		_node.PlaceType = value
 	}
-	if value, ok := _c.mutation.Categories(); ok {
-		_spec.SetField(place.FieldCategories, field.TypeJSON, value)
-		_node.Categories = value
-	}
 	if value, ok := _c.mutation.Address(); ok {
 		_spec.SetField(place.FieldAddress, field.TypeJSON, value)
 		_node.Address = value
@@ -581,10 +581,6 @@ func (_c *PlaceCreate) createSpec() (*Place, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ThumbnailURL(); ok {
 		_spec.SetField(place.FieldThumbnailURL, field.TypeString, value)
 		_node.ThumbnailURL = value
-	}
-	if value, ok := _c.mutation.Amenities(); ok {
-		_spec.SetField(place.FieldAmenities, field.TypeJSON, value)
-		_node.Amenities = value
 	}
 	if value, ok := _c.mutation.ViewCount(); ok {
 		_spec.SetField(place.FieldViewCount, field.TypeInt, value)
@@ -615,6 +611,22 @@ func (_c *PlaceCreate) createSpec() (*Place, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(placeimage.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.CategoryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   place.CategoryTable,
+			Columns: place.CategoryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(category.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

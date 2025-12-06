@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/omkar273/nashikdarshan/ent/category"
 	"github.com/omkar273/nashikdarshan/ent/place"
 	"github.com/omkar273/nashikdarshan/ent/placeimage"
 	"github.com/omkar273/nashikdarshan/ent/predicate"
@@ -20,11 +21,12 @@ import (
 // PlaceQuery is the builder for querying Place entities.
 type PlaceQuery struct {
 	config
-	ctx        *QueryContext
-	order      []place.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Place
-	withImages *PlaceImageQuery
+	ctx          *QueryContext
+	order        []place.OrderOption
+	inters       []Interceptor
+	predicates   []predicate.Place
+	withImages   *PlaceImageQuery
+	withCategory *CategoryQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -76,6 +78,28 @@ func (_q *PlaceQuery) QueryImages() *PlaceImageQuery {
 			sqlgraph.From(place.Table, place.FieldID, selector),
 			sqlgraph.To(placeimage.Table, placeimage.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, place.ImagesTable, place.ImagesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCategory chains the current query on the "category" edge.
+func (_q *PlaceQuery) QueryCategory() *CategoryQuery {
+	query := (&CategoryClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(place.Table, place.FieldID, selector),
+			sqlgraph.To(category.Table, category.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, place.CategoryTable, place.CategoryPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -270,12 +294,13 @@ func (_q *PlaceQuery) Clone() *PlaceQuery {
 		return nil
 	}
 	return &PlaceQuery{
-		config:     _q.config,
-		ctx:        _q.ctx.Clone(),
-		order:      append([]place.OrderOption{}, _q.order...),
-		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.Place{}, _q.predicates...),
-		withImages: _q.withImages.Clone(),
+		config:       _q.config,
+		ctx:          _q.ctx.Clone(),
+		order:        append([]place.OrderOption{}, _q.order...),
+		inters:       append([]Interceptor{}, _q.inters...),
+		predicates:   append([]predicate.Place{}, _q.predicates...),
+		withImages:   _q.withImages.Clone(),
+		withCategory: _q.withCategory.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -290,6 +315,17 @@ func (_q *PlaceQuery) WithImages(opts ...func(*PlaceImageQuery)) *PlaceQuery {
 		opt(query)
 	}
 	_q.withImages = query
+	return _q
+}
+
+// WithCategory tells the query-builder to eager-load the nodes that are connected to
+// the "category" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *PlaceQuery) WithCategory(opts ...func(*CategoryQuery)) *PlaceQuery {
+	query := (&CategoryClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withCategory = query
 	return _q
 }
 
@@ -371,8 +407,9 @@ func (_q *PlaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Place,
 	var (
 		nodes       = []*Place{}
 		_spec       = _q.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			_q.withImages != nil,
+			_q.withCategory != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -397,6 +434,13 @@ func (_q *PlaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Place,
 		if err := _q.loadImages(ctx, query, nodes,
 			func(n *Place) { n.Edges.Images = []*PlaceImage{} },
 			func(n *Place, e *PlaceImage) { n.Edges.Images = append(n.Edges.Images, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withCategory; query != nil {
+		if err := _q.loadCategory(ctx, query, nodes,
+			func(n *Place) { n.Edges.Category = []*Category{} },
+			func(n *Place, e *Category) { n.Edges.Category = append(n.Edges.Category, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -430,6 +474,67 @@ func (_q *PlaceQuery) loadImages(ctx context.Context, query *PlaceImageQuery, no
 			return fmt.Errorf(`unexpected referenced foreign-key "place_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (_q *PlaceQuery) loadCategory(ctx context.Context, query *CategoryQuery, nodes []*Place, init func(*Place), assign func(*Place, *Category)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[string]*Place)
+	nids := make(map[string]map[*Place]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(place.CategoryTable)
+		s.Join(joinT).On(s.C(category.FieldID), joinT.C(place.CategoryPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(place.CategoryPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(place.CategoryPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullString)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := values[0].(*sql.NullString).String
+				inValue := values[1].(*sql.NullString).String
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Place]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Category](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "category" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }
