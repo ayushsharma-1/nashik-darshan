@@ -59,10 +59,16 @@ const (
 	FieldLastViewedAt = "last_viewed_at"
 	// FieldPopularityScore holds the string denoting the popularity_score field in the database.
 	FieldPopularityScore = "popularity_score"
+	// FieldAvgVisitMinutes holds the string denoting the avg_visit_minutes field in the database.
+	FieldAvgVisitMinutes = "avg_visit_minutes"
+	// FieldOpeningHours holds the string denoting the opening_hours field in the database.
+	FieldOpeningHours = "opening_hours"
 	// EdgeImages holds the string denoting the images edge name in mutations.
 	EdgeImages = "images"
 	// EdgeCategory holds the string denoting the category edge name in mutations.
 	EdgeCategory = "category"
+	// EdgeVisits holds the string denoting the visits edge name in mutations.
+	EdgeVisits = "visits"
 	// Table holds the table name of the place in the database.
 	Table = "places"
 	// ImagesTable is the table that holds the images relation/edge.
@@ -77,6 +83,13 @@ const (
 	// CategoryInverseTable is the table name for the Category entity.
 	// It exists in this package in order to avoid circular dependency with the "category" package.
 	CategoryInverseTable = "categories"
+	// VisitsTable is the table that holds the visits relation/edge.
+	VisitsTable = "visits"
+	// VisitsInverseTable is the table name for the Visit entity.
+	// It exists in this package in order to avoid circular dependency with the "visit" package.
+	VisitsInverseTable = "visits"
+	// VisitsColumn is the table column denoting the visits relation/edge.
+	VisitsColumn = "place_id"
 )
 
 // Columns holds all SQL columns for place fields.
@@ -104,6 +117,8 @@ var Columns = []string{
 	FieldRatingCount,
 	FieldLastViewedAt,
 	FieldPopularityScore,
+	FieldAvgVisitMinutes,
+	FieldOpeningHours,
 }
 
 var (
@@ -155,6 +170,8 @@ var (
 	RatingCountValidator func(int) error
 	// DefaultPopularityScore holds the default value on creation for the "popularity_score" field.
 	DefaultPopularityScore decimal.Decimal
+	// DefaultAvgVisitMinutes holds the default value on creation for the "avg_visit_minutes" field.
+	DefaultAvgVisitMinutes int
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() string
 )
@@ -267,6 +284,11 @@ func ByPopularityScore(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPopularityScore, opts...).ToFunc()
 }
 
+// ByAvgVisitMinutes orders the results by the avg_visit_minutes field.
+func ByAvgVisitMinutes(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAvgVisitMinutes, opts...).ToFunc()
+}
+
 // ByImagesCount orders the results by images count.
 func ByImagesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -294,6 +316,20 @@ func ByCategory(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newCategoryStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByVisitsCount orders the results by visits count.
+func ByVisitsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newVisitsStep(), opts...)
+	}
+}
+
+// ByVisits orders the results by visits terms.
+func ByVisits(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newVisitsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newImagesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -306,5 +342,12 @@ func newCategoryStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CategoryInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, CategoryTable, CategoryPrimaryKey...),
+	)
+}
+func newVisitsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(VisitsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, VisitsTable, VisitsColumn),
 	)
 }

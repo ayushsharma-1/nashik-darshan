@@ -18,6 +18,7 @@ type Configuration struct {
 	Postgres PostgresConfig `validate:"required"`
 	Supabase SupabaseConfig `validate:"required"`
 	Secrets  SecretsConfig  `validate:"required"`
+	Routing  RoutingConfig  `validate:"required"`
 }
 
 type LoggingConfig struct {
@@ -58,6 +59,12 @@ type SupabaseConfig struct {
 	URL            string `mapstructure:"url" validate:"required"`
 	PublishableKey string `mapstructure:"publishable_key" validate:"required"` // For client-side use
 	SecretKey      string `mapstructure:"secret_key" validate:"required"`      // For server-side use
+}
+
+type RoutingConfig struct {
+	Provider string `mapstructure:"provider"` // e.g., "google_maps". Optional - when empty routing is disabled
+	APIKey   string `mapstructure:"api_key"`
+	Timeout  int    `mapstructure:"timeout" default:"30"` // Timeout in seconds
 }
 
 func NewConfig() (*Configuration, error) {
@@ -120,7 +127,31 @@ func NewConfig() (*Configuration, error) {
 }
 
 func (c Configuration) Validate() error {
-	return validator.ValidateRequest(c)
+	// First validate core configuration ignoring routing specific required checks
+	// Create a shallow copy with routing zeroed-out to avoid failing on optional routing
+	tmp := c
+	// zero-out routing to skip generic required validation on those fields
+	tmp.Routing = RoutingConfig{}
+
+	if err := validator.ValidateRequest(tmp); err != nil {
+		return err
+	}
+
+	// Conditional validation for Routing
+	// If a provider is specified and it's google_maps, APIKey must be present
+	if strings.TrimSpace(c.Routing.Provider) != "" {
+		provider := strings.ToLower(strings.TrimSpace(c.Routing.Provider))
+		switch provider {
+		case "google_maps":
+			if strings.TrimSpace(c.Routing.APIKey) == "" {
+				return fmt.Errorf("routing.api_key is required when routing.provider is 'google_maps'")
+			}
+		default:
+			// For unknown providers we allow configuration but log a hint (no error)
+		}
+	}
+
+	return nil
 }
 
 // GetDefaultConfig returns a default configuration for local development

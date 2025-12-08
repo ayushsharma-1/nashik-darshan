@@ -166,6 +166,11 @@ func PopularityScore(v decimal.Decimal) predicate.Place {
 	return predicate.Place(sql.FieldEQ(FieldPopularityScore, v))
 }
 
+// AvgVisitMinutes applies equality check predicate on the "avg_visit_minutes" field. It's identical to AvgVisitMinutesEQ.
+func AvgVisitMinutes(v int) predicate.Place {
+	return predicate.Place(sql.FieldEQ(FieldAvgVisitMinutes, v))
+}
+
 // StatusEQ applies the EQ predicate on the "status" field.
 func StatusEQ(v string) predicate.Place {
 	return predicate.Place(sql.FieldEQ(FieldStatus, v))
@@ -1341,6 +1346,56 @@ func PopularityScoreLTE(v decimal.Decimal) predicate.Place {
 	return predicate.Place(sql.FieldLTE(FieldPopularityScore, v))
 }
 
+// AvgVisitMinutesEQ applies the EQ predicate on the "avg_visit_minutes" field.
+func AvgVisitMinutesEQ(v int) predicate.Place {
+	return predicate.Place(sql.FieldEQ(FieldAvgVisitMinutes, v))
+}
+
+// AvgVisitMinutesNEQ applies the NEQ predicate on the "avg_visit_minutes" field.
+func AvgVisitMinutesNEQ(v int) predicate.Place {
+	return predicate.Place(sql.FieldNEQ(FieldAvgVisitMinutes, v))
+}
+
+// AvgVisitMinutesIn applies the In predicate on the "avg_visit_minutes" field.
+func AvgVisitMinutesIn(vs ...int) predicate.Place {
+	return predicate.Place(sql.FieldIn(FieldAvgVisitMinutes, vs...))
+}
+
+// AvgVisitMinutesNotIn applies the NotIn predicate on the "avg_visit_minutes" field.
+func AvgVisitMinutesNotIn(vs ...int) predicate.Place {
+	return predicate.Place(sql.FieldNotIn(FieldAvgVisitMinutes, vs...))
+}
+
+// AvgVisitMinutesGT applies the GT predicate on the "avg_visit_minutes" field.
+func AvgVisitMinutesGT(v int) predicate.Place {
+	return predicate.Place(sql.FieldGT(FieldAvgVisitMinutes, v))
+}
+
+// AvgVisitMinutesGTE applies the GTE predicate on the "avg_visit_minutes" field.
+func AvgVisitMinutesGTE(v int) predicate.Place {
+	return predicate.Place(sql.FieldGTE(FieldAvgVisitMinutes, v))
+}
+
+// AvgVisitMinutesLT applies the LT predicate on the "avg_visit_minutes" field.
+func AvgVisitMinutesLT(v int) predicate.Place {
+	return predicate.Place(sql.FieldLT(FieldAvgVisitMinutes, v))
+}
+
+// AvgVisitMinutesLTE applies the LTE predicate on the "avg_visit_minutes" field.
+func AvgVisitMinutesLTE(v int) predicate.Place {
+	return predicate.Place(sql.FieldLTE(FieldAvgVisitMinutes, v))
+}
+
+// OpeningHoursIsNil applies the IsNil predicate on the "opening_hours" field.
+func OpeningHoursIsNil() predicate.Place {
+	return predicate.Place(sql.FieldIsNull(FieldOpeningHours))
+}
+
+// OpeningHoursNotNil applies the NotNil predicate on the "opening_hours" field.
+func OpeningHoursNotNil() predicate.Place {
+	return predicate.Place(sql.FieldNotNull(FieldOpeningHours))
+}
+
 // HasImages applies the HasEdge predicate on the "images" edge.
 func HasImages() predicate.Place {
 	return predicate.Place(func(s *sql.Selector) {
@@ -1379,6 +1434,29 @@ func HasCategory() predicate.Place {
 func HasCategoryWith(preds ...predicate.Category) predicate.Place {
 	return predicate.Place(func(s *sql.Selector) {
 		step := newCategoryStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasVisits applies the HasEdge predicate on the "visits" edge.
+func HasVisits() predicate.Place {
+	return predicate.Place(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, VisitsTable, VisitsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasVisitsWith applies the HasEdge predicate on the "visits" edge with a given conditions (other predicates).
+func HasVisitsWith(preds ...predicate.Visit) predicate.Place {
+	return predicate.Place(func(s *sql.Selector) {
+		step := newVisitsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

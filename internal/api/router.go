@@ -11,14 +11,15 @@ import (
 )
 
 type Handlers struct {
-	Health   *v1.HealthHandler
-	Auth     *v1.AuthHandler
-	User     *v1.UserHandler
-	Category *v1.CategoryHandler
-	Place    *v1.PlaceHandler
-	Review   *v1.ReviewHandler
-	Hotel    *v1.HotelHandler
-	Event    *v1.EventHandler
+	Health    *v1.HealthHandler
+	Auth      *v1.AuthHandler
+	User      *v1.UserHandler
+	Category  *v1.CategoryHandler
+	Place     *v1.PlaceHandler
+	Review    *v1.ReviewHandler
+	Hotel     *v1.HotelHandler
+	Event     *v1.EventHandler
+	Itinerary *v1.ItineraryHandler
 }
 
 func NewRouter(handlers *Handlers, cfg *config.Configuration, logger *logger.Logger) *gin.Engine {
@@ -148,6 +149,24 @@ func NewRouter(handlers *Handlers, cfg *config.Configuration, logger *logger.Log
 		v1Event.PUT("/occurrences/:id", handlers.Event.UpdateOccurrence)    // Authenticated
 		v1Event.DELETE("/occurrences/:id", handlers.Event.DeleteOccurrence) // Authenticated
 		v1Event.GET("/:id/occurrences", handlers.Event.ListOccurrences)     // Public - list occurrences for specific event
+	}
+
+	// Itinerary routes
+	v1Itinerary := v1Router.Group("/itineraries")
+	{
+		// Public itinerary routes (specific paths BEFORE wildcard paths)
+		v1Itinerary.GET("", handlers.Itinerary.List) // Public list with filtering
+		// Specific routes with :id (must come before generic /:id to avoid conflicts)
+		v1Itinerary.GET("/:id/details", handlers.Itinerary.GetWithVisits) // Public get with full visit details
+		// Generic get by ID (must come AFTER specific routes)
+		v1Itinerary.GET("/:id", handlers.Itinerary.Get) // Public get basic info
+
+		// Authenticated itinerary routes
+		v1Itinerary.Use(middleware.AuthenticateMiddleware(cfg, logger))
+		v1Itinerary.GET("/me", handlers.Itinerary.GetMyItineraries) // Get user's itineraries
+		v1Itinerary.POST("", handlers.Itinerary.Create)             // Create optimized itinerary
+		v1Itinerary.PUT("/:id", handlers.Itinerary.Update)          // Update itinerary
+		v1Itinerary.DELETE("/:id", handlers.Itinerary.Delete)       // Delete itinerary
 	}
 
 	return router

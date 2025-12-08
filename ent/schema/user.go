@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	baseMixin "github.com/omkar273/nashikdarshan/ent/mixin"
@@ -57,7 +58,9 @@ func (User) Fields() []ent.Field {
 }
 
 func (User) Edges() []ent.Edge {
-	return []ent.Edge{}
+	return []ent.Edge{
+		edge.To("itineraries", Itinerary.Type),
+	}
 }
 
 func (User) Indexes() []ent.Index {

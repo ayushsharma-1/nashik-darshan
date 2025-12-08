@@ -15,6 +15,7 @@ import (
 	"github.com/omkar273/nashikdarshan/ent/place"
 	"github.com/omkar273/nashikdarshan/ent/placeimage"
 	"github.com/omkar273/nashikdarshan/ent/predicate"
+	"github.com/omkar273/nashikdarshan/ent/visit"
 	"github.com/shopspring/decimal"
 )
 
@@ -327,6 +328,39 @@ func (_u *PlaceUpdate) SetNillablePopularityScore(v *decimal.Decimal) *PlaceUpda
 	return _u
 }
 
+// SetAvgVisitMinutes sets the "avg_visit_minutes" field.
+func (_u *PlaceUpdate) SetAvgVisitMinutes(v int) *PlaceUpdate {
+	_u.mutation.ResetAvgVisitMinutes()
+	_u.mutation.SetAvgVisitMinutes(v)
+	return _u
+}
+
+// SetNillableAvgVisitMinutes sets the "avg_visit_minutes" field if the given value is not nil.
+func (_u *PlaceUpdate) SetNillableAvgVisitMinutes(v *int) *PlaceUpdate {
+	if v != nil {
+		_u.SetAvgVisitMinutes(*v)
+	}
+	return _u
+}
+
+// AddAvgVisitMinutes adds value to the "avg_visit_minutes" field.
+func (_u *PlaceUpdate) AddAvgVisitMinutes(v int) *PlaceUpdate {
+	_u.mutation.AddAvgVisitMinutes(v)
+	return _u
+}
+
+// SetOpeningHours sets the "opening_hours" field.
+func (_u *PlaceUpdate) SetOpeningHours(v map[string]string) *PlaceUpdate {
+	_u.mutation.SetOpeningHours(v)
+	return _u
+}
+
+// ClearOpeningHours clears the value of the "opening_hours" field.
+func (_u *PlaceUpdate) ClearOpeningHours() *PlaceUpdate {
+	_u.mutation.ClearOpeningHours()
+	return _u
+}
+
 // AddImageIDs adds the "images" edge to the PlaceImage entity by IDs.
 func (_u *PlaceUpdate) AddImageIDs(ids ...string) *PlaceUpdate {
 	_u.mutation.AddImageIDs(ids...)
@@ -355,6 +389,21 @@ func (_u *PlaceUpdate) AddCategory(v ...*Category) *PlaceUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddCategoryIDs(ids...)
+}
+
+// AddVisitIDs adds the "visits" edge to the Visit entity by IDs.
+func (_u *PlaceUpdate) AddVisitIDs(ids ...string) *PlaceUpdate {
+	_u.mutation.AddVisitIDs(ids...)
+	return _u
+}
+
+// AddVisits adds the "visits" edges to the Visit entity.
+func (_u *PlaceUpdate) AddVisits(v ...*Visit) *PlaceUpdate {
+	ids := make([]string, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddVisitIDs(ids...)
 }
 
 // Mutation returns the PlaceMutation object of the builder.
@@ -402,6 +451,27 @@ func (_u *PlaceUpdate) RemoveCategory(v ...*Category) *PlaceUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveCategoryIDs(ids...)
+}
+
+// ClearVisits clears all "visits" edges to the Visit entity.
+func (_u *PlaceUpdate) ClearVisits() *PlaceUpdate {
+	_u.mutation.ClearVisits()
+	return _u
+}
+
+// RemoveVisitIDs removes the "visits" edge to Visit entities by IDs.
+func (_u *PlaceUpdate) RemoveVisitIDs(ids ...string) *PlaceUpdate {
+	_u.mutation.RemoveVisitIDs(ids...)
+	return _u
+}
+
+// RemoveVisits removes "visits" edges to Visit entities.
+func (_u *PlaceUpdate) RemoveVisits(v ...*Visit) *PlaceUpdate {
+	ids := make([]string, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveVisitIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -562,6 +632,18 @@ func (_u *PlaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.PopularityScore(); ok {
 		_spec.SetField(place.FieldPopularityScore, field.TypeOther, value)
 	}
+	if value, ok := _u.mutation.AvgVisitMinutes(); ok {
+		_spec.SetField(place.FieldAvgVisitMinutes, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedAvgVisitMinutes(); ok {
+		_spec.AddField(place.FieldAvgVisitMinutes, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.OpeningHours(); ok {
+		_spec.SetField(place.FieldOpeningHours, field.TypeJSON, value)
+	}
+	if _u.mutation.OpeningHoursCleared() {
+		_spec.ClearField(place.FieldOpeningHours, field.TypeJSON)
+	}
 	if _u.mutation.ImagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -645,6 +727,51 @@ func (_u *PlaceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(category.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.VisitsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   place.VisitsTable,
+			Columns: []string{place.VisitsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(visit.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedVisitsIDs(); len(nodes) > 0 && !_u.mutation.VisitsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   place.VisitsTable,
+			Columns: []string{place.VisitsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(visit.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.VisitsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   place.VisitsTable,
+			Columns: []string{place.VisitsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(visit.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -968,6 +1095,39 @@ func (_u *PlaceUpdateOne) SetNillablePopularityScore(v *decimal.Decimal) *PlaceU
 	return _u
 }
 
+// SetAvgVisitMinutes sets the "avg_visit_minutes" field.
+func (_u *PlaceUpdateOne) SetAvgVisitMinutes(v int) *PlaceUpdateOne {
+	_u.mutation.ResetAvgVisitMinutes()
+	_u.mutation.SetAvgVisitMinutes(v)
+	return _u
+}
+
+// SetNillableAvgVisitMinutes sets the "avg_visit_minutes" field if the given value is not nil.
+func (_u *PlaceUpdateOne) SetNillableAvgVisitMinutes(v *int) *PlaceUpdateOne {
+	if v != nil {
+		_u.SetAvgVisitMinutes(*v)
+	}
+	return _u
+}
+
+// AddAvgVisitMinutes adds value to the "avg_visit_minutes" field.
+func (_u *PlaceUpdateOne) AddAvgVisitMinutes(v int) *PlaceUpdateOne {
+	_u.mutation.AddAvgVisitMinutes(v)
+	return _u
+}
+
+// SetOpeningHours sets the "opening_hours" field.
+func (_u *PlaceUpdateOne) SetOpeningHours(v map[string]string) *PlaceUpdateOne {
+	_u.mutation.SetOpeningHours(v)
+	return _u
+}
+
+// ClearOpeningHours clears the value of the "opening_hours" field.
+func (_u *PlaceUpdateOne) ClearOpeningHours() *PlaceUpdateOne {
+	_u.mutation.ClearOpeningHours()
+	return _u
+}
+
 // AddImageIDs adds the "images" edge to the PlaceImage entity by IDs.
 func (_u *PlaceUpdateOne) AddImageIDs(ids ...string) *PlaceUpdateOne {
 	_u.mutation.AddImageIDs(ids...)
@@ -996,6 +1156,21 @@ func (_u *PlaceUpdateOne) AddCategory(v ...*Category) *PlaceUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.AddCategoryIDs(ids...)
+}
+
+// AddVisitIDs adds the "visits" edge to the Visit entity by IDs.
+func (_u *PlaceUpdateOne) AddVisitIDs(ids ...string) *PlaceUpdateOne {
+	_u.mutation.AddVisitIDs(ids...)
+	return _u
+}
+
+// AddVisits adds the "visits" edges to the Visit entity.
+func (_u *PlaceUpdateOne) AddVisits(v ...*Visit) *PlaceUpdateOne {
+	ids := make([]string, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddVisitIDs(ids...)
 }
 
 // Mutation returns the PlaceMutation object of the builder.
@@ -1043,6 +1218,27 @@ func (_u *PlaceUpdateOne) RemoveCategory(v ...*Category) *PlaceUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveCategoryIDs(ids...)
+}
+
+// ClearVisits clears all "visits" edges to the Visit entity.
+func (_u *PlaceUpdateOne) ClearVisits() *PlaceUpdateOne {
+	_u.mutation.ClearVisits()
+	return _u
+}
+
+// RemoveVisitIDs removes the "visits" edge to Visit entities by IDs.
+func (_u *PlaceUpdateOne) RemoveVisitIDs(ids ...string) *PlaceUpdateOne {
+	_u.mutation.RemoveVisitIDs(ids...)
+	return _u
+}
+
+// RemoveVisits removes "visits" edges to Visit entities.
+func (_u *PlaceUpdateOne) RemoveVisits(v ...*Visit) *PlaceUpdateOne {
+	ids := make([]string, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveVisitIDs(ids...)
 }
 
 // Where appends a list predicates to the PlaceUpdate builder.
@@ -1233,6 +1429,18 @@ func (_u *PlaceUpdateOne) sqlSave(ctx context.Context) (_node *Place, err error)
 	if value, ok := _u.mutation.PopularityScore(); ok {
 		_spec.SetField(place.FieldPopularityScore, field.TypeOther, value)
 	}
+	if value, ok := _u.mutation.AvgVisitMinutes(); ok {
+		_spec.SetField(place.FieldAvgVisitMinutes, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedAvgVisitMinutes(); ok {
+		_spec.AddField(place.FieldAvgVisitMinutes, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.OpeningHours(); ok {
+		_spec.SetField(place.FieldOpeningHours, field.TypeJSON, value)
+	}
+	if _u.mutation.OpeningHoursCleared() {
+		_spec.ClearField(place.FieldOpeningHours, field.TypeJSON)
+	}
 	if _u.mutation.ImagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1316,6 +1524,51 @@ func (_u *PlaceUpdateOne) sqlSave(ctx context.Context) (_node *Place, err error)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(category.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.VisitsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   place.VisitsTable,
+			Columns: []string{place.VisitsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(visit.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedVisitsIDs(); len(nodes) > 0 && !_u.mutation.VisitsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   place.VisitsTable,
+			Columns: []string{place.VisitsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(visit.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.VisitsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   place.VisitsTable,
+			Columns: []string{place.VisitsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(visit.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

@@ -63,6 +63,10 @@ type Place struct {
 	LastViewedAt time.Time `json:"last_viewed_at,omitempty"`
 	// PopularityScore holds the value of the "popularity_score" field.
 	PopularityScore decimal.Decimal `json:"popularity_score,omitempty"`
+	// Average time visitors spend at this place
+	AvgVisitMinutes int `json:"avg_visit_minutes,omitempty"`
+	// Opening hours by day: {monday: '9:00-18:00', ...}
+	OpeningHours map[string]string `json:"opening_hours,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PlaceQuery when eager-loading is set.
 	Edges        PlaceEdges `json:"edges"`
@@ -75,9 +79,11 @@ type PlaceEdges struct {
 	Images []*PlaceImage `json:"images,omitempty"`
 	// Category holds the value of the category edge.
 	Category []*Category `json:"category,omitempty"`
+	// Visits holds the value of the visits edge.
+	Visits []*Visit `json:"visits,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // ImagesOrErr returns the Images value or an error if the edge
@@ -98,16 +104,25 @@ func (e PlaceEdges) CategoryOrErr() ([]*Category, error) {
 	return nil, &NotLoadedError{edge: "category"}
 }
 
+// VisitsOrErr returns the Visits value or an error if the edge
+// was not loaded in eager-loading.
+func (e PlaceEdges) VisitsOrErr() ([]*Visit, error) {
+	if e.loadedTypes[2] {
+		return e.Visits, nil
+	}
+	return nil, &NotLoadedError{edge: "visits"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Place) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case place.FieldMetadata, place.FieldAddress:
+		case place.FieldMetadata, place.FieldAddress, place.FieldOpeningHours:
 			values[i] = new([]byte)
 		case place.FieldLatitude, place.FieldLongitude, place.FieldRatingAvg, place.FieldPopularityScore:
 			values[i] = new(decimal.Decimal)
-		case place.FieldViewCount, place.FieldRatingCount:
+		case place.FieldViewCount, place.FieldRatingCount, place.FieldAvgVisitMinutes:
 			values[i] = new(sql.NullInt64)
 		case place.FieldID, place.FieldStatus, place.FieldCreatedBy, place.FieldUpdatedBy, place.FieldSlug, place.FieldTitle, place.FieldSubtitle, place.FieldShortDescription, place.FieldLongDescription, place.FieldPlaceType, place.FieldPrimaryImageURL, place.FieldThumbnailURL:
 			values[i] = new(sql.NullString)
@@ -270,6 +285,20 @@ func (_m *Place) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.PopularityScore = *value
 			}
+		case place.FieldAvgVisitMinutes:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field avg_visit_minutes", values[i])
+			} else if value.Valid {
+				_m.AvgVisitMinutes = int(value.Int64)
+			}
+		case place.FieldOpeningHours:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field opening_hours", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.OpeningHours); err != nil {
+					return fmt.Errorf("unmarshal field opening_hours: %w", err)
+				}
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -291,6 +320,11 @@ func (_m *Place) QueryImages() *PlaceImageQuery {
 // QueryCategory queries the "category" edge of the Place entity.
 func (_m *Place) QueryCategory() *CategoryQuery {
 	return NewPlaceClient(_m.config).QueryCategory(_m)
+}
+
+// QueryVisits queries the "visits" edge of the Place entity.
+func (_m *Place) QueryVisits() *VisitQuery {
+	return NewPlaceClient(_m.config).QueryVisits(_m)
 }
 
 // Update returns a builder for updating this Place.
@@ -381,6 +415,12 @@ func (_m *Place) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("popularity_score=")
 	builder.WriteString(fmt.Sprintf("%v", _m.PopularityScore))
+	builder.WriteString(", ")
+	builder.WriteString("avg_visit_minutes=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AvgVisitMinutes))
+	builder.WriteString(", ")
+	builder.WriteString("opening_hours=")
+	builder.WriteString(fmt.Sprintf("%v", _m.OpeningHours))
 	builder.WriteByte(')')
 	return builder.String()
 }

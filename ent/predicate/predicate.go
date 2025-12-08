@@ -18,6 +18,9 @@ type EventOccurrence func(*sql.Selector)
 // Hotel is the predicate function for hotel builders.
 type Hotel func(*sql.Selector)
 
+// Itinerary is the predicate function for itinerary builders.
+type Itinerary func(*sql.Selector)
+
 // Place is the predicate function for place builders.
 type Place func(*sql.Selector)
 
@@ -29,3 +32,6 @@ type Review func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
+
+// Visit is the predicate function for visit builders.
+type Visit func(*sql.Selector)

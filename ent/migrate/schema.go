@@ -250,6 +250,58 @@ var (
 			},
 		},
 	}
+	// ItinerariesColumns holds the columns for the "itineraries" table.
+	ItinerariesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "status", Type: field.TypeString, Default: "published", SchemaType: map[string]string{"postgres": "varchar(20)"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "created_by", Type: field.TypeString, Nullable: true},
+		{Name: "updated_by", Type: field.TypeString, Nullable: true},
+		{Name: "metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "title", Type: field.TypeString, Size: 255},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "planned_date", Type: field.TypeTime},
+		{Name: "start_latitude", Type: field.TypeOther, SchemaType: map[string]string{"postgres": "decimal(10,8)"}},
+		{Name: "start_longitude", Type: field.TypeOther, SchemaType: map[string]string{"postgres": "decimal(11,8)"}},
+		{Name: "preferred_transport_mode", Type: field.TypeString, Default: "WALKING"},
+		{Name: "total_distance_km", Type: field.TypeFloat64, Nullable: true},
+		{Name: "total_duration_minutes", Type: field.TypeInt, Nullable: true},
+		{Name: "total_visit_time_minutes", Type: field.TypeInt, Nullable: true},
+		{Name: "is_optimized", Type: field.TypeBool, Default: false},
+		{Name: "user_id", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(255)"}},
+	}
+	// ItinerariesTable holds the schema information for the "itineraries" table.
+	ItinerariesTable = &schema.Table{
+		Name:       "itineraries",
+		Columns:    ItinerariesColumns,
+		PrimaryKey: []*schema.Column{ItinerariesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "itineraries_users_itineraries",
+				Columns:    []*schema.Column{ItinerariesColumns[17]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "itinerary_user_id_status",
+				Unique:  false,
+				Columns: []*schema.Column{ItinerariesColumns[17], ItinerariesColumns[1]},
+			},
+			{
+				Name:    "itinerary_user_id_planned_date",
+				Unique:  false,
+				Columns: []*schema.Column{ItinerariesColumns[17], ItinerariesColumns[9]},
+			},
+			{
+				Name:    "itinerary_status",
+				Unique:  false,
+				Columns: []*schema.Column{ItinerariesColumns[1]},
+			},
+		},
+	}
 	// PlacesColumns holds the columns for the "places" table.
 	PlacesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(255)"}},
@@ -275,6 +327,8 @@ var (
 		{Name: "rating_count", Type: field.TypeInt, Default: 0, SchemaType: map[string]string{"postgres": "integer"}},
 		{Name: "last_viewed_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"postgres": "timestamp with time zone"}},
 		{Name: "popularity_score", Type: field.TypeOther, SchemaType: map[string]string{"postgres": "decimal(10,4)"}},
+		{Name: "avg_visit_minutes", Type: field.TypeInt, Default: 60, SchemaType: map[string]string{"postgres": "integer"}},
+		{Name: "opening_hours", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 	}
 	// PlacesTable holds the schema information for the "places" table.
 	PlacesTable = &schema.Table{
@@ -438,6 +492,55 @@ var (
 			},
 		},
 	}
+	// VisitsColumns holds the columns for the "visits" table.
+	VisitsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "status", Type: field.TypeString, Default: "published", SchemaType: map[string]string{"postgres": "varchar(20)"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "created_by", Type: field.TypeString, Nullable: true},
+		{Name: "updated_by", Type: field.TypeString, Nullable: true},
+		{Name: "sequence_order", Type: field.TypeInt},
+		{Name: "planned_duration_minutes", Type: field.TypeInt, Default: 60},
+		{Name: "distance_from_previous_km", Type: field.TypeFloat64, Nullable: true},
+		{Name: "travel_time_from_previous_minutes", Type: field.TypeInt, Nullable: true},
+		{Name: "transport_mode", Type: field.TypeString, Nullable: true},
+		{Name: "notes", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "itinerary_id", Type: field.TypeString},
+		{Name: "place_id", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(255)"}},
+	}
+	// VisitsTable holds the schema information for the "visits" table.
+	VisitsTable = &schema.Table{
+		Name:       "visits",
+		Columns:    VisitsColumns,
+		PrimaryKey: []*schema.Column{VisitsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "visits_itineraries_visits",
+				Columns:    []*schema.Column{VisitsColumns[12]},
+				RefColumns: []*schema.Column{ItinerariesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "visits_places_visits",
+				Columns:    []*schema.Column{VisitsColumns[13]},
+				RefColumns: []*schema.Column{PlacesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "visit_itinerary_id_sequence_order",
+				Unique:  true,
+				Columns: []*schema.Column{VisitsColumns[12], VisitsColumns[6]},
+			},
+			{
+				Name:    "visit_place_id",
+				Unique:  false,
+				Columns: []*schema.Column{VisitsColumns[13]},
+			},
+		},
+	}
 	// CategoryPlacesColumns holds the columns for the "category_places" table.
 	CategoryPlacesColumns = []*schema.Column{
 		{Name: "category_id", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(255)"}},
@@ -469,17 +572,22 @@ var (
 		EventsTable,
 		EventOccurrencesTable,
 		HotelsTable,
+		ItinerariesTable,
 		PlacesTable,
 		PlaceImagesTable,
 		ReviewsTable,
 		UsersTable,
+		VisitsTable,
 		CategoryPlacesTable,
 	}
 )
 
 func init() {
 	EventOccurrencesTable.ForeignKeys[0].RefTable = EventsTable
+	ItinerariesTable.ForeignKeys[0].RefTable = UsersTable
 	PlaceImagesTable.ForeignKeys[0].RefTable = PlacesTable
+	VisitsTable.ForeignKeys[0].RefTable = ItinerariesTable
+	VisitsTable.ForeignKeys[1].RefTable = PlacesTable
 	CategoryPlacesTable.ForeignKeys[0].RefTable = CategoriesTable
 	CategoryPlacesTable.ForeignKeys[1].RefTable = PlacesTable
 }
