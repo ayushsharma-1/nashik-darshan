@@ -5,6 +5,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/omkar273/nashikdarshan/ent/visit"
 	"github.com/omkar273/nashikdarshan/internal/api/dto"
 	"github.com/omkar273/nashikdarshan/internal/domain/itinerary"
 	"github.com/omkar273/nashikdarshan/internal/domain/place"
@@ -388,7 +389,19 @@ func (s *itineraryService) Delete(ctx context.Context, id string) error {
 		return err
 	}
 
-	// Delete itinerary (cascade will delete visits)
+	// Delete all visits associated with this itinerary first
+	client := s.DB.Querier(ctx)
+	_, err = client.Visit.Delete().
+		Where(visit.ItineraryIDEQ(id)).
+		Exec(ctx)
+	if err != nil {
+		s.Logger.Errorw("Failed to delete visits for itinerary", "error", err, "itinerary_id", id)
+		return ierr.WithError(err).
+			WithHint("Failed to delete associated visits").
+			Mark(ierr.ErrDatabase)
+	}
+
+	// Now delete the itinerary
 	err = s.ItineraryRepo.Delete(ctx, id)
 	if err != nil {
 		s.Logger.Errorw("Failed to delete itinerary", "error", err, "itinerary_id", id)

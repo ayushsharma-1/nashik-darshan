@@ -108,7 +108,8 @@ func (Itinerary) Edges() []ent.Edge {
 			Unique(),
 
 		// Visit relationship (ordered list of places)
-		edge.To("visits", Visit.Type),
+		edge.To("visits", Visit.Type).
+			StorageKey(edge.Column("itinerary_id")),
 	}
 }
 
