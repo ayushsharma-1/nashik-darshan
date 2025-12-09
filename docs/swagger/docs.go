@@ -1592,6 +1592,438 @@ const docTemplate = `{
                 }
             }
         },
+        "/itineraries": {
+            "get": {
+                "description": "Get a paginated list of itineraries with filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Itinerary"
+                ],
+                "summary": "List itineraries",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Status filter (published, draft, archived, deleted)",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "created_at",
+                        "description": "Sort field",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "desc",
+                        "description": "Sort order (asc/desc)",
+                        "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by user ID",
+                        "name": "user_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter itineraries from date (YYYY-MM-DD)",
+                        "name": "from_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter itineraries to date (YYYY-MM-DD)",
+                        "name": "to_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by transport mode (WALKING, DRIVING, TAXI)",
+                        "name": "transport_mode",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ListItinerariesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Create a new optimized itinerary with route planning",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Itinerary"
+                ],
+                "summary": "Create a new itinerary",
+                "parameters": [
+                    {
+                        "description": "Create itinerary request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateItineraryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ItineraryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "One or more places not found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Routing service error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/itineraries/me": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Get all itineraries for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Itinerary"
+                ],
+                "summary": "Get user's itineraries",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Status filter",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "created_at",
+                        "description": "Sort field",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "desc",
+                        "description": "Sort order (asc/desc)",
+                        "name": "order",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ListItinerariesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "User not authenticated",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/itineraries/{id}": {
+            "get": {
+                "description": "Get an itinerary by its ID without visit details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Itinerary"
+                ],
+                "summary": "Get itinerary by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Itinerary ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ItineraryResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Itinerary not found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Update an existing itinerary (does not re-optimize route)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Itinerary"
+                ],
+                "summary": "Update an itinerary",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Itinerary ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update itinerary request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateItineraryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ItineraryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Itinerary not found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Delete an itinerary and all its visits",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Itinerary"
+                ],
+                "summary": "Delete an itinerary",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Itinerary ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Successfully deleted"
+                    },
+                    "404": {
+                        "description": "Itinerary not found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/itineraries/{id}/details": {
+            "get": {
+                "description": "Get an itinerary by its ID with all visit details including place information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Itinerary"
+                ],
+                "summary": "Get itinerary with visits",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Itinerary ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ItineraryResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Itinerary not found",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ierr.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/places": {
             "get": {
                 "description": "Get a paginated list of places with filtering and pagination",
@@ -2962,6 +3394,56 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateItineraryRequest": {
+            "type": "object",
+            "required": [
+                "planned_date",
+                "selected_places",
+                "start_location",
+                "title",
+                "transport_mode"
+            ],
+            "properties": {
+                "default_duration": {
+                    "type": "integer",
+                    "maximum": 240,
+                    "minimum": 15
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 1000
+                },
+                "planned_date": {
+                    "type": "string"
+                },
+                "selected_places": {
+                    "type": "array",
+                    "maxItems": 10,
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "start_location": {
+                    "$ref": "#/definitions/types.Location"
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 3
+                },
+                "transport_mode": {
+                    "$ref": "#/definitions/types.TransportMode"
+                },
+                "visit_durations": {
+                    "description": "placeID -\u003e minutes",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "dto.CreateOccurrenceRequest": {
             "type": "object",
             "required": [
@@ -3057,13 +3539,7 @@ const docTemplate = `{
                     "maxLength": 10000
                 },
                 "place_type": {
-                    "maxLength": 50,
-                    "minLength": 2,
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.PlaceType"
-                        }
-                    ]
+                    "$ref": "#/definitions/types.PlaceType"
                 },
                 "primary_image_url": {
                     "type": "string",
@@ -3466,6 +3942,59 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ItineraryResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_optimized": {
+                    "type": "boolean"
+                },
+                "planned_date": {
+                    "type": "string"
+                },
+                "start_location": {
+                    "$ref": "#/definitions/types.Location"
+                },
+                "status": {
+                    "$ref": "#/definitions/types.Status"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "total_distance_km": {
+                    "type": "number"
+                },
+                "total_duration_minutes": {
+                    "type": "integer"
+                },
+                "total_visit_time_minutes": {
+                    "type": "integer"
+                },
+                "transport_mode": {
+                    "$ref": "#/definitions/types.TransportMode"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "visits": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.VisitResponse"
+                    }
+                }
+            }
+        },
         "dto.ListCategoriesResponse": {
             "type": "object",
             "properties": {
@@ -3505,6 +4034,26 @@ const docTemplate = `{
                 },
                 "pagination": {
                     "$ref": "#/definitions/types.PaginationResponse"
+                }
+            }
+        },
+        "dto.ListItinerariesResponse": {
+            "type": "object",
+            "properties": {
+                "itineraries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.ItineraryResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -4045,6 +4594,32 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UpdateItineraryRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 1000
+                },
+                "planned_date": {
+                    "type": "string"
+                },
+                "start_location": {
+                    "$ref": "#/definitions/types.Location"
+                },
+                "status": {
+                    "$ref": "#/definitions/types.Status"
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 3
+                },
+                "transport_mode": {
+                    "$ref": "#/definitions/types.TransportMode"
+                }
+            }
+        },
         "dto.UpdateOccurrenceRequest": {
             "type": "object",
             "properties": {
@@ -4116,15 +4691,6 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 10000
                 },
-                "place_type": {
-                    "maxLength": 50,
-                    "minLength": 2,
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.PlaceType"
-                        }
-                    ]
-                },
                 "primary_image_url": {
                     "type": "string",
                     "maxLength": 500
@@ -4195,6 +4761,50 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 20,
                     "minLength": 10
+                }
+            }
+        },
+        "dto.VisitResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "distance_from_previous_km": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "itinerary_id": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "place": {
+                    "$ref": "#/definitions/dto.PlaceResponse"
+                },
+                "place_id": {
+                    "type": "string"
+                },
+                "planned_duration_minutes": {
+                    "type": "integer"
+                },
+                "sequence_order": {
+                    "type": "integer"
+                },
+                "status": {
+                    "$ref": "#/definitions/types.Status"
+                },
+                "transport_mode": {
+                    "$ref": "#/definitions/types.TransportMode"
+                },
+                "travel_time_from_previous_minutes": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
@@ -4414,18 +5024,10 @@ const docTemplate = `{
         "types.PlaceType": {
             "type": "string",
             "enum": [
-                "hotel",
-                "apartment",
-                "attraction",
-                "restaurant",
-                "experience"
+                "temple"
             ],
             "x-enum-varnames": [
-                "PlaceTypeHotel",
-                "PlaceTypeApartment",
-                "PlaceTypeAttraction",
-                "PlaceTypeRestaurant",
-                "PlaceTypeExperience"
+                "PlaceTypeTemple"
             ]
         },
         "types.RecurrenceType": {
@@ -4491,6 +5093,19 @@ const docTemplate = `{
                 "StatusDraft",
                 "StatusArchived",
                 "StatusDeleted"
+            ]
+        },
+        "types.TransportMode": {
+            "type": "string",
+            "enum": [
+                "WALKING",
+                "DRIVING",
+                "TAXI"
+            ],
+            "x-enum-varnames": [
+                "TransportModeWalking",
+                "TransportModeDriving",
+                "TransportModeTaxi"
             ]
         },
         "types.UserRole": {

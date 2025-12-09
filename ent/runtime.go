@@ -9,11 +9,13 @@ import (
 	"github.com/omkar273/nashikdarshan/ent/event"
 	"github.com/omkar273/nashikdarshan/ent/eventoccurrence"
 	"github.com/omkar273/nashikdarshan/ent/hotel"
+	"github.com/omkar273/nashikdarshan/ent/itinerary"
 	"github.com/omkar273/nashikdarshan/ent/place"
 	"github.com/omkar273/nashikdarshan/ent/placeimage"
 	"github.com/omkar273/nashikdarshan/ent/review"
 	"github.com/omkar273/nashikdarshan/ent/schema"
 	"github.com/omkar273/nashikdarshan/ent/user"
+	"github.com/omkar273/nashikdarshan/ent/visit"
 	"github.com/shopspring/decimal"
 )
 
@@ -327,6 +329,71 @@ func init() {
 	hotelDescID := hotelFields[0].Descriptor()
 	// hotel.DefaultID holds the default value on creation for the id field.
 	hotel.DefaultID = hotelDescID.Default.(func() string)
+	itineraryMixin := schema.Itinerary{}.Mixin()
+	itineraryMixinFields0 := itineraryMixin[0].Fields()
+	_ = itineraryMixinFields0
+	itineraryMixinFields1 := itineraryMixin[1].Fields()
+	_ = itineraryMixinFields1
+	itineraryFields := schema.Itinerary{}.Fields()
+	_ = itineraryFields
+	// itineraryDescStatus is the schema descriptor for status field.
+	itineraryDescStatus := itineraryMixinFields0[0].Descriptor()
+	// itinerary.DefaultStatus holds the default value on creation for the status field.
+	itinerary.DefaultStatus = itineraryDescStatus.Default.(string)
+	// itineraryDescCreatedAt is the schema descriptor for created_at field.
+	itineraryDescCreatedAt := itineraryMixinFields0[1].Descriptor()
+	// itinerary.DefaultCreatedAt holds the default value on creation for the created_at field.
+	itinerary.DefaultCreatedAt = itineraryDescCreatedAt.Default.(func() time.Time)
+	// itineraryDescUpdatedAt is the schema descriptor for updated_at field.
+	itineraryDescUpdatedAt := itineraryMixinFields0[2].Descriptor()
+	// itinerary.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	itinerary.DefaultUpdatedAt = itineraryDescUpdatedAt.Default.(func() time.Time)
+	// itinerary.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	itinerary.UpdateDefaultUpdatedAt = itineraryDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// itineraryDescMetadata is the schema descriptor for metadata field.
+	itineraryDescMetadata := itineraryMixinFields1[0].Descriptor()
+	// itinerary.DefaultMetadata holds the default value on creation for the metadata field.
+	itinerary.DefaultMetadata = itineraryDescMetadata.Default.(map[string]string)
+	// itineraryDescUserID is the schema descriptor for user_id field.
+	itineraryDescUserID := itineraryFields[1].Descriptor()
+	// itinerary.UserIDValidator is a validator for the "user_id" field. It is called by the builders before save.
+	itinerary.UserIDValidator = itineraryDescUserID.Validators[0].(func(string) error)
+	// itineraryDescTitle is the schema descriptor for title field.
+	itineraryDescTitle := itineraryFields[2].Descriptor()
+	// itinerary.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	itinerary.TitleValidator = func() func(string) error {
+		validators := itineraryDescTitle.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(title string) error {
+			for _, fn := range fns {
+				if err := fn(title); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// itineraryDescPlannedDate is the schema descriptor for planned_date field.
+	itineraryDescPlannedDate := itineraryFields[4].Descriptor()
+	// itinerary.DefaultPlannedDate holds the default value on creation for the planned_date field.
+	itinerary.DefaultPlannedDate = itineraryDescPlannedDate.Default.(func() time.Time)
+	// itineraryDescPreferredTransportMode is the schema descriptor for preferred_transport_mode field.
+	itineraryDescPreferredTransportMode := itineraryFields[7].Descriptor()
+	// itinerary.DefaultPreferredTransportMode holds the default value on creation for the preferred_transport_mode field.
+	itinerary.DefaultPreferredTransportMode = itineraryDescPreferredTransportMode.Default.(string)
+	// itineraryDescIsOptimized is the schema descriptor for is_optimized field.
+	itineraryDescIsOptimized := itineraryFields[11].Descriptor()
+	// itinerary.DefaultIsOptimized holds the default value on creation for the is_optimized field.
+	itinerary.DefaultIsOptimized = itineraryDescIsOptimized.Default.(bool)
+	// itineraryDescID is the schema descriptor for id field.
+	itineraryDescID := itineraryFields[0].Descriptor()
+	// itinerary.DefaultID holds the default value on creation for the id field.
+	itinerary.DefaultID = itineraryDescID.Default.(func() string)
+	// itinerary.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	itinerary.IDValidator = itineraryDescID.Validators[0].(func(string) error)
 	placeMixin := schema.Place{}.Mixin()
 	placeMixinFields0 := placeMixin[0].Fields()
 	_ = placeMixinFields0
@@ -392,6 +459,10 @@ func init() {
 	placeDescPopularityScore := placeFields[16].Descriptor()
 	// place.DefaultPopularityScore holds the default value on creation for the popularity_score field.
 	place.DefaultPopularityScore = placeDescPopularityScore.Default.(decimal.Decimal)
+	// placeDescAvgVisitMinutes is the schema descriptor for avg_visit_minutes field.
+	placeDescAvgVisitMinutes := placeFields[17].Descriptor()
+	// place.DefaultAvgVisitMinutes holds the default value on creation for the avg_visit_minutes field.
+	place.DefaultAvgVisitMinutes = placeDescAvgVisitMinutes.Default.(int)
 	// placeDescID is the schema descriptor for id field.
 	placeDescID := placeFields[0].Descriptor()
 	// place.DefaultID holds the default value on creation for the id field.
@@ -541,4 +612,47 @@ func init() {
 	userDescID := userFields[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.
 	user.DefaultID = userDescID.Default.(func() string)
+	visitMixin := schema.Visit{}.Mixin()
+	visitMixinFields0 := visitMixin[0].Fields()
+	_ = visitMixinFields0
+	visitFields := schema.Visit{}.Fields()
+	_ = visitFields
+	// visitDescStatus is the schema descriptor for status field.
+	visitDescStatus := visitMixinFields0[0].Descriptor()
+	// visit.DefaultStatus holds the default value on creation for the status field.
+	visit.DefaultStatus = visitDescStatus.Default.(string)
+	// visitDescCreatedAt is the schema descriptor for created_at field.
+	visitDescCreatedAt := visitMixinFields0[1].Descriptor()
+	// visit.DefaultCreatedAt holds the default value on creation for the created_at field.
+	visit.DefaultCreatedAt = visitDescCreatedAt.Default.(func() time.Time)
+	// visitDescUpdatedAt is the schema descriptor for updated_at field.
+	visitDescUpdatedAt := visitMixinFields0[2].Descriptor()
+	// visit.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	visit.DefaultUpdatedAt = visitDescUpdatedAt.Default.(func() time.Time)
+	// visit.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	visit.UpdateDefaultUpdatedAt = visitDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// visitDescItineraryID is the schema descriptor for itinerary_id field.
+	visitDescItineraryID := visitFields[1].Descriptor()
+	// visit.ItineraryIDValidator is a validator for the "itinerary_id" field. It is called by the builders before save.
+	visit.ItineraryIDValidator = visitDescItineraryID.Validators[0].(func(string) error)
+	// visitDescPlaceID is the schema descriptor for place_id field.
+	visitDescPlaceID := visitFields[2].Descriptor()
+	// visit.PlaceIDValidator is a validator for the "place_id" field. It is called by the builders before save.
+	visit.PlaceIDValidator = visitDescPlaceID.Validators[0].(func(string) error)
+	// visitDescSequenceOrder is the schema descriptor for sequence_order field.
+	visitDescSequenceOrder := visitFields[3].Descriptor()
+	// visit.SequenceOrderValidator is a validator for the "sequence_order" field. It is called by the builders before save.
+	visit.SequenceOrderValidator = visitDescSequenceOrder.Validators[0].(func(int) error)
+	// visitDescPlannedDurationMinutes is the schema descriptor for planned_duration_minutes field.
+	visitDescPlannedDurationMinutes := visitFields[4].Descriptor()
+	// visit.DefaultPlannedDurationMinutes holds the default value on creation for the planned_duration_minutes field.
+	visit.DefaultPlannedDurationMinutes = visitDescPlannedDurationMinutes.Default.(int)
+	// visit.PlannedDurationMinutesValidator is a validator for the "planned_duration_minutes" field. It is called by the builders before save.
+	visit.PlannedDurationMinutesValidator = visitDescPlannedDurationMinutes.Validators[0].(func(int) error)
+	// visitDescID is the schema descriptor for id field.
+	visitDescID := visitFields[0].Descriptor()
+	// visit.DefaultID holds the default value on creation for the id field.
+	visit.DefaultID = visitDescID.Default.(func() string)
+	// visit.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	visit.IDValidator = visitDescID.Validators[0].(func(string) error)
 }

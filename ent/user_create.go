@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/omkar273/nashikdarshan/ent/itinerary"
 	"github.com/omkar273/nashikdarshan/ent/user"
 )
 
@@ -140,6 +141,21 @@ func (_c *UserCreate) SetNillableID(v *string) *UserCreate {
 		_c.SetID(*v)
 	}
 	return _c
+}
+
+// AddItineraryIDs adds the "itineraries" edge to the Itinerary entity by IDs.
+func (_c *UserCreate) AddItineraryIDs(ids ...string) *UserCreate {
+	_c.mutation.AddItineraryIDs(ids...)
+	return _c
+}
+
+// AddItineraries adds the "itineraries" edges to the Itinerary entity.
+func (_c *UserCreate) AddItineraries(v ...*Itinerary) *UserCreate {
+	ids := make([]string, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddItineraryIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -315,6 +331,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeString, value)
 		_node.Role = value
+	}
+	if nodes := _c.mutation.ItinerariesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ItinerariesTable,
+			Columns: []string{user.ItinerariesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(itinerary.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

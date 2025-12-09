@@ -20,6 +20,8 @@ type Tx struct {
 	EventOccurrence *EventOccurrenceClient
 	// Hotel is the client for interacting with the Hotel builders.
 	Hotel *HotelClient
+	// Itinerary is the client for interacting with the Itinerary builders.
+	Itinerary *ItineraryClient
 	// Place is the client for interacting with the Place builders.
 	Place *PlaceClient
 	// PlaceImage is the client for interacting with the PlaceImage builders.
@@ -28,6 +30,8 @@ type Tx struct {
 	Review *ReviewClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// Visit is the client for interacting with the Visit builders.
+	Visit *VisitClient
 
 	// lazily loaded.
 	client     *Client
@@ -163,10 +167,12 @@ func (tx *Tx) init() {
 	tx.Event = NewEventClient(tx.config)
 	tx.EventOccurrence = NewEventOccurrenceClient(tx.config)
 	tx.Hotel = NewHotelClient(tx.config)
+	tx.Itinerary = NewItineraryClient(tx.config)
 	tx.Place = NewPlaceClient(tx.config)
 	tx.PlaceImage = NewPlaceImageClient(tx.config)
 	tx.Review = NewReviewClient(tx.config)
 	tx.User = NewUserClient(tx.config)
+	tx.Visit = NewVisitClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

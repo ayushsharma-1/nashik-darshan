@@ -13,6 +13,7 @@ import (
 	"github.com/omkar273/nashikdarshan/ent/category"
 	"github.com/omkar273/nashikdarshan/ent/place"
 	"github.com/omkar273/nashikdarshan/ent/placeimage"
+	"github.com/omkar273/nashikdarshan/ent/visit"
 	"github.com/shopspring/decimal"
 )
 
@@ -291,6 +292,26 @@ func (_c *PlaceCreate) SetNillablePopularityScore(v *decimal.Decimal) *PlaceCrea
 	return _c
 }
 
+// SetAvgVisitMinutes sets the "avg_visit_minutes" field.
+func (_c *PlaceCreate) SetAvgVisitMinutes(v int) *PlaceCreate {
+	_c.mutation.SetAvgVisitMinutes(v)
+	return _c
+}
+
+// SetNillableAvgVisitMinutes sets the "avg_visit_minutes" field if the given value is not nil.
+func (_c *PlaceCreate) SetNillableAvgVisitMinutes(v *int) *PlaceCreate {
+	if v != nil {
+		_c.SetAvgVisitMinutes(*v)
+	}
+	return _c
+}
+
+// SetOpeningHours sets the "opening_hours" field.
+func (_c *PlaceCreate) SetOpeningHours(v map[string]string) *PlaceCreate {
+	_c.mutation.SetOpeningHours(v)
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *PlaceCreate) SetID(v string) *PlaceCreate {
 	_c.mutation.SetID(v)
@@ -333,6 +354,21 @@ func (_c *PlaceCreate) AddCategory(v ...*Category) *PlaceCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddCategoryIDs(ids...)
+}
+
+// AddVisitIDs adds the "visits" edge to the Visit entity by IDs.
+func (_c *PlaceCreate) AddVisitIDs(ids ...string) *PlaceCreate {
+	_c.mutation.AddVisitIDs(ids...)
+	return _c
+}
+
+// AddVisits adds the "visits" edges to the Visit entity.
+func (_c *PlaceCreate) AddVisits(v ...*Visit) *PlaceCreate {
+	ids := make([]string, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddVisitIDs(ids...)
 }
 
 // Mutation returns the PlaceMutation object of the builder.
@@ -410,6 +446,10 @@ func (_c *PlaceCreate) defaults() {
 		v := place.DefaultPopularityScore
 		_c.mutation.SetPopularityScore(v)
 	}
+	if _, ok := _c.mutation.AvgVisitMinutes(); !ok {
+		v := place.DefaultAvgVisitMinutes
+		_c.mutation.SetAvgVisitMinutes(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := place.DefaultID()
 		_c.mutation.SetID(v)
@@ -478,6 +518,9 @@ func (_c *PlaceCreate) check() error {
 	}
 	if _, ok := _c.mutation.PopularityScore(); !ok {
 		return &ValidationError{Name: "popularity_score", err: errors.New(`ent: missing required field "Place.popularity_score"`)}
+	}
+	if _, ok := _c.mutation.AvgVisitMinutes(); !ok {
+		return &ValidationError{Name: "avg_visit_minutes", err: errors.New(`ent: missing required field "Place.avg_visit_minutes"`)}
 	}
 	return nil
 }
@@ -602,6 +645,14 @@ func (_c *PlaceCreate) createSpec() (*Place, *sqlgraph.CreateSpec) {
 		_spec.SetField(place.FieldPopularityScore, field.TypeOther, value)
 		_node.PopularityScore = value
 	}
+	if value, ok := _c.mutation.AvgVisitMinutes(); ok {
+		_spec.SetField(place.FieldAvgVisitMinutes, field.TypeInt, value)
+		_node.AvgVisitMinutes = value
+	}
+	if value, ok := _c.mutation.OpeningHours(); ok {
+		_spec.SetField(place.FieldOpeningHours, field.TypeJSON, value)
+		_node.OpeningHours = value
+	}
 	if nodes := _c.mutation.ImagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -627,6 +678,22 @@ func (_c *PlaceCreate) createSpec() (*Place, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(category.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.VisitsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   place.VisitsTable,
+			Columns: []string{place.VisitsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(visit.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

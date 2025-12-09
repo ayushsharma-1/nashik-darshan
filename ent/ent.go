@@ -16,10 +16,12 @@ import (
 	"github.com/omkar273/nashikdarshan/ent/event"
 	"github.com/omkar273/nashikdarshan/ent/eventoccurrence"
 	"github.com/omkar273/nashikdarshan/ent/hotel"
+	"github.com/omkar273/nashikdarshan/ent/itinerary"
 	"github.com/omkar273/nashikdarshan/ent/place"
 	"github.com/omkar273/nashikdarshan/ent/placeimage"
 	"github.com/omkar273/nashikdarshan/ent/review"
 	"github.com/omkar273/nashikdarshan/ent/user"
+	"github.com/omkar273/nashikdarshan/ent/visit"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -84,10 +86,12 @@ func checkColumn(t, c string) error {
 			event.Table:           event.ValidColumn,
 			eventoccurrence.Table: eventoccurrence.ValidColumn,
 			hotel.Table:           hotel.ValidColumn,
+			itinerary.Table:       itinerary.ValidColumn,
 			place.Table:           place.ValidColumn,
 			placeimage.Table:      placeimage.ValidColumn,
 			review.Table:          review.ValidColumn,
 			user.Table:            user.ValidColumn,
+			visit.Table:           visit.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

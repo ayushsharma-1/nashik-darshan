@@ -131,6 +131,21 @@ func (Place) Fields() []ent.Field {
 				"postgres": "decimal(10,4)",
 			}).
 			Default(decimal.Zero),
+
+		// Itinerary Planning
+		field.Int("avg_visit_minutes").
+			SchemaType(map[string]string{
+				"postgres": "integer",
+			}).
+			Default(60).
+			Comment("Average time visitors spend at this place"),
+
+		field.JSON("opening_hours", map[string]string{}).
+			SchemaType(map[string]string{
+				"postgres": "jsonb",
+			}).
+			Optional().
+			Comment("Opening hours by day: {monday: '9:00-18:00', ...}"),
 	}
 }
 
@@ -139,6 +154,7 @@ func (Place) Edges() []ent.Edge {
 		edge.To("images", PlaceImage.Type),
 		edge.From("category", Category.Type).
 			Ref("places"),
+		edge.To("visits", Visit.Type),
 	}
 }
 

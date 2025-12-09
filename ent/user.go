@@ -37,8 +37,29 @@ type User struct {
 	// Phone holds the value of the "phone" field.
 	Phone *string `json:"phone,omitempty"`
 	// Role holds the value of the "role" field.
-	Role         string `json:"role,omitempty"`
+	Role string `json:"role,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the UserQuery when eager-loading is set.
+	Edges        UserEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// UserEdges holds the relations/edges for other nodes in the graph.
+type UserEdges struct {
+	// Itineraries holds the value of the itineraries edge.
+	Itineraries []*Itinerary `json:"itineraries,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// ItinerariesOrErr returns the Itineraries value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ItinerariesOrErr() ([]*Itinerary, error) {
+	if e.loadedTypes[0] {
+		return e.Itineraries, nil
+	}
+	return nil, &NotLoadedError{edge: "itineraries"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -147,6 +168,11 @@ func (_m *User) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (_m *User) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
+}
+
+// QueryItineraries queries the "itineraries" edge of the User entity.
+func (_m *User) QueryItineraries() *ItineraryQuery {
+	return NewUserClient(_m.config).QueryItineraries(_m)
 }
 
 // Update returns a builder for updating this User.

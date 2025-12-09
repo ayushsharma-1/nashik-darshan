@@ -57,6 +57,18 @@ func (f HotelFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.HotelMutation", m)
 }
 
+// The ItineraryFunc type is an adapter to allow the use of ordinary
+// function as Itinerary mutator.
+type ItineraryFunc func(context.Context, *ent.ItineraryMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ItineraryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ItineraryMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ItineraryMutation", m)
+}
+
 // The PlaceFunc type is an adapter to allow the use of ordinary
 // function as Place mutator.
 type PlaceFunc func(context.Context, *ent.PlaceMutation) (ent.Value, error)
@@ -103,6 +115,18 @@ func (f UserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserMutation", m)
+}
+
+// The VisitFunc type is an adapter to allow the use of ordinary
+// function as Visit mutator.
+type VisitFunc func(context.Context, *ent.VisitMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f VisitFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.VisitMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.VisitMutation", m)
 }
 
 // Condition is a hook condition function.

@@ -16,6 +16,7 @@ import (
 	"github.com/omkar273/nashikdarshan/ent/place"
 	"github.com/omkar273/nashikdarshan/ent/placeimage"
 	"github.com/omkar273/nashikdarshan/ent/predicate"
+	"github.com/omkar273/nashikdarshan/ent/visit"
 )
 
 // PlaceQuery is the builder for querying Place entities.
@@ -27,6 +28,7 @@ type PlaceQuery struct {
 	predicates   []predicate.Place
 	withImages   *PlaceImageQuery
 	withCategory *CategoryQuery
+	withVisits   *VisitQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -100,6 +102,28 @@ func (_q *PlaceQuery) QueryCategory() *CategoryQuery {
 			sqlgraph.From(place.Table, place.FieldID, selector),
 			sqlgraph.To(category.Table, category.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, place.CategoryTable, place.CategoryPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryVisits chains the current query on the "visits" edge.
+func (_q *PlaceQuery) QueryVisits() *VisitQuery {
+	query := (&VisitClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(place.Table, place.FieldID, selector),
+			sqlgraph.To(visit.Table, visit.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, place.VisitsTable, place.VisitsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -301,6 +325,7 @@ func (_q *PlaceQuery) Clone() *PlaceQuery {
 		predicates:   append([]predicate.Place{}, _q.predicates...),
 		withImages:   _q.withImages.Clone(),
 		withCategory: _q.withCategory.Clone(),
+		withVisits:   _q.withVisits.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -326,6 +351,17 @@ func (_q *PlaceQuery) WithCategory(opts ...func(*CategoryQuery)) *PlaceQuery {
 		opt(query)
 	}
 	_q.withCategory = query
+	return _q
+}
+
+// WithVisits tells the query-builder to eager-load the nodes that are connected to
+// the "visits" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *PlaceQuery) WithVisits(opts ...func(*VisitQuery)) *PlaceQuery {
+	query := (&VisitClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withVisits = query
 	return _q
 }
 
@@ -407,9 +443,10 @@ func (_q *PlaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Place,
 	var (
 		nodes       = []*Place{}
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			_q.withImages != nil,
 			_q.withCategory != nil,
+			_q.withVisits != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -441,6 +478,13 @@ func (_q *PlaceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Place,
 		if err := _q.loadCategory(ctx, query, nodes,
 			func(n *Place) { n.Edges.Category = []*Category{} },
 			func(n *Place, e *Category) { n.Edges.Category = append(n.Edges.Category, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withVisits; query != nil {
+		if err := _q.loadVisits(ctx, query, nodes,
+			func(n *Place) { n.Edges.Visits = []*Visit{} },
+			func(n *Place, e *Visit) { n.Edges.Visits = append(n.Edges.Visits, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -535,6 +579,36 @@ func (_q *PlaceQuery) loadCategory(ctx context.Context, query *CategoryQuery, no
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (_q *PlaceQuery) loadVisits(ctx context.Context, query *VisitQuery, nodes []*Place, init func(*Place), assign func(*Place, *Visit)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[string]*Place)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(visit.FieldPlaceID)
+	}
+	query.Where(predicate.Visit(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(place.VisitsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.PlaceID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "place_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

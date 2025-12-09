@@ -163,6 +163,43 @@ definitions:
     - slug
     - star_rating
     type: object
+  dto.CreateItineraryRequest:
+    properties:
+      default_duration:
+        maximum: 240
+        minimum: 15
+        type: integer
+      description:
+        maxLength: 1000
+        type: string
+      planned_date:
+        type: string
+      selected_places:
+        items:
+          type: string
+        maxItems: 10
+        minItems: 1
+        type: array
+      start_location:
+        $ref: '#/definitions/types.Location'
+      title:
+        maxLength: 255
+        minLength: 3
+        type: string
+      transport_mode:
+        $ref: '#/definitions/types.TransportMode'
+      visit_durations:
+        additionalProperties:
+          type: integer
+        description: placeID -> minutes
+        type: object
+    required:
+    - planned_date
+    - selected_places
+    - start_location
+    - title
+    - transport_mode
+    type: object
   dto.CreateOccurrenceRequest:
     properties:
       day_of_month:
@@ -226,10 +263,7 @@ definitions:
         maxLength: 10000
         type: string
       place_type:
-        allOf:
-        - $ref: '#/definitions/types.PlaceType'
-        maxLength: 50
-        minLength: 2
+        $ref: '#/definitions/types.PlaceType'
       primary_image_url:
         maxLength: 500
         type: string
@@ -510,6 +544,41 @@ definitions:
       website:
         type: string
     type: object
+  dto.ItineraryResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_optimized:
+        type: boolean
+      planned_date:
+        type: string
+      start_location:
+        $ref: '#/definitions/types.Location'
+      status:
+        $ref: '#/definitions/types.Status'
+      title:
+        type: string
+      total_distance_km:
+        type: number
+      total_duration_minutes:
+        type: integer
+      total_visit_time_minutes:
+        type: integer
+      transport_mode:
+        $ref: '#/definitions/types.TransportMode'
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      visits:
+        items:
+          $ref: '#/definitions/dto.VisitResponse'
+        type: array
+    type: object
   dto.ListCategoriesResponse:
     properties:
       items:
@@ -536,6 +605,19 @@ definitions:
         type: array
       pagination:
         $ref: '#/definitions/types.PaginationResponse'
+    type: object
+  dto.ListItinerariesResponse:
+    properties:
+      itineraries:
+        items:
+          $ref: '#/definitions/dto.ItineraryResponse'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
     type: object
   dto.ListPlacesResponse:
     properties:
@@ -900,6 +982,24 @@ definitions:
         maxLength: 500
         type: string
     type: object
+  dto.UpdateItineraryRequest:
+    properties:
+      description:
+        maxLength: 1000
+        type: string
+      planned_date:
+        type: string
+      start_location:
+        $ref: '#/definitions/types.Location'
+      status:
+        $ref: '#/definitions/types.Status'
+      title:
+        maxLength: 255
+        minLength: 3
+        type: string
+      transport_mode:
+        $ref: '#/definitions/types.TransportMode'
+    type: object
   dto.UpdateOccurrenceRequest:
     properties:
       day_of_month:
@@ -948,11 +1048,6 @@ definitions:
       long_description:
         maxLength: 10000
         type: string
-      place_type:
-        allOf:
-        - $ref: '#/definitions/types.PlaceType'
-        maxLength: 50
-        minLength: 2
       primary_image_url:
         maxLength: 500
         type: string
@@ -1004,6 +1099,35 @@ definitions:
       phone:
         maxLength: 20
         minLength: 10
+        type: string
+    type: object
+  dto.VisitResponse:
+    properties:
+      created_at:
+        type: string
+      distance_from_previous_km:
+        type: number
+      id:
+        type: string
+      itinerary_id:
+        type: string
+      notes:
+        type: string
+      place:
+        $ref: '#/definitions/dto.PlaceResponse'
+      place_id:
+        type: string
+      planned_duration_minutes:
+        type: integer
+      sequence_order:
+        type: integer
+      status:
+        $ref: '#/definitions/types.Status'
+      transport_mode:
+        $ref: '#/definitions/types.TransportMode'
+      travel_time_from_previous_minutes:
+        type: integer
+      updated_at:
         type: string
     type: object
   event.EventOccurrence:
@@ -1152,18 +1276,10 @@ definitions:
     type: object
   types.PlaceType:
     enum:
-    - hotel
-    - apartment
-    - attraction
-    - restaurant
-    - experience
+    - temple
     type: string
     x-enum-varnames:
-    - PlaceTypeHotel
-    - PlaceTypeApartment
-    - PlaceTypeAttraction
-    - PlaceTypeRestaurant
-    - PlaceTypeExperience
+    - PlaceTypeTemple
   types.RecurrenceType:
     enum:
     - NONE
@@ -1218,6 +1334,16 @@ definitions:
     - StatusDraft
     - StatusArchived
     - StatusDeleted
+  types.TransportMode:
+    enum:
+    - WALKING
+    - DRIVING
+    - TAXI
+    type: string
+    x-enum-varnames:
+    - TransportModeWalking
+    - TransportModeDriving
+    - TransportModeTaxi
   types.UserRole:
     enum:
     - USER
@@ -2267,6 +2393,290 @@ paths:
       summary: Get hotel by slug
       tags:
       - Hotel
+  /itineraries:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of itineraries with filtering
+      parameters:
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Status filter (published, draft, archived, deleted)
+        in: query
+        name: status
+        type: string
+      - default: created_at
+        description: Sort field
+        in: query
+        name: sort
+        type: string
+      - default: desc
+        description: Sort order (asc/desc)
+        in: query
+        name: order
+        type: string
+      - description: Filter by user ID
+        in: query
+        name: user_id
+        type: string
+      - description: Filter itineraries from date (YYYY-MM-DD)
+        in: query
+        name: from_date
+        type: string
+      - description: Filter itineraries to date (YYYY-MM-DD)
+        in: query
+        name: to_date
+        type: string
+      - description: Filter by transport mode (WALKING, DRIVING, TAXI)
+        in: query
+        name: transport_mode
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListItinerariesResponse'
+        "400":
+          description: Invalid query parameters
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: List itineraries
+      tags:
+      - Itinerary
+    post:
+      consumes:
+      - application/json
+      description: Create a new optimized itinerary with route planning
+      parameters:
+      - description: Create itinerary request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateItineraryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.ItineraryResponse'
+        "400":
+          description: Invalid request payload or validation error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "404":
+          description: One or more places not found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "502":
+          description: Routing service error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Create a new itinerary
+      tags:
+      - Itinerary
+  /itineraries/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an itinerary and all its visits
+      parameters:
+      - description: Itinerary ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Successfully deleted
+        "404":
+          description: Itinerary not found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Delete an itinerary
+      tags:
+      - Itinerary
+    get:
+      consumes:
+      - application/json
+      description: Get an itinerary by its ID without visit details
+      parameters:
+      - description: Itinerary ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ItineraryResponse'
+        "404":
+          description: Itinerary not found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Get itinerary by ID
+      tags:
+      - Itinerary
+    put:
+      consumes:
+      - application/json
+      description: Update an existing itinerary (does not re-optimize route)
+      parameters:
+      - description: Itinerary ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update itinerary request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateItineraryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ItineraryResponse'
+        "400":
+          description: Invalid request payload or validation error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "404":
+          description: Itinerary not found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Update an itinerary
+      tags:
+      - Itinerary
+  /itineraries/{id}/details:
+    get:
+      consumes:
+      - application/json
+      description: Get an itinerary by its ID with all visit details including place
+        information
+      parameters:
+      - description: Itinerary ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ItineraryResponse'
+        "404":
+          description: Itinerary not found
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      summary: Get itinerary with visits
+      tags:
+      - Itinerary
+  /itineraries/me:
+    get:
+      consumes:
+      - application/json
+      description: Get all itineraries for the authenticated user
+      parameters:
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Status filter
+        in: query
+        name: status
+        type: string
+      - default: created_at
+        description: Sort field
+        in: query
+        name: sort
+        type: string
+      - default: desc
+        description: Sort order (asc/desc)
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListItinerariesResponse'
+        "400":
+          description: Invalid query parameters
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "401":
+          description: User not authenticated
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ierr.ErrorResponse'
+      security:
+      - Authorization: []
+      summary: Get user's itineraries
+      tags:
+      - Itinerary
   /places:
     get:
       consumes:

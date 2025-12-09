@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -33,8 +34,17 @@ const (
 	FieldPhone = "phone"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
+	// EdgeItineraries holds the string denoting the itineraries edge name in mutations.
+	EdgeItineraries = "itineraries"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// ItinerariesTable is the table that holds the itineraries relation/edge.
+	ItinerariesTable = "itineraries"
+	// ItinerariesInverseTable is the table name for the Itinerary entity.
+	// It exists in this package in order to avoid circular dependency with the "itinerary" package.
+	ItinerariesInverseTable = "itineraries"
+	// ItinerariesColumn is the table column denoting the itineraries relation/edge.
+	ItinerariesColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -136,4 +146,25 @@ func ByPhone(opts ...sql.OrderTermOption) OrderOption {
 // ByRole orders the results by the role field.
 func ByRole(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRole, opts...).ToFunc()
+}
+
+// ByItinerariesCount orders the results by itineraries count.
+func ByItinerariesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newItinerariesStep(), opts...)
+	}
+}
+
+// ByItineraries orders the results by itineraries terms.
+func ByItineraries(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newItinerariesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newItinerariesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ItinerariesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ItinerariesTable, ItinerariesColumn),
+	)
 }

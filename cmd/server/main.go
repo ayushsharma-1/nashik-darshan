@@ -72,9 +72,13 @@ func main() {
 			repository.NewReviewRepository,
 			repository.NewHotelRepository,
 			repository.NewEventRepository,
+			repository.NewItineraryRepository,
 		),
 	) // services
 	opts = append(opts, fx.Provide(
+
+		// external services
+		service.NewRoutingClient,
 
 		// all services
 		security.NewEncryptionService,
@@ -86,6 +90,7 @@ func main() {
 		service.NewReviewService,
 		service.NewHotelService,
 		service.NewEventService,
+		service.NewItineraryService,
 	)) // factory layer
 	opts = append(opts, fx.Provide(
 		// handlers
@@ -116,16 +121,17 @@ func startServer(
 	startAPIServer(lc, r, cfg, log)
 }
 
-func provideHandlers(logger *logger.Logger, authService service.AuthService, userService service.UserService, categoryService service.CategoryService, placeService service.PlaceService, reviewService service.ReviewService, hotelService service.HotelService, eventService service.EventService) *api.Handlers {
+func provideHandlers(logger *logger.Logger, authService service.AuthService, userService service.UserService, categoryService service.CategoryService, placeService service.PlaceService, reviewService service.ReviewService, hotelService service.HotelService, eventService service.EventService, itineraryService service.ItineraryService) *api.Handlers {
 	return &api.Handlers{
-		Health:   v1.NewHealthHandler(logger),
-		Auth:     v1.NewAuthHandler(authService),
-		User:     v1.NewUserHandler(userService),
-		Category: v1.NewCategoryHandler(categoryService),
-		Place:    v1.NewPlaceHandler(placeService),
-		Review:   v1.NewReviewHandler(reviewService),
-		Hotel:    v1.NewHotelHandler(hotelService),
-		Event:    v1.NewEventHandler(eventService),
+		Health:    v1.NewHealthHandler(logger),
+		Auth:      v1.NewAuthHandler(authService),
+		User:      v1.NewUserHandler(userService),
+		Category:  v1.NewCategoryHandler(categoryService),
+		Place:     v1.NewPlaceHandler(placeService),
+		Review:    v1.NewReviewHandler(reviewService),
+		Hotel:     v1.NewHotelHandler(hotelService),
+		Event:     v1.NewEventHandler(eventService),
+		Itinerary: v1.NewItineraryHandler(itineraryService),
 	}
 }
 
